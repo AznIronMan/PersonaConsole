@@ -82,6 +82,14 @@ Use Python 3.11+ with the package's test dependencies installed. For consuming
 runtime changes, follow the owning runtime's `AGENTS.md`, task tracker,
 verification, and deployment rules.
 
+Optional fixture visual smoke:
+
+```bash
+python3 -m pip install -e ".[visual]"
+python3 -m playwright install chromium
+PYTHONPATH=src python3 scripts/visual_smoke.py
+```
+
 ## Public Export
 
 Create a fresh public-safe tree with:
@@ -99,6 +107,7 @@ Review the exported tree before creating fresh public git history and tagging
 - [Configuration Model](docs/CONFIGURATION_MODEL.md)
 - [Feature Extraction Plan](docs/FEATURE_EXTRACTION_PLAN.md)
 - [Reference Console Backlog](docs/REFERENCE_CONSOLE_BACKLOG.md)
+- [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)
 

@@ -1,0 +1,28 @@
+# Visual QA
+
+PersonaCore includes an optional Playwright smoke for the public-safe fixture
+admin console. It verifies the shared shell, dashboard primitives, live
+controls, desktop navigation, and mobile navigation, then writes screenshots.
+
+Install optional tooling:
+
+```bash
+python3 -m pip install -e ".[visual]"
+python3 -m playwright install chromium
+```
+
+Run the smoke:
+
+```bash
+PYTHONPATH=src python3 scripts/visual_smoke.py
+```
+
+Screenshots are written to:
+
+```text
+build/visual-smoke/screenshots/
+```
+
+The smoke uses only generic fixture data. Private runtime screenshots,
+credentials, authenticated sessions, and deployment paths must stay outside the
+public PersonaCore repo.
