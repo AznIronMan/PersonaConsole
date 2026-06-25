@@ -18,6 +18,7 @@ from .models import (
     DashboardHealthMetric,
     DashboardHealthStrip,
     DashboardMetric,
+    DashboardMetricSpec,
     DashboardQueueRow,
     DashboardRouteCard,
     DashboardSparkBucket,
@@ -78,6 +79,52 @@ def _percent(value: object) -> int:
     except (TypeError, ValueError):
         return 0
     return int(max(0, min(100, round(number))))
+
+
+def _human_count(value: object) -> str:
+    try:
+        number = int(value or 0)
+    except (TypeError, ValueError):
+        return str(value or "0")
+    sign = "-" if number < 0 else ""
+    absolute = abs(number)
+    if absolute >= 1_000_000:
+        formatted = f"{absolute / 1_000_000:.1f}".rstrip("0").rstrip(".")
+        return f"{sign}{formatted}m"
+    if absolute >= 1_000:
+        formatted = f"{absolute / 1_000:.1f}".rstrip("0").rstrip(".")
+        return f"{sign}{formatted}k"
+    return f"{number}"
+
+
+def _clip(value: object, max_length: int) -> str:
+    text = str(value if value is not None else "")
+    clean_length = max(1, int(max_length or 1))
+    if len(text) <= clean_length:
+        return text
+    if clean_length <= 3:
+        return "." * clean_length
+    return text[: clean_length - 3].rstrip() + "..."
+
+
+def format_dashboard_metric_value(
+    value: object,
+    *,
+    value_kind: str = "auto",
+    max_length: int = 24,
+) -> str:
+    """Return a compact value for dashboard metric cards."""
+
+    kind = str(value_kind or "auto").strip().lower()
+    if kind == "count":
+        return _human_count(value)
+    if kind == "text":
+        return _clip(value or "-", max_length)
+    if kind == "raw":
+        return str(value if value is not None else "")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return _human_count(value)
+    return _clip(value or "-", max_length)
 
 
 def _attrs(**attrs: str) -> str:
@@ -191,6 +238,43 @@ def render_dashboard_metrics(metrics: Sequence[DashboardMetric | Mapping[str, ob
     if not cards:
         return ""
     return '<section class="pc-dashboard-stat-grid">' + "".join(cards) + "</section>"
+
+
+def dashboard_metrics_from_counts(
+    counts: Mapping[str, object],
+    specs: Sequence[DashboardMetricSpec | Mapping[str, object]],
+) -> list[DashboardMetric]:
+    """Build dashboard metrics from a consumer-owned count/status mapping."""
+
+    metrics: list[DashboardMetric] = []
+    for raw_spec in specs:
+        spec = _coerce(raw_spec, DashboardMetricSpec)
+        value = counts.get(spec.key, spec.default)
+        metrics.append(
+            DashboardMetric(
+                spec.label,
+                format_dashboard_metric_value(value, value_kind=spec.value_kind, max_length=spec.max_length),
+                href=spec.href,
+                detail=spec.detail,
+                tone=spec.tone,
+            )
+        )
+    return metrics
+
+
+def render_dashboard_summary_grid(
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] | Mapping[str, object],
+    specs: Sequence[DashboardMetricSpec | Mapping[str, object]] | None = None,
+) -> str:
+    """Render a metric summary grid from metric objects or count specs."""
+
+    if specs is not None:
+        if not isinstance(metrics, Mapping):
+            raise TypeError("metrics must be a mapping when specs are provided")
+        return render_dashboard_metrics(dashboard_metrics_from_counts(metrics, specs))
+    if isinstance(metrics, Mapping):
+        raise TypeError("specs are required when metrics is a mapping")
+    return render_dashboard_metrics(metrics)
 
 
 def render_dashboard_route_cards(routes: Sequence[DashboardRouteCard | Mapping[str, object]], *, title: str = "Operator work") -> str:

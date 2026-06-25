@@ -10,15 +10,19 @@ from persona_console import (
     DashboardHealthMetric,
     DashboardHealthStrip,
     DashboardMetric,
+    DashboardMetricSpec,
     DashboardQueueRow,
     DashboardRouteCard,
     TokenHealthCheck,
     TokenHealthConfig,
+    dashboard_metrics_from_counts,
+    format_dashboard_metric_value,
     render_dashboard_activity,
     render_dashboard_attention,
     render_dashboard_flow,
     render_dashboard_queue,
     render_dashboard_sections,
+    render_dashboard_summary_grid,
 )
 
 
@@ -74,6 +78,58 @@ def test_dashboard_sections_accept_plain_dicts_and_skip_missing_sections():
     assert "pc-dashboard-route-grid" in html
     assert "Review" in html
     assert "pc-dashboard-overview" not in html
+
+
+def test_dashboard_metric_specs_build_summary_cards_from_counts():
+    metrics = dashboard_metrics_from_counts(
+        {
+            "messages": 12345,
+            "provider": "example-provider-with-a-long-name",
+        },
+        [
+            DashboardMetricSpec("Messages", "messages", "/messages", "stored messages", tone="good", value_kind="count"),
+            {
+                "label": "Provider",
+                "key": "provider",
+                "href": "/runtime/provider",
+                "value_kind": "text",
+                "max_length": 16,
+            },
+            {"label": "<Missing>", "key": "missing", "href": "/missing", "default": "<none>"},
+        ],
+    )
+
+    assert metrics[0].value == "12.3k"
+    assert metrics[1].value == "example-provi..."
+    assert metrics[2].value == "<none>"
+
+    html = render_dashboard_summary_grid(metrics)
+
+    assert "pc-dashboard-stat-grid" in html
+    assert "12.3k" in html
+    assert "example-provi..." in html
+    assert "&lt;Missing&gt;" in html
+    assert "&lt;none&gt;" in html
+
+
+def test_dashboard_summary_grid_can_render_count_specs_directly():
+    html = render_dashboard_summary_grid(
+        {"pending": 4, "mode": "observe"},
+        [
+            {"label": "Pending", "key": "pending", "href": "/review", "value_kind": "count"},
+            {"label": "Mode", "key": "mode", "href": "/runtime", "value_kind": "raw"},
+        ],
+    )
+
+    assert "Pending" in html
+    assert ">4</div>" in html
+    assert "observe" in html
+
+
+def test_dashboard_metric_value_formatting_handles_edges():
+    assert format_dashboard_metric_value(1_500_000, value_kind="count") == "1.5m"
+    assert format_dashboard_metric_value("abcdefgh", value_kind="text", max_length=3) == "..."
+    assert format_dashboard_metric_value(None, value_kind="raw") == ""
 
 
 def test_health_adapters_flow_queue_and_activity_render_expected_surfaces():

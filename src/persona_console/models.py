@@ -156,6 +156,18 @@ class DashboardMetric:
 
 
 @dataclass(frozen=True)
+class DashboardMetricSpec:
+    label: str
+    key: str
+    href: str = ""
+    detail: str = ""
+    tone: str = "neutral"
+    default: str | int | float = 0
+    value_kind: str = "auto"
+    max_length: int = 24
+
+
+@dataclass(frozen=True)
 class DashboardRouteCard:
     label: str
     href: str

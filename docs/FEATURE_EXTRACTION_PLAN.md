@@ -22,6 +22,9 @@ Recommended first extraction targets:
 
 - Dashboard attention overview, filter chips, metric/stat cards, route cards,
   queue bars, and activity rows.
+- Count/status summary-card builders that turn consumer-owned mappings into
+  shared metric cards without moving route or database ownership into
+  PersonaCore.
 - Runtime health/status summary strip and health detail cards.
 - Token/credential health panels for provider tokens and webhook secrets,
   enabled by runtime settings and populated by runtime-owned lookups.

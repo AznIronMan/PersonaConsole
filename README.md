@@ -44,6 +44,10 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   primitives such as attention cards, filters, metrics, route cards, health
   strips, token health, adapter cards, flow charts, queue summaries, and
   activity rows.
+- `personacore.dashboard_metrics_from_counts(...)` and
+  `personacore.render_dashboard_summary_grid(...)` turn consumer-owned count
+  or status mappings into reusable dashboard summary cards without moving route,
+  database, or runtime ownership into PersonaCore.
 - `personacore.TokenHealthConfig` and
   `personacore.build_token_health_report(...)` provide an opt-in, redacted
   credential health primitive for provider tokens and webhook secrets. Consumers
@@ -58,10 +62,10 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
 
 The public package distribution is `personacore`. The sanitized `v1.0.1`
 baseline starts the public history, `v1.0.2` adds configurable token health as
-a shared feature primitive, and `v1.0.3` carries the current public-safe export
-and release workflow cleanup. The existing `persona_console` Python package
-remains in the source tree as a compatibility implementation path for v1.x
-consumers.
+a shared feature primitive, `v1.0.3` carries public-safe export workflow
+cleanup, and `v1.0.4` adds reusable dashboard summary-card helpers for consumer
+deduplication. The existing `persona_console` Python package remains in the
+source tree as a compatibility implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -118,6 +122,7 @@ script prints the tag matching the exported package version.
 - [Reference Console Backlog](docs/REFERENCE_CONSOLE_BACKLOG.md)
 - [Release 1.0.2](docs/RELEASE_1.0.2.md)
 - [Release 1.0.3](docs/RELEASE_1.0.3.md)
+- [Release 1.0.4](docs/RELEASE_1.0.4.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

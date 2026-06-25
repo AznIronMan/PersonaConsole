@@ -128,6 +128,28 @@ raw values are never copied into the report. Consumers may hide secret key names
 with `TokenHealthConfig(show_secret_names=False)` when even source names should
 stay runtime-local.
 
+## Dashboard Summary Cards
+
+Repeated count/status cards should stay generic. Consumers own the underlying
+database queries, routes, and labels, then pass a safe mapping plus display
+specs into PersonaCore:
+
+```python
+from personacore import DashboardMetricSpec, render_dashboard_summary_grid
+
+html = render_dashboard_summary_grid(
+    {"messages": 42, "review_pending": 3, "provider": "example-provider"},
+    [
+        DashboardMetricSpec("Messages", "messages", "/messages", value_kind="count"),
+        DashboardMetricSpec("Review", "review_pending", "/review", value_kind="count"),
+        DashboardMetricSpec("Provider", "provider", "/runtime/provider", value_kind="text"),
+    ],
+)
+```
+
+This keeps route ownership and data access in the consumer while removing
+duplicated summary-card markup.
+
 ## Extension Rules
 
 - Prefer adding a generic capability or data provider over adding

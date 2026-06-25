@@ -12,7 +12,9 @@ def test_personacore_reexports_core_api():
     assert personacore.PersonaConsoleConfig is persona_console.PersonaConsoleConfig
     assert personacore.PersonaCoreConfig is personacore.PersonaConsoleConfig
     assert personacore.DashboardData is persona_console.DashboardData
+    assert personacore.DashboardMetricSpec is persona_console.DashboardMetricSpec
     assert personacore.render_dashboard_sections is persona_console.render_dashboard_sections
+    assert personacore.dashboard_metrics_from_counts is persona_console.dashboard_metrics_from_counts
     assert personacore.TokenHealthConfig is persona_console.TokenHealthConfig
     assert personacore.build_token_health_report is persona_console.build_token_health_report
     assert personacore.NavItem is persona_console.NavItem
@@ -23,14 +25,16 @@ def test_personacore_reexports_core_api():
 
 
 def test_personacore_submodules_reexport_existing_implementation():
-    from personacore.dashboard import render_dashboard_sections
-    from personacore.models import PersonaCoreConfig
+    from personacore.dashboard import dashboard_metrics_from_counts, render_dashboard_sections
+    from personacore.models import DashboardMetricSpec, PersonaCoreConfig
     from personacore.render import render_nav_groups
     from personacore.token_health import build_token_health_report
 
     assert PersonaCoreConfig is persona_console.PersonaConsoleConfig
+    assert DashboardMetricSpec is persona_console.DashboardMetricSpec
     assert render_nav_groups is persona_console.render_nav_groups
     assert render_dashboard_sections is persona_console.render_dashboard_sections
+    assert dashboard_metrics_from_counts is persona_console.dashboard_metrics_from_counts
     assert build_token_health_report is persona_console.build_token_health_report
 
 
@@ -49,4 +53,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.3"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.4"

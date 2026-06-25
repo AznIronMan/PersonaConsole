@@ -2,6 +2,8 @@
 
 from .fastapi import register_static_assets
 from .dashboard import (
+    dashboard_metrics_from_counts,
+    format_dashboard_metric_value,
     render_dashboard_activity,
     render_dashboard_adapter_cards,
     render_dashboard_attention,
@@ -12,6 +14,7 @@ from .dashboard import (
     render_dashboard_queue,
     render_dashboard_route_cards,
     render_dashboard_sections,
+    render_dashboard_summary_grid,
 )
 from .models import (
     DashboardAction,
@@ -27,6 +30,7 @@ from .models import (
     DashboardHealthMetric,
     DashboardHealthStrip,
     DashboardMetric,
+    DashboardMetricSpec,
     DashboardQueueRow,
     DashboardRouteCard,
     DashboardSparkBucket,
@@ -65,6 +69,7 @@ __all__ = [
     "DashboardHealthMetric",
     "DashboardHealthStrip",
     "DashboardMetric",
+    "DashboardMetricSpec",
     "DashboardQueueRow",
     "DashboardRouteCard",
     "DashboardSparkBucket",
@@ -79,6 +84,8 @@ __all__ = [
     "active_nav_label",
     "build_token_health_report",
     "configure_jinja_loader",
+    "dashboard_metrics_from_counts",
+    "format_dashboard_metric_value",
     "register_static_assets",
     "render_dashboard_activity",
     "render_dashboard_adapter_cards",
@@ -90,6 +97,7 @@ __all__ = [
     "render_dashboard_queue",
     "render_dashboard_route_cards",
     "render_dashboard_sections",
+    "render_dashboard_summary_grid",
     "render_live_controls",
     "render_nav_groups",
     "render_shell_html",
@@ -99,7 +107,7 @@ __all__ = [
     "token_health_lookup",
 ]
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 
 def configure_jinja_loader(*args, **kwargs):

@@ -1,6 +1,8 @@
 """Dashboard primitive re-exports for the public PersonaCore import path."""
 
 from persona_console.dashboard import (
+    dashboard_metrics_from_counts,
+    format_dashboard_metric_value,
     render_dashboard_activity,
     render_dashboard_adapter_cards,
     render_dashboard_attention,
@@ -11,9 +13,12 @@ from persona_console.dashboard import (
     render_dashboard_queue,
     render_dashboard_route_cards,
     render_dashboard_sections,
+    render_dashboard_summary_grid,
 )
 
 __all__ = [
+    "dashboard_metrics_from_counts",
+    "format_dashboard_metric_value",
     "render_dashboard_activity",
     "render_dashboard_adapter_cards",
     "render_dashboard_attention",
@@ -24,4 +29,5 @@ __all__ = [
     "render_dashboard_queue",
     "render_dashboard_route_cards",
     "render_dashboard_sections",
+    "render_dashboard_summary_grid",
 ]
