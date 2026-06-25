@@ -2,12 +2,60 @@ from __future__ import annotations
 
 from dataclasses import asdict, fields, is_dataclass
 from html import escape
-from typing import Any, Callable, Mapping, TypeVar
+from typing import Any, Callable, Mapping, Sequence, TypeVar
 
 from .models import TokenHealthCheck, TokenHealthConfig
+from .privacy import feature_enabled
 
 T = TypeVar("T")
 TokenLookup = Callable[[str], object]
+TOKEN_HEALTH_FEATURE = "token_health"
+
+_TOKEN_PROVIDER_PRESETS = {
+    "meta": TokenHealthCheck(
+        "meta",
+        "Meta access token",
+        "Social",
+        ("META_ACCESS_TOKEN", "META_TOKEN"),
+    ),
+    "instagram": TokenHealthCheck(
+        "instagram",
+        "Instagram access token",
+        "Social",
+        ("INSTAGRAM_ACCESS_TOKEN", "IG_ACCESS_TOKEN", "IG_TOKEN"),
+    ),
+    "x": TokenHealthCheck(
+        "x",
+        "X API token",
+        "Social",
+        ("X_BEARER_TOKEN", "X_API_TOKEN", "TWITTER_BEARER_TOKEN"),
+    ),
+    "discord": TokenHealthCheck(
+        "discord",
+        "Discord bot token",
+        "Messaging",
+        ("DISCORD_BOT_TOKEN", "DISCORD_TOKEN"),
+    ),
+    "webhook": TokenHealthCheck(
+        "webhook",
+        "Webhook secret",
+        "Webhooks",
+        ("WEBHOOK_SECRET", "WEBHOOK_VERIFY_TOKEN"),
+        required=False,
+    ),
+}
+
+_TOKEN_PROVIDER_ALIASES = {
+    "ig": "instagram",
+    "instagram_basic": "instagram",
+    "meta_graph": "meta",
+    "twitter": "x",
+    "twitter_x": "x",
+    "x_api": "x",
+    "discord_bot": "discord",
+    "webhook_secret": "webhook",
+    "webhook_verify": "webhook",
+}
 
 _TONE_ALIASES = {
     "bad": "bad",
@@ -55,6 +103,11 @@ def _tone(value: object) -> str:
     return _TONE_ALIASES.get(str(value or "").strip().lower(), "neutral")
 
 
+def _provider_key(value: object) -> str:
+    key = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    return _TOKEN_PROVIDER_ALIASES.get(key, key)
+
+
 def _secret_names(value: object) -> tuple[str, ...]:
     if isinstance(value, str):
         names = [value]
@@ -91,6 +144,92 @@ def _lookup_secret(
     return None
 
 
+def token_health_provider_keys() -> tuple[str, ...]:
+    """Return the built-in public provider preset keys."""
+
+    return tuple(_TOKEN_PROVIDER_PRESETS)
+
+
+def _token_check_from_override(
+    base: TokenHealthCheck,
+    override: TokenHealthCheck | Mapping[str, object] | Sequence[str] | str | None,
+) -> TokenHealthCheck:
+    if override is None:
+        return base
+    if isinstance(override, TokenHealthCheck):
+        return override
+    data = _mapping(base)
+    if isinstance(override, Mapping):
+        data.update(_mapping(override))
+    else:
+        data["secret_names"] = _secret_names(override)
+    return _coerce(data, TokenHealthCheck)
+
+
+def token_health_checks_for_providers(
+    providers: Sequence[str] | str,
+    *,
+    overrides: Mapping[str, TokenHealthCheck | Mapping[str, object] | Sequence[str] | str] | None = None,
+) -> tuple[TokenHealthCheck, ...]:
+    """Build generic token checks for common provider names.
+
+    Presets are public-safe labels and source names only. Consumers can override
+    any preset locally when their runtime uses different environment keys or
+    has a different required/optional policy.
+    """
+
+    raw_providers = (providers,) if isinstance(providers, str) else tuple(providers)
+    checks: list[TokenHealthCheck] = []
+    seen: set[str] = set()
+    override_map = overrides or {}
+    for raw_provider in raw_providers:
+        key = _provider_key(raw_provider)
+        if not key or key in seen:
+            continue
+        if key not in _TOKEN_PROVIDER_PRESETS:
+            raise ValueError(f"Unknown token health provider: {raw_provider}")
+        seen.add(key)
+        override = override_map.get(str(raw_provider)) or override_map.get(key)
+        checks.append(_token_check_from_override(_TOKEN_PROVIDER_PRESETS[key], override))
+    return tuple(checks)
+
+
+def token_health_config_for_providers(
+    providers: Sequence[str] | str,
+    *,
+    enabled: bool = True,
+    feature: str = TOKEN_HEALTH_FEATURE,
+    title: str = "Token Health",
+    subtitle: str = "Configured integration credentials",
+    empty_label: str = "No token checks configured.",
+    show_secret_names: bool = True,
+    overrides: Mapping[str, TokenHealthCheck | Mapping[str, object] | Sequence[str] | str] | None = None,
+) -> TokenHealthConfig:
+    """Create a token health config from public-safe provider presets."""
+
+    return TokenHealthConfig(
+        enabled=enabled,
+        feature=feature,
+        title=title,
+        subtitle=subtitle,
+        checks=token_health_checks_for_providers(providers, overrides=overrides),
+        empty_label=empty_label,
+        show_secret_names=show_secret_names,
+    )
+
+
+def token_health_feature_enabled(
+    config: TokenHealthConfig | Mapping[str, object],
+    features: Mapping[str, bool] | None = None,
+) -> bool:
+    model = _coerce(config, TokenHealthConfig)
+    return bool(model.enabled) and feature_enabled(
+        features,
+        str(model.feature or TOKEN_HEALTH_FEATURE),
+        default=True,
+    )
+
+
 def _check_present(
     check: TokenHealthCheck,
     *,
@@ -115,6 +254,7 @@ def build_token_health_report(
     *,
     values: Mapping[str, object] | None = None,
     lookup: TokenLookup | None = None,
+    features: Mapping[str, bool] | None = None,
 ) -> dict[str, object]:
     """Build a redacted token health report from runtime-owned settings.
 
@@ -124,7 +264,8 @@ def build_token_health_report(
 
     model = _coerce(config, TokenHealthConfig)
     rows: list[dict[str, object]] = []
-    if model.enabled:
+    enabled = token_health_feature_enabled(model, features)
+    if enabled:
         source_values = values or {}
         for raw_check in model.checks:
             check = _coerce(raw_check, TokenHealthCheck)
@@ -166,7 +307,8 @@ def build_token_health_report(
     present_count = sum(1 for row in rows if row["present"])
     tone = "bad" if blocked_required else ("warn" if warnings else "good")
     return {
-        "enabled": bool(model.enabled),
+        "enabled": enabled,
+        "feature": str(model.feature or TOKEN_HEALTH_FEATURE),
         "title": str(model.title),
         "subtitle": str(model.subtitle),
         "empty_label": str(model.empty_label),
@@ -239,14 +381,18 @@ def render_token_health_panel(
     *,
     values: Mapping[str, object] | None = None,
     lookup: TokenLookup | None = None,
+    features: Mapping[str, bool] | None = None,
 ) -> str:
     if report is None:
         return ""
     data = (
-        build_token_health_report(report, values=values, lookup=lookup)
+        build_token_health_report(report, values=values, lookup=lookup, features=features)
         if isinstance(report, TokenHealthConfig) or "checks" in report
         else dict(report)
     )
+    feature = str(data.get("feature") or TOKEN_HEALTH_FEATURE)
+    if not feature_enabled(features, feature, default=True):
+        return ""
     if not data.get("enabled", True):
         return ""
     rows = [row for row in data.get("tokens", []) or [] if isinstance(row, Mapping)]

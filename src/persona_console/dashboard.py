@@ -513,7 +513,7 @@ def render_dashboard_sections(data: DashboardData | Mapping[str, object]) -> str
         render_dashboard_metrics(model.metrics),
         render_dashboard_route_cards(model.routes),
         render_dashboard_health_strip(model.health),
-        render_token_health_panel(model.token_health),
+        render_token_health_panel(model.token_health, features=model.features),
         render_dashboard_adapter_cards(model.adapters),
         render_dashboard_flow(model.flow),
         render_dashboard_queue(model.queue),

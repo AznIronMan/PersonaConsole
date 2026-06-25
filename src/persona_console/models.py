@@ -212,6 +212,7 @@ class TokenHealthCheck:
 @dataclass(frozen=True)
 class TokenHealthConfig:
     enabled: bool = False
+    feature: str = "token_health"
     title: str = "Token Health"
     subtitle: str = "Configured integration credentials"
     checks: Sequence[TokenHealthCheck | Mapping[str, object]] = field(default_factory=tuple)
@@ -292,6 +293,7 @@ class DashboardActivityItem:
 
 @dataclass(frozen=True)
 class DashboardData:
+    features: Mapping[str, bool] = field(default_factory=dict)
     attention: DashboardAttention | Mapping[str, object] | None = None
     filters: Sequence[DashboardFilter | Mapping[str, object]] = field(default_factory=tuple)
     metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)

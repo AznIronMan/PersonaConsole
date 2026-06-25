@@ -82,6 +82,7 @@ features = {
     "media": False,
     "owner_private_admin": False,
     "review": True,
+    "token_health": False,
     "workers": False,
     "scheduling": False,
 }
@@ -166,6 +167,41 @@ The returned report is safe to render or expose through an admin health route:
 raw values are never copied into the report. Consumers may hide secret key names
 with `TokenHealthConfig(show_secret_names=False)` when even source names should
 stay runtime-local.
+
+Runtimes that use the shared feature map can gate the module with
+`features["token_health"]`. An explicit `False` hides the shared panel even when
+the config is otherwise enabled; route handlers and background checks remain
+owned by the consumer runtime.
+
+For common public providers, consumers can start from sanitized presets and
+override source names locally:
+
+```python
+from personacore import (
+    TOKEN_HEALTH_FEATURE,
+    build_token_health_report,
+    token_health_config_for_providers,
+)
+
+features = {TOKEN_HEALTH_FEATURE: True}
+token_health = token_health_config_for_providers(
+    ["meta", "instagram", "x", "discord"],
+    show_secret_names=False,
+    overrides={
+        "x": {"secret_names": ["RUNTIME_X_TOKEN"], "required": False},
+    },
+)
+
+report = build_token_health_report(
+    token_health,
+    values=runtime_settings,
+    features=features,
+)
+```
+
+Built-in provider presets are public labels only. Runtime-specific aliases,
+credential names, validation calls, token refresh state, and health routes
+should stay in the consumer repository.
 
 ## Dashboard Summary Cards
 

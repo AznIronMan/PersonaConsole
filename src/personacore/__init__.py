@@ -27,6 +27,7 @@ from persona_console import (
     PersonaConsoleConfig,
     PrivacyRenderMode,
     StatusPill,
+    TOKEN_HEALTH_FEATURE,
     ThemeTokens,
     TokenHealthCheck,
     TokenHealthConfig,
@@ -61,7 +62,11 @@ from persona_console import (
     render_status_pill,
     render_token_health_panel,
     render_user_pill,
+    token_health_checks_for_providers,
+    token_health_config_for_providers,
+    token_health_feature_enabled,
     token_health_lookup,
+    token_health_provider_keys,
 )
 from persona_console import __version__
 
@@ -92,6 +97,7 @@ __all__ = [
     "PersonaConsoleConfig",
     "PrivacyRenderMode",
     "StatusPill",
+    "TOKEN_HEALTH_FEATURE",
     "ThemeTokens",
     "TokenHealthCheck",
     "TokenHealthConfig",
@@ -126,5 +132,9 @@ __all__ = [
     "render_status_pill",
     "render_token_health_panel",
     "render_user_pill",
+    "token_health_checks_for_providers",
+    "token_health_config_for_providers",
+    "token_health_feature_enabled",
     "token_health_lookup",
+    "token_health_provider_keys",
 ]

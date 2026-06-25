@@ -52,7 +52,16 @@ from .render import (
     render_status_pill,
     render_user_pill,
 )
-from .token_health import build_token_health_report, render_token_health_panel, token_health_lookup
+from .token_health import (
+    TOKEN_HEALTH_FEATURE,
+    build_token_health_report,
+    render_token_health_panel,
+    token_health_checks_for_providers,
+    token_health_config_for_providers,
+    token_health_feature_enabled,
+    token_health_lookup,
+    token_health_provider_keys,
+)
 from .privacy import (
     OWNER_PRIVATE_ADMIN_FEATURE,
     WITHHELD_PRIVATE_TEXT,
@@ -95,6 +104,7 @@ __all__ = [
     "PrivacyRenderMode",
     "StatusPill",
     "ThemeTokens",
+    "TOKEN_HEALTH_FEATURE",
     "TokenHealthCheck",
     "TokenHealthConfig",
     "UserPill",
@@ -127,11 +137,15 @@ __all__ = [
     "render_shell_html",
     "render_status_pill",
     "render_token_health_panel",
+    "token_health_checks_for_providers",
+    "token_health_config_for_providers",
+    "token_health_feature_enabled",
     "render_user_pill",
     "token_health_lookup",
+    "token_health_provider_keys",
 ]
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 
 def configure_jinja_loader(*args, **kwargs):
