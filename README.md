@@ -100,9 +100,11 @@ public-safe reference admin parity spec and expands the fixture into a fuller
 operator workspace target. `v1.0.11` extracts the reference-style people page
 into a shared typed surface. `v1.0.12` expands the shared message surface into
 a denser browser default with filter chips, action links, selected-thread
-metrics, and named conversation/transcript columns. The existing
-`persona_console` Python package remains in the source tree as a compatibility
-implementation path for v1.x consumers.
+metrics, and named conversation/transcript columns. `v1.0.13` fixes
+adapter-health card markup so linked adapter titles and linked sparkline
+buckets remain valid card content instead of breaking browser layout. The
+existing `persona_console` Python package remains in the source tree as a
+compatibility implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -135,7 +137,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.12
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.13
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -178,6 +180,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.10](docs/RELEASE_1.0.10.md)
 - [Release 1.0.11](docs/RELEASE_1.0.11.md)
 - [Release 1.0.12](docs/RELEASE_1.0.12.md)
+- [Release 1.0.13](docs/RELEASE_1.0.13.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

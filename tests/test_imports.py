@@ -112,4 +112,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.12"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.13"

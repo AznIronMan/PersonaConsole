@@ -26,7 +26,15 @@ def test_adapter_health_panel_renders_and_escapes_runtime_data():
                     counts=[{"label": "<0 failed>", "tone": "ok"}, "<128 in/24h>"],
                     detail="<detail>",
                     action_hint="<inspect>",
-                    sparkline=[AdapterHealthSparkBucket("<now>", 140, tone="blue", title="<now title>")],
+                    sparkline=[
+                        AdapterHealthSparkBucket(
+                            "<now>",
+                            140,
+                            href="/messages?bucket=<now>",
+                            tone="blue",
+                            title="<now title>",
+                        )
+                    ],
                 )
             ],
         )
@@ -34,6 +42,10 @@ def test_adapter_health_panel_renders_and_escapes_runtime_data():
 
     assert 'id="adapter-health"' in html
     assert "pc-adapter-health" in html
+    assert '<article class="pc-dashboard-adapter pc-dashboard-tone-good">' in html
+    assert '<a class="pc-dashboard-adapter' not in html
+    assert 'href="/messages?route=&lt;dm&gt;"' in html
+    assert 'href="/messages?bucket=&lt;now&gt;"' in html
     assert "&lt;Adapter Health&gt;" in html
     assert "&lt;Messages&gt;" in html
     assert "&lt;runtime policy&gt;" in html

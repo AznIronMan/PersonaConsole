@@ -125,9 +125,15 @@ def _card_html(raw_adapter: DashboardAdapterCard | Mapping[str, object]) -> str:
             tone = "neutral"
         if label:
             counts.append(f'<span class="pc-dashboard-count pc-dashboard-tone-{tone}">{escape(label)}</span>')
+    title = escape(str(adapter.label))
+    title_html = (
+        f'<a href="{escape(adapter.href, quote=True)}">{title}</a>'
+        if adapter.href
+        else f"<strong>{title}</strong>"
+    )
     body = (
         '<div class="pc-dashboard-adapter-title-row">'
-        f'<strong>{escape(str(adapter.label))}</strong>'
+        f"{title_html}"
         f'<span class="pc-dashboard-adapter-status">{escape(str(adapter.status))}</span></div>'
         + (f'<div class="pc-dashboard-section-meta">{escape(str(adapter.route))}</div>' if adapter.route else "")
         + (f'<div class="pc-dashboard-adapter-policy">{escape(str(adapter.policy))}</div>' if adapter.policy else "")
@@ -140,7 +146,7 @@ def _card_html(raw_adapter: DashboardAdapterCard | Mapping[str, object]) -> str:
         + (f'<div class="pc-dashboard-attention-detail">{escape(str(adapter.detail))}</div>' if adapter.detail else "")
         + (f'<div class="pc-dashboard-action-hint">{escape(str(adapter.action_hint))}</div>' if adapter.action_hint else "")
     )
-    return _link_or_tag("article", adapter.href, f"pc-dashboard-adapter pc-dashboard-tone-{_tone(adapter.tone)}", body)
+    return _link_or_tag("article", "", f"pc-dashboard-adapter pc-dashboard-tone-{_tone(adapter.tone)}", body)
 
 
 def _config_from_input(
