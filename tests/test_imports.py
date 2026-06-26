@@ -15,6 +15,7 @@ def test_personacore_reexports_core_api():
     assert personacore.DashboardMetricSpec is persona_console.DashboardMetricSpec
     assert personacore.render_dashboard_sections is persona_console.render_dashboard_sections
     assert personacore.dashboard_metrics_from_counts is persona_console.dashboard_metrics_from_counts
+    assert personacore.run_consumer_integration_doctor is persona_console.run_consumer_integration_doctor
     assert personacore.TOKEN_HEALTH_FEATURE == persona_console.TOKEN_HEALTH_FEATURE == "token_health"
     assert personacore.TokenHealthConfig is persona_console.TokenHealthConfig
     assert personacore.build_token_health_report is persona_console.build_token_health_report
@@ -27,6 +28,7 @@ def test_personacore_reexports_core_api():
     assert personacore.render_shell_html is persona_console.render_shell_html
     assert "PersonaCoreConfig" in personacore.__all__
     assert "DashboardData" in personacore.__all__
+    assert "run_consumer_integration_doctor" in personacore.__all__
     assert "TOKEN_HEALTH_FEATURE" in personacore.__all__
     assert "TokenHealthConfig" in personacore.__all__
     assert "OwnerPrivateScopePolicy" in personacore.__all__
@@ -38,6 +40,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     from personacore.privacy import OwnerPrivateScopePolicy, render_private_text
     from personacore.render import render_nav_groups
     from personacore.token_health import build_token_health_report, token_health_config_for_providers
+    from personacore.doctor import run_consumer_integration_doctor
 
     assert PersonaCoreConfig is persona_console.PersonaConsoleConfig
     assert DashboardMetricSpec is persona_console.DashboardMetricSpec
@@ -48,6 +51,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert dashboard_metrics_from_counts is persona_console.dashboard_metrics_from_counts
     assert build_token_health_report is persona_console.build_token_health_report
     assert token_health_config_for_providers is persona_console.token_health_config_for_providers
+    assert run_consumer_integration_doctor is persona_console.run_consumer_integration_doctor
 
 
 def test_personacore_import_does_not_require_fastapi_dependency():
@@ -65,4 +69,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.6"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.7"

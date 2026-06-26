@@ -56,6 +56,9 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   and `personacore.token_health_config_for_providers(...)` give runtimes a
   common feature flag and public provider presets for integrations such as
   Meta, Instagram, X, Discord, and webhooks.
+- `personacore.run_consumer_integration_doctor(...)` verifies consumer installs
+  or source mounts by checking version alignment, required shared exports,
+  owner-private helpers, token-health helpers, and a generic render smoke.
 - `persona_console.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
 - `persona_console.configure_jinja_loader(templates)` adds PersonaCore
@@ -69,8 +72,9 @@ a shared feature primitive, `v1.0.3` carries public-safe export workflow
 cleanup, `v1.0.4` adds reusable dashboard summary-card helpers for consumer
 deduplication, `v1.0.5` adds generic owner-private admin visibility helpers
 for runtime-enforced privacy, and `v1.0.6` adds token-health feature gating and
-public provider presets. The existing `persona_console` Python package remains
-in the source tree as a compatibility implementation path for v1.x consumers.
+public provider presets. `v1.0.7` adds the consumer integration doctor for
+upgrade/restart smokes. The existing `persona_console` Python package remains in
+the source tree as a compatibility implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -99,6 +103,15 @@ PYTHONPATH=src python -m pytest tests
 Use Python 3.11+ with the package's test dependencies installed. For consuming
 runtime changes, follow the owning runtime's `AGENTS.md`, task tracker,
 verification, and deployment rules.
+
+Consumer integration doctor:
+
+```bash
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.7
+```
+
+Use `--json` for automation. Imported module filesystem paths are hidden unless
+`--show-paths` is passed.
 
 Optional fixture visual smoke:
 
@@ -130,6 +143,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.4](docs/RELEASE_1.0.4.md)
 - [Release 1.0.5](docs/RELEASE_1.0.5.md)
 - [Release 1.0.6](docs/RELEASE_1.0.6.md)
+- [Release 1.0.7](docs/RELEASE_1.0.7.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

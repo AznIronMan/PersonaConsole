@@ -62,6 +62,13 @@ from .token_health import (
     token_health_lookup,
     token_health_provider_keys,
 )
+from .doctor import (
+    ConsumerIntegrationDoctorReport,
+    DoctorCheck,
+    ModuleSnapshot,
+    doctor_report_to_text,
+    run_consumer_integration_doctor,
+)
 from .privacy import (
     OWNER_PRIVATE_ADMIN_FEATURE,
     WITHHELD_PRIVATE_TEXT,
@@ -95,6 +102,9 @@ __all__ = [
     "DashboardQueueRow",
     "DashboardRouteCard",
     "DashboardSparkBucket",
+    "ConsumerIntegrationDoctorReport",
+    "DoctorCheck",
+    "ModuleSnapshot",
     "NavItem",
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -115,6 +125,7 @@ __all__ = [
     "canonical_privacy_scope",
     "configure_jinja_loader",
     "dashboard_metrics_from_counts",
+    "doctor_report_to_text",
     "feature_enabled",
     "format_dashboard_metric_value",
     "owner_private_scope_for_content",
@@ -137,6 +148,7 @@ __all__ = [
     "render_shell_html",
     "render_status_pill",
     "render_token_health_panel",
+    "run_consumer_integration_doctor",
     "token_health_checks_for_providers",
     "token_health_config_for_providers",
     "token_health_feature_enabled",
@@ -145,7 +157,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 
 def configure_jinja_loader(*args, **kwargs):

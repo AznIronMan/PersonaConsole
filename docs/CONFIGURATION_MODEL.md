@@ -203,6 +203,22 @@ Built-in provider presets are public labels only. Runtime-specific aliases,
 credential names, validation calls, token refresh state, and health routes
 should stay in the consumer repository.
 
+## Consumer Integration Doctor
+
+After changing a consumer's installed package, checked-out tag, source mount, or
+service image, run the generic doctor before deeper runtime-specific smokes:
+
+```bash
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.7
+```
+
+The doctor verifies that `persona_console` and `personacore` import, report the
+same version, expose token-health and owner-private helpers, and can render a
+generic shell plus redacted token-health panel. It does not read runtime
+secrets, databases, private routes, or consumer settings. Filesystem paths are
+omitted from output unless `--show-paths` is explicitly passed for local
+diagnostics.
+
 ## Dashboard Summary Cards
 
 Repeated count/status cards should stay generic. Consumers own the underlying
