@@ -33,6 +33,9 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Adapter health" in html
     assert "pc-adapter-health" in html
     assert "pc-message-surface" in html
+    assert "pc-message-controls" in html
+    assert "Raw rows" in html
+    assert "Selected conversation" in html
     assert "pc-activity-surface" in html
     assert "pc-media-surface" in html
     assert "Owner-private reply summarized for operators." in html

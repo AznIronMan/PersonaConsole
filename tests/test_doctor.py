@@ -6,12 +6,12 @@ from persona_console.doctor import doctor_report_to_text, run_consumer_integrati
 
 
 def test_consumer_integration_doctor_passes_current_source():
-    report = run_consumer_integration_doctor(expected_version="1.0.11")
+    report = run_consumer_integration_doctor(expected_version="1.0.12")
     data = report.as_dict()
 
     assert report.ok is True
-    assert data["persona_console"]["version"] == "1.0.11"
-    assert data["personacore"]["version"] == "1.0.11"
+    assert data["persona_console"]["version"] == "1.0.12"
+    assert data["personacore"]["version"] == "1.0.12"
     assert data["persona_console"]["path"] == ""
     assert data["personacore"]["path"] == ""
     assert "raw-doctor-secret" not in str(data)
@@ -31,7 +31,7 @@ def test_consumer_integration_doctor_detects_expected_version_mismatch():
 
 
 def test_consumer_integration_doctor_text_is_public_safe_by_default():
-    report = run_consumer_integration_doctor(expected_version="1.0.11")
+    report = run_consumer_integration_doctor(expected_version="1.0.12")
     text = doctor_report_to_text(report)
 
     assert "PersonaCore consumer integration doctor: ok" in text
@@ -48,7 +48,7 @@ def test_consumer_integration_doctor_script_json():
             sys.executable,
             "scripts/consumer_integration_doctor.py",
             "--expected-version",
-            "1.0.11",
+            "1.0.12",
             "--json",
         ],
         check=True,
@@ -58,8 +58,8 @@ def test_consumer_integration_doctor_script_json():
 
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["persona_console"]["version"] == "1.0.11"
-    assert payload["personacore"]["version"] == "1.0.11"
+    assert payload["persona_console"]["version"] == "1.0.12"
+    assert payload["personacore"]["version"] == "1.0.12"
     assert payload["persona_console"]["path"] == ""
     assert "raw-doctor-secret" not in result.stdout
     assert "raw-doctor-private-message" not in result.stdout

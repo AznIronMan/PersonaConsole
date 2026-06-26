@@ -304,6 +304,15 @@ def _surface_render_check(module: Any) -> DoctorCheck:
         html = module.render_surface_sections(
             messages=module.MessageSurfaceConfig(
                 enabled=True,
+                filters=[
+                    module.DashboardFilter("All", "/messages", key="1", active=True),
+                ],
+                metrics=[
+                    module.DashboardMetric("Threads", 1, "/messages", "doctor"),
+                ],
+                actions=[
+                    module.DashboardAction("Raw rows", "/messages?view=raw"),
+                ],
                 conversations=[
                     module.MessageConversation(
                         "one",
@@ -321,6 +330,9 @@ def _surface_render_check(module: Any) -> DoctorCheck:
                         privacy_scope="owner_private",
                     )
                 ],
+                conversation_title="Threads",
+                transcript_title="Selected thread",
+                transcript_meta="doctor smoke",
             ),
             media=module.MediaSurfaceConfig(
                 enabled=True,
@@ -341,6 +353,9 @@ def _surface_render_check(module: Any) -> DoctorCheck:
         return _check(False, "surface_render", "message/activity/media surface render failed", f"{exc.__class__.__name__}: {exc}")
     ok = (
         "pc-message-surface" in html
+        and "pc-message-controls" in html
+        and "pc-message-metrics" in html
+        and "Selected thread" in html
         and "pc-media-surface" in html
         and "safe thread summary" in html
         and "safe message summary" in html

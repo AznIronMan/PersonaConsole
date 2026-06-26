@@ -64,10 +64,13 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
 - `personacore.MessageSurfaceConfig`,
   `personacore.ActivitySurfaceConfig`, `personacore.MediaSurfaceConfig`, and
   `personacore.render_surface_sections(...)` provide opt-in conversation,
-  activity, and media/artifact admin surfaces. Owner-private render helpers can
-  show raw text to the linked owner context while rendering safe alternates or
-  withheld placeholders for non-owner admins; consumers must still enforce the
-  same policy in their HTML, JSON, query, snapshot, and file routes.
+  activity, and media/artifact admin surfaces. The message surface supports
+  platform/filter chips, selected-thread metrics, action links, a conversation
+  rail, transcript bubbles, attachments, badges, and owner-private redaction.
+  Owner-private render helpers can show raw text to the linked owner context
+  while rendering safe alternates or withheld placeholders for non-owner
+  admins; consumers must still enforce the same policy in their HTML, JSON,
+  query, snapshot, and file routes.
 - `personacore.PeopleSurfaceConfig` and
   `personacore.render_people_surface(...)` provide the shared dense people
   table, filter bar, tag chips, relationship summary, notes preview, and
@@ -95,9 +98,11 @@ opt-in shared module. `v1.0.9` adds reusable message, activity, and
 media/artifact surfaces with owner-private redaction hooks. `v1.0.10` adds a
 public-safe reference admin parity spec and expands the fixture into a fuller
 operator workspace target. `v1.0.11` extracts the reference-style people page
-into a shared typed surface. The existing `persona_console` Python package
-remains in the source tree as a compatibility implementation path for v1.x
-consumers.
+into a shared typed surface. `v1.0.12` expands the shared message surface into
+a denser browser default with filter chips, action links, selected-thread
+metrics, and named conversation/transcript columns. The existing
+`persona_console` Python package remains in the source tree as a compatibility
+implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -130,7 +135,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.11
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.12
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -172,6 +177,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.9](docs/RELEASE_1.0.9.md)
 - [Release 1.0.10](docs/RELEASE_1.0.10.md)
 - [Release 1.0.11](docs/RELEASE_1.0.11.md)
+- [Release 1.0.12](docs/RELEASE_1.0.12.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

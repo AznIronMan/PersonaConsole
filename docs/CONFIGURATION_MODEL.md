@@ -268,6 +268,9 @@ serving, and mutation endpoints.
 from personacore import (
     MESSAGES_FEATURE,
     AdminPrivacyContext,
+    DashboardAction,
+    DashboardFilter,
+    DashboardMetric,
     MessageConversation,
     MessageSurfaceConfig,
     MessageTranscriptItem,
@@ -285,6 +288,15 @@ context = AdminPrivacyContext(
 html = render_message_surface(
     MessageSurfaceConfig(
         enabled=True,
+        filters=[
+            DashboardFilter("All", "/messages", key="12", active=True),
+            DashboardFilter("Direct", "/messages?platform=direct", key="5"),
+        ],
+        metrics=[
+            DashboardMetric("Threads", 2, "/messages", "current filter"),
+            DashboardMetric("Unread", 2, "/messages?unread=1", "needs pass", tone="warn"),
+        ],
+        actions=[DashboardAction("Raw rows", "/messages?view=raw")],
         conversations=[
             MessageConversation(
                 "thread-1",
@@ -302,6 +314,9 @@ html = render_message_surface(
                 privacy_scope="owner_private",
             )
         ],
+        conversation_title="Threads",
+        transcript_title="Selected conversation",
+        transcript_meta="current page",
     ),
     features={MESSAGES_FEATURE: True},
     privacy_policy=policy,
@@ -379,7 +394,7 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.11
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.12
 ```
 
 The doctor verifies that `persona_console` and `personacore` import, report the

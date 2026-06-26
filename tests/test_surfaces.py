@@ -5,6 +5,9 @@ from persona_console import (
     ActivityEvent,
     ActivitySurfaceConfig,
     AdminPrivacyContext,
+    DashboardAction,
+    DashboardFilter,
+    DashboardMetric,
     MediaArtifactCard,
     MediaSurfaceConfig,
     MessageAttachment,
@@ -47,6 +50,15 @@ def _message_config() -> MessageSurfaceConfig:
     return MessageSurfaceConfig(
         enabled=True,
         title="<Messages>",
+        filters=[
+            DashboardFilter("<All>", "/messages?platform=all", key="12", active=True),
+            DashboardFilter("Provider", "/messages?platform=provider", key="7"),
+        ],
+        metrics=[
+            DashboardMetric("Threads", 2, "/messages", "visible"),
+            DashboardMetric("Selected", "1", "/messages?thread=thread-1", "active", tone="info"),
+        ],
+        actions=[DashboardAction("Raw rows", "/messages?view=raw", tone="neutral")],
         conversations=[
             MessageConversation(
                 "thread-1",
@@ -89,6 +101,9 @@ def _message_config() -> MessageSurfaceConfig:
             )
         ],
         selected_key="thread-1",
+        conversation_title="Threads",
+        transcript_title="Selected thread",
+        transcript_meta="1 visible message",
     )
 
 
@@ -101,6 +116,12 @@ def test_message_surface_redacts_owner_private_content_for_operator():
 
     assert 'id="messages"' in html
     assert "&lt;Messages&gt;" in html
+    assert "pc-message-controls" in html
+    assert "&lt;All&gt;" in html
+    assert "Raw rows" in html
+    assert "Threads" in html
+    assert "Selected thread" in html
+    assert "1 visible message" in html
     assert "operator-safe thread summary" in html
     assert "operator-safe dm summary" in html
     assert "operator-safe attachment" in html

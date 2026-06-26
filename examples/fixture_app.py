@@ -12,6 +12,7 @@ from personacore import (
     ActivityEvent,
     ActivitySurfaceConfig,
     AdminPrivacyContext,
+    DashboardAction,
     DashboardActivityItem,
     DashboardAdapterCard,
     DashboardAttention,
@@ -126,7 +127,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.11-fixture",
+        app_version="v1.0.12-fixture",
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -458,6 +459,20 @@ def render_dashboard_fragment() -> str:
     surfaces = render_surface_sections(
         messages=MessageSurfaceConfig(
             enabled=True,
+            filters=[
+                DashboardFilter("All", "/messages", key="12", active=True, color="rgb(251 113 133)"),
+                DashboardFilter("Chat", "/messages?platform=chat", key="7", color="rgb(45 212 191)"),
+                DashboardFilter("Direct", "/messages?platform=direct", key="5", color="rgb(251 191 36)"),
+            ],
+            metrics=[
+                DashboardMetric("Visible threads", 2, "/messages", "current filters", tone="info"),
+                DashboardMetric("Selected messages", 2, "/messages/thread-1", "thread-1"),
+                DashboardMetric("Unread", 2, "/messages?unread=1", "needs pass", tone="warn"),
+            ],
+            actions=[
+                DashboardAction("Raw rows", "/messages?view=raw"),
+                DashboardAction("Review queue", "/review", tone="warn"),
+            ],
             conversations=[
                 MessageConversation(
                     "thread-1",
@@ -485,6 +500,9 @@ def render_dashboard_fragment() -> str:
                 ),
             ],
             selected_key="thread-1",
+            conversation_title="Threads",
+            transcript_title="Selected conversation",
+            transcript_meta="2 visible messages",
             transcript=[
                 MessageTranscriptItem(
                     "Consumer",

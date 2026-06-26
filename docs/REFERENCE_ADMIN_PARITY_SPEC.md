@@ -78,8 +78,11 @@ hidden with feature flags instead of leaving dead links.
 
 PersonaCore should supply reusable primitives for common module surfaces:
 
-- `messages`: conversation list, selected thread, transcript bubbles,
-  attachments, badges, and redacted owner-private fallbacks.
+- `messages`: platform/filter chips, selected-thread metrics, action links,
+  conversation list, selected thread, transcript bubbles, attachments, badges,
+  and redacted owner-private fallbacks. PersonaCore `1.0.12` supplies the
+  typed browser controls and two-column message surface; consumers still own
+  lookups, auth, pagination, and private scope mapping.
 - `activity`: public/group/social activity rows and timeline events.
 - `media`: artifact cards, preview placeholders, status labels, and redacted
   owner-private fallbacks.

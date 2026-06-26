@@ -376,9 +376,15 @@ class MessageSurfaceConfig:
     feature: str = "messages"
     title: str = "Messages"
     subtitle: str = "Conversation review"
+    filters: Sequence[DashboardFilter | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[DashboardAction | Mapping[str, object]] = field(default_factory=tuple)
     conversations: Sequence[MessageConversation | Mapping[str, object]] = field(default_factory=tuple)
     transcript: Sequence[MessageTranscriptItem | Mapping[str, object]] = field(default_factory=tuple)
     selected_key: str = ""
+    conversation_title: str = "Conversations"
+    transcript_title: str = "Transcript"
+    transcript_meta: str = ""
     empty_label: str = "No conversations found."
     transcript_empty_label: str = "Select a conversation to inspect its messages."
 

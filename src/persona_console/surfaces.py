@@ -7,6 +7,9 @@ from typing import Any, Mapping, Sequence, TypeVar
 from .models import (
     ActivityEvent,
     ActivitySurfaceConfig,
+    DashboardAction,
+    DashboardFilter,
+    DashboardMetric,
     MediaArtifactCard,
     MediaSurfaceConfig,
     MessageAttachment,
@@ -192,6 +195,68 @@ def _panel_head(title: str, subtitle: str) -> str:
         f'<div class="pc-dashboard-section-meta">{escape(str(subtitle))}</div>'
         "</div></div>"
     )
+
+
+def _message_filters_html(filters: Sequence[DashboardFilter | Mapping[str, object]]) -> str:
+    chips: list[str] = []
+    for raw_filter in filters:
+        item = _coerce(raw_filter, DashboardFilter)
+        if not item.label:
+            continue
+        active = " is-active" if item.active else ""
+        swatch = ""
+        if item.color:
+            swatch = (
+                '<span class="pc-message-filter-swatch" aria-hidden="true" '
+                f'style="background: {escape(item.color, quote=True)}"></span>'
+            )
+        key = f"<small>{escape(str(item.key))}</small>" if item.key else ""
+        chips.append(
+            f'<a class="pc-message-filter{active}" href="{escape(item.href or "#", quote=True)}">'
+            f'{swatch}<span>{escape(str(item.label))}</span>{key}</a>'
+        )
+    if not chips:
+        return ""
+    return '<nav class="pc-message-filters" aria-label="Message filters">' + "".join(chips) + "</nav>"
+
+
+def _message_actions_html(actions: Sequence[DashboardAction | Mapping[str, object]]) -> str:
+    links: list[str] = []
+    for raw_action in actions:
+        item = _coerce(raw_action, DashboardAction)
+        if not item.label or not item.href:
+            continue
+        links.append(
+            f'<a class="pc-message-action pc-dashboard-tone-{_tone(item.tone)}" '
+            f'href="{escape(str(item.href), quote=True)}">{escape(str(item.label))}</a>'
+        )
+    if not links:
+        return ""
+    return '<div class="pc-message-actions">' + "".join(links) + "</div>"
+
+
+def _message_metrics_html(metrics: Sequence[DashboardMetric | Mapping[str, object]]) -> str:
+    cards: list[str] = []
+    for raw_metric in metrics:
+        item = _coerce(raw_metric, DashboardMetric)
+        if not item.label:
+            continue
+        body = (
+            f'<span>{escape(str(item.label))}</span>'
+            f'<strong>{escape(str(item.value))}</strong>'
+            + (f'<em>{escape(str(item.detail))}</em>' if item.detail else "")
+        )
+        cards.append(
+            _link_or_tag(
+                "div",
+                item.href,
+                f"pc-message-metric pc-dashboard-tone-{_tone(item.tone)}",
+                body,
+            )
+        )
+    if not cards:
+        return ""
+    return '<div class="pc-message-metrics">' + "".join(cards) + "</div>"
 
 
 def message_surface_feature_enabled(
@@ -380,13 +445,29 @@ def render_message_surface(
         if transcript
         else f'<div class="pc-dashboard-empty">{escape(str(model.transcript_empty_label))}</div>'
     )
+    filters = _message_filters_html(model.filters)
+    actions = _message_actions_html(model.actions)
+    metrics = _message_metrics_html(model.metrics)
+    controls = (
+        f'<div class="pc-message-controls">{filters}{actions}</div>'
+        if filters or actions
+        else ""
+    )
+    transcript_meta = f'<em>{escape(str(model.transcript_meta))}</em>' if model.transcript_meta else ""
     return (
         '<section id="messages" class="pc-message-surface pc-dashboard-panel">'
         f"{_panel_head(model.title, model.subtitle)}"
+        f"{controls}"
+        f"{metrics}"
         '<div class="pc-message-layout">'
         '<div class="pc-message-conversation-list">'
+        '<div class="pc-message-column-head">'
+        f'<strong>{escape(str(model.conversation_title))}</strong>'
+        f'<em>{len(conversations)}</em></div>'
         f"{conversation_body}</div>"
         '<div class="pc-message-transcript">'
+        '<div class="pc-message-column-head">'
+        f'<strong>{escape(str(model.transcript_title))}</strong>{transcript_meta}</div>'
         f"{transcript_body}</div>"
         "</div></section>"
     )
