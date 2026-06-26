@@ -58,6 +58,11 @@ from .models import (
     PersonTag,
     PersonaCoreConfig,
     PersonaConsoleConfig,
+    ReviewAgendaItem,
+    ReviewBoardRow,
+    ReviewQueueCard,
+    ReviewQueueSection,
+    ReviewSurfaceConfig,
     StatusPill,
     SurfaceBadge,
     ThemeTokens,
@@ -120,6 +125,11 @@ from .people import (
     people_surface_feature_enabled,
     render_people_surface,
 )
+from .review import (
+    REVIEW_FEATURE,
+    render_review_surface,
+    review_surface_feature_enabled,
+)
 
 __all__ = [
     "NavGroup",
@@ -170,6 +180,12 @@ __all__ = [
     "PersonaCoreConfig",
     "PersonaConsoleConfig",
     "PrivacyRenderMode",
+    "REVIEW_FEATURE",
+    "ReviewAgendaItem",
+    "ReviewBoardRow",
+    "ReviewQueueCard",
+    "ReviewQueueSection",
+    "ReviewSurfaceConfig",
     "StatusPill",
     "SurfaceBadge",
     "ThemeTokens",
@@ -192,6 +208,7 @@ __all__ = [
     "media_surface_feature_enabled",
     "message_surface_feature_enabled",
     "people_surface_feature_enabled",
+    "review_surface_feature_enabled",
     "owner_private_scope_for_content",
     "privacy_render_mode",
     "register_static_assets",
@@ -214,6 +231,7 @@ __all__ = [
     "render_nav_groups",
     "render_people_surface",
     "render_private_text",
+    "render_review_surface",
     "render_shell_html",
     "render_status_pill",
     "render_surface_sections",
@@ -227,7 +245,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.13"
+__version__ = "1.0.14"
 
 
 def configure_jinja_loader(*args, **kwargs):

@@ -327,6 +327,73 @@ class PeopleSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class ReviewBoardRow:
+    kind: str
+    status: str
+    entity: str
+    summary: str = ""
+    href: str = ""
+    risk: str = "neutral"
+    actor: str = ""
+    age: str = ""
+    open_label: str = "Open"
+    summary_safe_alternate: str = ""
+    summary_privacy_scope: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class ReviewAgendaItem:
+    label: str
+    value: str | int = ""
+    href: str = ""
+    category: str = ""
+    summary: str = ""
+    tone: str = "neutral"
+
+
+@dataclass(frozen=True)
+class ReviewQueueCard:
+    label: str
+    status: str = ""
+    href: str = ""
+    category: str = ""
+    summary: str = ""
+    tone: str = "neutral"
+    meta: Sequence[tuple[str, str] | Mapping[str, object]] = field(default_factory=tuple)
+    summary_safe_alternate: str = ""
+    summary_privacy_scope: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class ReviewQueueSection:
+    title: str
+    subtitle: str = ""
+    cards: Sequence[ReviewQueueCard | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No queued items."
+
+
+@dataclass(frozen=True)
+class ReviewSurfaceConfig:
+    enabled: bool = False
+    feature: str = "review"
+    title: str = "Review"
+    subtitle: str = "Operator-gated decisions and queues"
+    filters: Sequence[DashboardFilter | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[DashboardAction | Mapping[str, object]] = field(default_factory=tuple)
+    rows: Sequence[ReviewBoardRow | Mapping[str, object]] = field(default_factory=tuple)
+    agenda: Sequence[ReviewAgendaItem | Mapping[str, object]] = field(default_factory=tuple)
+    queue_sections: Sequence[ReviewQueueSection | Mapping[str, object]] = field(default_factory=tuple)
+    board_title: str = "Decision Board"
+    board_subtitle: str = "Actionable review rows"
+    empty_label: str = "No decision rows found."
+    agenda_title: str = "Review Agenda"
+    agenda_subtitle: str = "Direct routes"
+
+
+@dataclass(frozen=True)
 class MessageAttachment:
     label: str
     href: str = ""

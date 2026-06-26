@@ -75,10 +75,15 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   `personacore.render_people_surface(...)` provide the shared dense people
   table, filter bar, tag chips, relationship summary, notes preview, and
   owner-private note redaction hooks used by consumer-owned people pages.
+- `personacore.ReviewSurfaceConfig` and
+  `personacore.render_review_surface(...)` provide a shared review-board
+  surface for operator-gated decision rows, agenda cards, publishing queue
+  summaries, and owner-private safe-alternate summaries.
 - `personacore.run_consumer_integration_doctor(...)` verifies consumer installs
   or source mounts by checking version alignment, required shared exports,
   owner-private helpers, token-health helpers, adapter-health helpers,
-  message/media/activity helpers, people helpers, and a generic render smoke.
+  message/media/activity helpers, people helpers, review helpers, and generic
+  render smokes.
 - `persona_console.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
 - `persona_console.configure_jinja_loader(templates)` adds PersonaCore
@@ -102,9 +107,11 @@ into a shared typed surface. `v1.0.12` expands the shared message surface into
 a denser browser default with filter chips, action links, selected-thread
 metrics, and named conversation/transcript columns. `v1.0.13` fixes
 adapter-health card markup so linked adapter titles and linked sparkline
-buckets remain valid card content instead of breaking browser layout. The
-existing `persona_console` Python package remains in the source tree as a
-compatibility implementation path for v1.x consumers.
+buckets remain valid card content instead of breaking browser layout.
+`v1.0.14` adds a shared review-board surface for operator-gated decision rows,
+agenda cards, publishing queue summaries, and owner-private safe-alternate
+rendering. The existing `persona_console` Python package remains in the source
+tree as a compatibility implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -137,7 +144,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.13
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.14
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -181,6 +188,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.11](docs/RELEASE_1.0.11.md)
 - [Release 1.0.12](docs/RELEASE_1.0.12.md)
 - [Release 1.0.13](docs/RELEASE_1.0.13.md)
+- [Release 1.0.14](docs/RELEASE_1.0.14.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

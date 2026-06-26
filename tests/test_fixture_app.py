@@ -27,6 +27,12 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Example Consumer" in html
     assert "Owner-private notes are summarized for operators." in html
     assert "raw fixture private people note" not in html
+    assert "pc-review-surface" in html
+    assert "Decision Board" in html
+    assert "Owner-private review summary withheld for operators." in html
+    assert "Owner-private queue summarized for operators." in html
+    assert "raw fixture private review summary" not in html
+    assert "raw fixture private queue summary" not in html
     assert "Task Queue" in html
     assert "Log Tail" in html
     assert "Settings Posture" in html

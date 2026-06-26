@@ -9,6 +9,7 @@ from personacore import (
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
     PEOPLE_FEATURE,
+    REVIEW_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
     AdminPrivacyContext,
@@ -42,6 +43,11 @@ from personacore import (
     PersonRelationshipSummary,
     PersonTag,
     PersonaCoreConfig,
+    ReviewAgendaItem,
+    ReviewBoardRow,
+    ReviewQueueCard,
+    ReviewQueueSection,
+    ReviewSurfaceConfig,
     StatusPill,
     SurfaceBadge,
     ThemeTokens,
@@ -51,6 +57,7 @@ from personacore import (
     register_static_assets,
     render_dashboard_sections,
     render_people_surface,
+    render_review_surface,
     render_shell_html,
     render_surface_sections,
 )
@@ -72,6 +79,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             ACTIVITY_FEATURE: True,
             MEDIA_FEATURE: True,
             PEOPLE_FEATURE: True,
+            REVIEW_FEATURE: True,
             TASKS_FEATURE: True,
             WORKERS_FEATURE: True,
             LOGS_FEATURE: True,
@@ -127,7 +135,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.13-fixture",
+        app_version="v1.0.14-fixture",
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -381,6 +389,98 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
+    review_surface = render_review_surface(
+        ReviewSurfaceConfig(
+            enabled=True,
+            title="Review",
+            subtitle="Operator-gated decisions and publishing queues.",
+            filters=[
+                DashboardFilter("All", "/review", key="8", active=True),
+                DashboardFilter("Media", "/review?kind=media", key="1"),
+                DashboardFilter("Messages", "/review?kind=message", key="2"),
+            ],
+            metrics=[
+                DashboardMetric("Pending", 4, "/review?status=pending", "needs operator pass", tone="warn"),
+                DashboardMetric("Failed", 1, "/review?status=failed", "retry needed", tone="bad"),
+                DashboardMetric("Ready", 3, "/review?status=ready", "safe to inspect", tone="good"),
+            ],
+            actions=[
+                DashboardAction("Persona proposals", "/persona/proposals", tone="info"),
+                DashboardAction("Media review", "/review/media", tone="warn"),
+            ],
+            rows=[
+                ReviewBoardRow(
+                    "proposal",
+                    "pending",
+                    "persona:voice",
+                    "Review proposed tone adjustment before applying.",
+                    "/persona/proposals/1",
+                    risk="warn",
+                    actor="operator",
+                    age="12m",
+                    badges=[SurfaceBadge("diff", "info")],
+                ),
+                ReviewBoardRow(
+                    "message",
+                    "held",
+                    "messages:owner-private",
+                    "raw fixture private review summary",
+                    "/messages/raw-private-review",
+                    risk="bad",
+                    actor="runtime",
+                    age="now",
+                    summary_safe_alternate="Owner-private review summary withheld for operators.",
+                    summary_privacy_scope="owner_private",
+                ),
+                ReviewBoardRow(
+                    "media",
+                    "draft",
+                    "media:asset-1",
+                    "Generated asset is ready for operator inspection.",
+                    "/review/media?q=asset-1",
+                    risk="warn",
+                    actor="media-worker",
+                    age="28m",
+                ),
+            ],
+            agenda=[
+                ReviewAgendaItem("Persona proposals", 3, "/persona/proposals", "review queue", "Inspect current/proposed values.", "warn"),
+                ReviewAgendaItem("Reflection", 12, "/review/reflection", "mind output", "Classify and link reflection notes.", "good"),
+                ReviewAgendaItem("Media", 1, "/review/media", "draft assets", "Review generated artifacts.", "warn"),
+                ReviewAgendaItem("Voice", 2, "/creation/voice", "audio clips", "Inspect queued clips.", "info"),
+            ],
+            queue_sections=[
+                ReviewQueueSection(
+                    "Publishing Queues",
+                    "safe summaries",
+                    cards=[
+                        ReviewQueueCard(
+                            "Example social draft",
+                            status="draft",
+                            href="/review/social?q=post-1",
+                            category="social",
+                            summary="Caption is ready for operator review.",
+                            meta=[("Key", "post-1"), ("Source", "operator")],
+                            tone="warn",
+                        ),
+                        ReviewQueueCard(
+                            "Owner-private queue",
+                            status="pending",
+                            href="/review/private",
+                            category="direct",
+                            summary="raw fixture private queue summary",
+                            summary_safe_alternate="Owner-private queue summarized for operators.",
+                            summary_privacy_scope="owner_private",
+                            tone="info",
+                        ),
+                    ],
+                )
+            ],
+        ),
+        features={REVIEW_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     operator_workspace = """
 <section class="pc-dashboard-panel pc-reference-workspace">
   <div class="pc-dashboard-panel-head">
@@ -567,7 +667,7 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    return render_dashboard_sections(dashboard) + people_surface + surfaces + operator_workspace + hold_form
+    return render_dashboard_sections(dashboard) + people_surface + review_surface + surfaces + operator_workspace + hold_form
 
 
 def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:

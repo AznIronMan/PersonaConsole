@@ -49,6 +49,16 @@ _PEOPLE_EXPORTS = (
     "people_surface_feature_enabled",
     "render_people_surface",
 )
+_REVIEW_EXPORTS = (
+    "REVIEW_FEATURE",
+    "ReviewAgendaItem",
+    "ReviewBoardRow",
+    "ReviewQueueCard",
+    "ReviewQueueSection",
+    "ReviewSurfaceConfig",
+    "render_review_surface",
+    "review_surface_feature_enabled",
+)
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -150,12 +160,14 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "token_health_exports", _TOKEN_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "surface_exports", _SURFACE_EXPORTS))
         checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
+        checks.extend(_export_checks(module, "review_exports", _REVIEW_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.append(_adapter_health_render_check(module))
         checks.append(_token_health_render_check(module))
         checks.append(_surface_render_check(module))
         checks.append(_people_render_check(module))
+        checks.append(_review_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -419,6 +431,68 @@ def _people_render_check(module: Any) -> DoctorCheck:
         and raw_value not in html
     )
     return _check(ok, "people_render", "people surface renders with owner-private redaction")
+
+
+def _review_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-review-summary"
+    raw_url = "/doctor/raw-private-review"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_review_surface(
+            module.ReviewSurfaceConfig(
+                enabled=True,
+                filters=[module.DashboardFilter("All", "/review", key="1", active=True)],
+                metrics=[module.DashboardMetric("Pending", 1, "/review", "doctor", tone="warn")],
+                rows=[
+                    module.ReviewBoardRow(
+                        "message",
+                        "held",
+                        "messages:owner-private",
+                        summary=raw_value,
+                        summary_safe_alternate="safe review summary",
+                        summary_privacy_scope="owner_private",
+                        href=raw_url,
+                        risk="bad",
+                    )
+                ],
+                agenda=[
+                    module.ReviewAgendaItem("Messages", 1, "/review/messages", "queue", "Inspect safe summary", "warn"),
+                ],
+                queue_sections=[
+                    module.ReviewQueueSection(
+                        "Queues",
+                        cards=[
+                            module.ReviewQueueCard(
+                                "Owner private queue",
+                                status="pending",
+                                summary=raw_value,
+                                summary_safe_alternate="safe queue summary",
+                                summary_privacy_scope="owner_private",
+                                href=raw_url,
+                            )
+                        ],
+                    )
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "review_render", "review surface render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-review-surface" in html
+        and "Decision Board" in html
+        and "safe review summary" in html
+        and "safe queue summary" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "review_render", "review surface renders with owner-private redaction")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

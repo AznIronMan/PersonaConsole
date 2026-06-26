@@ -38,6 +38,10 @@ def test_personacore_reexports_core_api():
     assert personacore.PersonRelationshipSummary is persona_console.PersonRelationshipSummary
     assert personacore.PersonTag is persona_console.PersonTag
     assert personacore.render_people_surface is persona_console.render_people_surface
+    assert personacore.REVIEW_FEATURE == persona_console.REVIEW_FEATURE == "review"
+    assert personacore.ReviewSurfaceConfig is persona_console.ReviewSurfaceConfig
+    assert personacore.ReviewBoardRow is persona_console.ReviewBoardRow
+    assert personacore.render_review_surface is persona_console.render_review_surface
     assert personacore.OwnerPrivateScopePolicy is persona_console.OwnerPrivateScopePolicy
     assert personacore.AdminPrivacyContext is persona_console.AdminPrivacyContext
     assert personacore.PrivacyRenderMode is persona_console.PrivacyRenderMode
@@ -57,6 +61,9 @@ def test_personacore_reexports_core_api():
     assert "PEOPLE_FEATURE" in personacore.__all__
     assert "PeopleSurfaceConfig" in personacore.__all__
     assert "render_people_surface" in personacore.__all__
+    assert "REVIEW_FEATURE" in personacore.__all__
+    assert "ReviewSurfaceConfig" in personacore.__all__
+    assert "render_review_surface" in personacore.__all__
     assert "OwnerPrivateScopePolicy" in personacore.__all__
 
 
@@ -73,6 +80,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     from personacore.people import PEOPLE_FEATURE, render_people_surface
     from personacore.privacy import OwnerPrivateScopePolicy, render_private_text
     from personacore.render import render_nav_groups
+    from personacore.review import REVIEW_FEATURE, render_review_surface
     from personacore.surfaces import render_message_surface, render_surface_sections
     from personacore.token_health import build_token_health_report, token_health_config_for_providers
     from personacore.doctor import run_consumer_integration_doctor
@@ -92,6 +100,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert render_surface_sections is persona_console.render_surface_sections
     assert PEOPLE_FEATURE == persona_console.PEOPLE_FEATURE
     assert render_people_surface is persona_console.render_people_surface
+    assert REVIEW_FEATURE == persona_console.REVIEW_FEATURE
+    assert render_review_surface is persona_console.render_review_surface
     assert build_token_health_report is persona_console.build_token_health_report
     assert token_health_config_for_providers is persona_console.token_health_config_for_providers
     assert run_consumer_integration_doctor is persona_console.run_consumer_integration_doctor
@@ -112,4 +122,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.13"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.14"

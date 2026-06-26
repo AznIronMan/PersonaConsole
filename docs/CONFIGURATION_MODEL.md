@@ -388,21 +388,86 @@ placeholders. This protects the shared HTML render only; consumer JSON,
 snapshot, query, and file routes must enforce the same policy before returning
 raw private data.
 
+## Review Surface
+
+The review surface is a shared, opt-in module for operator-gated decision
+boards. Consumers provide the normalized rows, agenda routes, queue summaries,
+filters, actions, and authorization; PersonaCore renders the scan-friendly
+surface and applies safe-alternate owner-private summaries where configured.
+
+```python
+from personacore import (
+    REVIEW_FEATURE,
+    AdminPrivacyContext,
+    DashboardFilter,
+    DashboardMetric,
+    OwnerPrivateScopePolicy,
+    ReviewAgendaItem,
+    ReviewBoardRow,
+    ReviewQueueCard,
+    ReviewQueueSection,
+    ReviewSurfaceConfig,
+    render_review_surface,
+)
+
+policy = OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+context = AdminPrivacyContext(access_tier="operator", viewer_person_key="operator")
+
+html = render_review_surface(
+    ReviewSurfaceConfig(
+        enabled=True,
+        filters=[DashboardFilter("All", "/review", key="8", active=True)],
+        metrics=[DashboardMetric("Pending", 8, "/review?status=pending", tone="warn")],
+        rows=[
+            ReviewBoardRow(
+                "message",
+                "held",
+                "messages:owner-private",
+                summary="raw owner-private review note",
+                summary_safe_alternate="Operator-safe review summary",
+                summary_privacy_scope="owner_private",
+                href="/messages/private-row",
+                risk="bad",
+            )
+        ],
+        agenda=[
+            ReviewAgendaItem("Messages", 2, "/review/messages", "queue", "Inspect safe summaries", "warn"),
+        ],
+        queue_sections=[
+            ReviewQueueSection(
+                "Publishing Queues",
+                cards=[
+                    ReviewQueueCard("Draft post", status="pending", href="/review/social", summary="Ready for review"),
+                ],
+            )
+        ],
+    ),
+    features={REVIEW_FEATURE: True},
+    privacy_policy=policy,
+    privacy_context=context,
+)
+```
+
+If a review row or queue card declares a privacy scope, the shared renderer
+strips raw links for non-owner contexts and renders the configured safe
+alternate or withheld placeholder. Consumer HTML snapshots, JSON endpoints,
+database queries, and action routes must still enforce the same policy.
+
 ## Consumer Integration Doctor
 
 After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.13
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.14
 ```
 
 The doctor verifies that `persona_console` and `personacore` import, report the
 same version, expose adapter-health, token-health, owner-private, and
-message/activity/media/people helpers, and can render a generic shell plus
-redacted feature panels. It does not read runtime secrets, databases, private
-routes, or consumer settings. Filesystem paths are omitted from output unless
-`--show-paths` is explicitly passed for local diagnostics.
+message/activity/media/people/review helpers, and can render a generic shell
+plus redacted feature panels. It does not read runtime secrets, databases,
+private routes, or consumer settings. Filesystem paths are omitted from output
+unless `--show-paths` is explicitly passed for local diagnostics.
 
 ## Dashboard Summary Cards
 
