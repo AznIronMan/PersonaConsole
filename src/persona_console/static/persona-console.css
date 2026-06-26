@@ -935,9 +935,214 @@ pre {
 }
 .pc-message-surface,
 .pc-activity-surface,
-.pc-media-surface {
+.pc-media-surface,
+.pc-people-surface {
   display: grid;
   gap: 10px;
+}
+.pc-people-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  gap: 9px;
+  align-items: end;
+}
+.pc-people-search {
+  display: grid;
+  gap: 5px;
+}
+.pc-people-search span {
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.pc-people-search input {
+  min-height: 36px;
+}
+.pc-people-check {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: color-mix(in srgb, var(--pc-text) 78%, var(--pc-muted));
+  font-size: 12px;
+  white-space: nowrap;
+}
+.pc-people-check input {
+  width: auto;
+}
+.pc-people-button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--pc-accent) 54%, var(--pc-border));
+  border-radius: 7px;
+  background: var(--pc-accent-surface);
+  color: var(--pc-text);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 13px;
+}
+.pc-people-button-muted {
+  border-color: var(--pc-border);
+  background: var(--pc-surface-muted);
+  color: color-mix(in srgb, var(--pc-text) 82%, var(--pc-muted));
+}
+.pc-people-new-person {
+  border: 1px solid color-mix(in srgb, var(--pc-border) 80%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc-bg) 28%, transparent);
+}
+.pc-people-new-person summary {
+  padding: 12px;
+  color: var(--pc-accent-soft);
+  font-size: 14px;
+  font-weight: 800;
+}
+.pc-people-new-person-body {
+  padding: 0 12px 12px;
+}
+.pc-people-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc-bg) 24%, transparent);
+}
+.pc-people-table {
+  min-width: 1080px;
+}
+.pc-people-table th {
+  color: var(--pc-muted);
+  background: color-mix(in srgb, var(--pc-surface) 66%, black);
+  font-size: 11px;
+}
+.pc-people-table td {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.pc-people-name-cell {
+  min-width: 160px;
+}
+.pc-people-name-link {
+  color: var(--pc-accent-soft);
+  font-weight: 800;
+}
+.pc-people-subtitle,
+.pc-people-muted {
+  color: var(--pc-muted);
+  font-size: 11px;
+}
+.pc-people-mono {
+  color: color-mix(in srgb, var(--pc-text) 82%, var(--pc-muted));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+}
+.pc-people-nowrap {
+  white-space: nowrap;
+}
+.pc-person-tags,
+.pc-person-relationship-tags,
+.pc-people-inline-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pc-people-inline-badges {
+  display: inline-flex;
+  margin-left: 5px;
+}
+.pc-person-tag {
+  display: inline-flex;
+  min-height: 21px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 72%, transparent);
+  border-radius: 999px;
+  background: var(--pc-surface-muted);
+  color: color-mix(in srgb, var(--pc-text) 84%, var(--pc-muted));
+  font-size: 10px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 7px;
+  white-space: nowrap;
+}
+.pc-person-tag-good {
+  border-color: color-mix(in srgb, var(--pc-success) 55%, transparent);
+  background: color-mix(in srgb, var(--pc-success) 18%, transparent);
+  color: rgb(167 243 208);
+}
+.pc-person-tag-warn {
+  border-color: color-mix(in srgb, var(--pc-warning) 55%, transparent);
+  background: color-mix(in srgb, var(--pc-warning) 18%, transparent);
+  color: rgb(253 230 138);
+}
+.pc-person-tag-bad {
+  border-color: color-mix(in srgb, var(--pc-danger) 55%, transparent);
+  background: color-mix(in srgb, var(--pc-danger) 18%, transparent);
+  color: rgb(254 202 202);
+}
+.pc-person-tag-info {
+  border-color: color-mix(in srgb, var(--pc-info) 55%, transparent);
+  background: color-mix(in srgb, var(--pc-info) 18%, transparent);
+  color: rgb(186 230 253);
+}
+.pc-person-relationship {
+  min-width: 140px;
+  display: grid;
+  gap: 5px;
+}
+.pc-person-relationship-score {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc-bg) 34%, transparent);
+  color: var(--pc-text);
+  padding: 0 10px;
+}
+.pc-person-relationship-score span {
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.pc-person-relationship-score strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.pc-person-relationship-score-good { border-color: color-mix(in srgb, var(--pc-success) 65%, var(--pc-border)); }
+.pc-person-relationship-score-warn { border-color: color-mix(in srgb, var(--pc-warning) 65%, var(--pc-border)); }
+.pc-person-relationship-score-bad { border-color: color-mix(in srgb, var(--pc-danger) 65%, var(--pc-border)); }
+.pc-person-relationship-score-info { border-color: color-mix(in srgb, var(--pc-info) 65%, var(--pc-border)); }
+.pc-person-relationship-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pc-border) 54%, transparent);
+}
+.pc-person-relationship-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pc-muted);
+}
+.pc-person-relationship-fill-good { background: var(--pc-success); }
+.pc-person-relationship-fill-warn { background: var(--pc-warning); }
+.pc-person-relationship-fill-bad { background: var(--pc-danger); }
+.pc-person-relationship-fill-info { background: var(--pc-info); }
+.pc-people-notes {
+  max-width: 320px;
+  color: color-mix(in srgb, var(--pc-text) 82%, var(--pc-muted));
+  line-height: 1.42;
+}
+.pc-people-empty {
+  color: var(--pc-muted);
+  text-align: center;
 }
 .pc-message-layout {
   display: grid;
@@ -1420,6 +1625,16 @@ pre {
   .pc-message-layout,
   .pc-media-card {
     grid-template-columns: 1fr;
+  }
+  .pc-people-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .pc-people-check,
+  .pc-people-button {
+    width: 100%;
+  }
+  .pc-people-table {
+    min-width: 980px;
   }
   .pc-message-bubble {
     max-width: 100%;

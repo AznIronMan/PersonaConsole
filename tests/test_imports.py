@@ -32,6 +32,12 @@ def test_personacore_reexports_core_api():
     assert personacore.TokenHealthConfig is persona_console.TokenHealthConfig
     assert personacore.build_token_health_report is persona_console.build_token_health_report
     assert personacore.token_health_config_for_providers is persona_console.token_health_config_for_providers
+    assert personacore.PEOPLE_FEATURE == persona_console.PEOPLE_FEATURE == "people"
+    assert personacore.PeopleSurfaceConfig is persona_console.PeopleSurfaceConfig
+    assert personacore.PersonListRow is persona_console.PersonListRow
+    assert personacore.PersonRelationshipSummary is persona_console.PersonRelationshipSummary
+    assert personacore.PersonTag is persona_console.PersonTag
+    assert personacore.render_people_surface is persona_console.render_people_surface
     assert personacore.OwnerPrivateScopePolicy is persona_console.OwnerPrivateScopePolicy
     assert personacore.AdminPrivacyContext is persona_console.AdminPrivacyContext
     assert personacore.PrivacyRenderMode is persona_console.PrivacyRenderMode
@@ -48,13 +54,23 @@ def test_personacore_reexports_core_api():
     assert "render_surface_sections" in personacore.__all__
     assert "TOKEN_HEALTH_FEATURE" in personacore.__all__
     assert "TokenHealthConfig" in personacore.__all__
+    assert "PEOPLE_FEATURE" in personacore.__all__
+    assert "PeopleSurfaceConfig" in personacore.__all__
+    assert "render_people_surface" in personacore.__all__
     assert "OwnerPrivateScopePolicy" in personacore.__all__
 
 
 def test_personacore_submodules_reexport_existing_implementation():
     from personacore.adapter_health import render_adapter_health_panel
     from personacore.dashboard import dashboard_metrics_from_counts, render_dashboard_sections
-    from personacore.models import AdapterHealthConfig, DashboardMetricSpec, MessageSurfaceConfig, PersonaCoreConfig
+    from personacore.models import (
+        AdapterHealthConfig,
+        DashboardMetricSpec,
+        MessageSurfaceConfig,
+        PeopleSurfaceConfig,
+        PersonaCoreConfig,
+    )
+    from personacore.people import PEOPLE_FEATURE, render_people_surface
     from personacore.privacy import OwnerPrivateScopePolicy, render_private_text
     from personacore.render import render_nav_groups
     from personacore.surfaces import render_message_surface, render_surface_sections
@@ -64,6 +80,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert PersonaCoreConfig is persona_console.PersonaConsoleConfig
     assert AdapterHealthConfig is persona_console.AdapterHealthConfig
     assert MessageSurfaceConfig is persona_console.MessageSurfaceConfig
+    assert PeopleSurfaceConfig is persona_console.PeopleSurfaceConfig
     assert DashboardMetricSpec is persona_console.DashboardMetricSpec
     assert render_adapter_health_panel is persona_console.render_adapter_health_panel
     assert OwnerPrivateScopePolicy is persona_console.OwnerPrivateScopePolicy
@@ -73,6 +90,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert dashboard_metrics_from_counts is persona_console.dashboard_metrics_from_counts
     assert render_message_surface is persona_console.render_message_surface
     assert render_surface_sections is persona_console.render_surface_sections
+    assert PEOPLE_FEATURE == persona_console.PEOPLE_FEATURE
+    assert render_people_surface is persona_console.render_people_surface
     assert build_token_health_report is persona_console.build_token_health_report
     assert token_health_config_for_providers is persona_console.token_health_config_for_providers
     assert run_consumer_integration_doctor is persona_console.run_consumer_integration_doctor
@@ -93,4 +112,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.10"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.11"

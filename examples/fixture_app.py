@@ -8,6 +8,7 @@ from personacore import (
     ACTIVITY_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
+    PEOPLE_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
     AdminPrivacyContext,
@@ -35,6 +36,10 @@ from personacore import (
     NavGroup,
     NavItem,
     OwnerPrivateScopePolicy,
+    PeopleSurfaceConfig,
+    PersonListRow,
+    PersonRelationshipSummary,
+    PersonTag,
     PersonaCoreConfig,
     StatusPill,
     SurfaceBadge,
@@ -44,11 +49,11 @@ from personacore import (
     UserPill,
     register_static_assets,
     render_dashboard_sections,
+    render_people_surface,
     render_shell_html,
     render_surface_sections,
 )
 
-PEOPLE_FEATURE = "people"
 TASKS_FEATURE = "tasks"
 WORKERS_FEATURE = "workers"
 LOGS_FEATURE = "logs"
@@ -121,7 +126,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.10-fixture",
+        app_version="v1.0.11-fixture",
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -310,6 +315,71 @@ def render_dashboard_fragment() -> str:
             DashboardActivityItem("Media", "Assets ready", "/media", "09:26", "Three generated assets are ready for inspection.", tone="good"),
         ],
     )
+    people_surface = render_people_surface(
+        PeopleSurfaceConfig(
+            enabled=True,
+            title="People",
+            subtitle="Canonical people records with shared privacy-aware summaries.",
+            search_action="/people",
+            rows=[
+                PersonListRow(
+                    key="example-consumer",
+                    label="Example Consumer",
+                    href="/people/example-consumer",
+                    subtitle='id 301 - "consumer"',
+                    external_id="CN0001",
+                    trust_label="internal",
+                    trust_tone="info",
+                    linked_users=4,
+                    tags=[
+                        PersonTag("Supportive", tone="good"),
+                        PersonTag("Warm", tone="info"),
+                        PersonTag("Needs review", tone="warn"),
+                    ],
+                    relationship=PersonRelationshipSummary(
+                        label="Persona",
+                        score="+54",
+                        tone="good",
+                        score_percent=78,
+                        lanes=[PersonTag("trusted", tone="info"), PersonTag("familiar", tone="good")],
+                        labels=[PersonTag("friend", tone="info"), PersonTag("review", tone="warn")],
+                    ),
+                    notes="Reads as calm and cooperative; the current handoff is clear enough for operator review.",
+                    updated="1h ago",
+                ),
+                PersonListRow(
+                    key="example-owner-private",
+                    label="Owner-Private Profile",
+                    href="/people/example-owner-private",
+                    subtitle='id 346 - "owner lane"',
+                    external_id="INT-OWNER",
+                    trust_label="owner-private",
+                    trust_tone="warn",
+                    linked_users=1,
+                    tags=[
+                        PersonTag("Protected", tone="warn"),
+                        PersonTag("Direct", tone="info"),
+                    ],
+                    relationship=PersonRelationshipSummary(
+                        label="Persona",
+                        score="+45",
+                        tone="good",
+                        score_percent=72,
+                        lanes=[PersonTag("trusted", tone="info")],
+                        labels=[PersonTag("private", tone="warn")],
+                    ),
+                    notes="raw fixture private people note",
+                    notes_safe_alternate="Owner-private notes are summarized for operators.",
+                    notes_privacy_scope="owner_private",
+                    updated="2h ago",
+                ),
+            ],
+            new_person_html='<p class="hint">Consumer runtimes own the actual create form and authorization.</p>',
+        ),
+        features={PEOPLE_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     operator_workspace = """
 <section class="pc-dashboard-panel pc-reference-workspace">
   <div class="pc-dashboard-panel-head">
@@ -317,25 +387,9 @@ def render_dashboard_fragment() -> str:
       <div class="pc-dashboard-section-title">Operator Workspace</div>
       <p class="pc-dashboard-section-meta">Reference module mix for consumer-owned routes and data.</p>
     </div>
-    <span class="pc-dashboard-status"><span class="pc-dashboard-status-dot"></span>4 modules</span>
+    <span class="pc-dashboard-status"><span class="pc-dashboard-status-dot"></span>3 modules</span>
   </div>
   <div class="grid">
-    <article class="card">
-      <div class="panel-head">
-        <h3>People Snapshot</h3>
-        <span class="pc-dashboard-tag">visibility aware</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Segment</th><th>Count</th><th>Operator view</th></tr></thead>
-          <tbody>
-            <tr><td>Active profiles</td><td>37</td><td>Names, notes, and public summaries</td></tr>
-            <tr><td>Owner-private lane</td><td>1</td><td>Safe alternate summary only</td></tr>
-            <tr><td>Moderator review</td><td>5</td><td>Read-only queue visibility</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </article>
     <article class="card">
       <div class="panel-head">
         <h3>Task Queue</h3>
@@ -495,7 +549,7 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    return render_dashboard_sections(dashboard) + surfaces + operator_workspace + hold_form
+    return render_dashboard_sections(dashboard) + people_surface + surfaces + operator_workspace + hold_form
 
 
 def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:

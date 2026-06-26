@@ -84,7 +84,8 @@ PersonaCore should supply reusable primitives for common module surfaces:
 - `media`: artifact cards, preview placeholders, status labels, and redacted
   owner-private fallbacks.
 - `people`: profile and relationship summaries rendered from consumer-owned
-  data.
+  data. PersonaCore `1.0.11` supplies the typed filter/table/notes surface;
+  consumers still own lookups, auth, edits, and private scope mapping.
 - `review`: queue metrics, pending rows, decision context, and action slots.
 - `tasks`: task status tables and operator next actions.
 - `workers`: queue latency, retry state, and adapter/runtime cards.
@@ -159,7 +160,9 @@ the shared composition target with generic labels and fake data:
 - Attention, metrics, routes, health, token health, adapter health, flow,
   queue, and activity sections.
 - Message, activity, and media surfaces with owner-private safe alternates.
-- Generic people, task, log, and settings posture panels.
+- People surface with tags, relationship summary, and owner-private note
+  fallback.
+- Generic task, log, and settings posture panels.
 
 Use the fixture for visual QA and consumer alignment discussions. It should
 remain sanitized and must not include private runtime names, hosts, paths,

@@ -2,8 +2,8 @@
 
 PersonaCore includes an optional Playwright smoke for the public-safe fixture
 admin console. It verifies the shared shell, dashboard primitives, live
-controls, reference workspace panels, desktop navigation, and mobile
-navigation, then writes screenshots.
+controls, the shared people surface, reference workspace panels, desktop
+navigation, and mobile navigation, then writes screenshots.
 
 Install optional tooling:
 

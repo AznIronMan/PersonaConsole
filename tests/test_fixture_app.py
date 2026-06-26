@@ -23,7 +23,10 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "pc-dashboard-overview" in html
     assert "Operator Attention" in html
     assert "Operator Workspace" in html
-    assert "People Snapshot" in html
+    assert "pc-people-surface" in html
+    assert "Example Consumer" in html
+    assert "Owner-private notes are summarized for operators." in html
+    assert "raw fixture private people note" not in html
     assert "Task Queue" in html
     assert "Log Tail" in html
     assert "Settings Posture" in html

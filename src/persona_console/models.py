@@ -266,6 +266,67 @@ class SurfaceBadge:
 
 
 @dataclass(frozen=True)
+class PersonTag:
+    label: str
+    href: str = ""
+    tone: str = "neutral"
+    title: str = ""
+
+
+@dataclass(frozen=True)
+class PersonRelationshipSummary:
+    label: str = "Persona"
+    score: str | int = ""
+    tone: str = "neutral"
+    score_percent: int | float = 0
+    lanes: Sequence[PersonTag | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    labels: Sequence[PersonTag | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    meta: str = ""
+
+
+@dataclass(frozen=True)
+class PersonListRow:
+    key: str
+    label: str
+    href: str = ""
+    subtitle: str = ""
+    external_id: str = ""
+    trust_label: str = ""
+    trust_tone: str = "neutral"
+    linked_users: str | int = ""
+    tags: Sequence[PersonTag | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    relationship: PersonRelationshipSummary | Mapping[str, object] | None = None
+    notes: str = ""
+    notes_safe_alternate: str = ""
+    notes_privacy_scope: str = ""
+    updated: str = ""
+    unlinked: bool = False
+    badges: Sequence[PersonTag | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PeopleSurfaceConfig:
+    enabled: bool = False
+    feature: str = "people"
+    title: str = "People"
+    subtitle: str = "Canonical people records"
+    rows: Sequence[PersonListRow | Mapping[str, object]] = field(default_factory=tuple)
+    search_action: str = ""
+    search_value: str = ""
+    search_placeholder: str = "canonical name, external id, alias, admin address..."
+    unlinked_name: str = "unlinked"
+    unlinked_checked: bool = False
+    sort: str = ""
+    direction: str = ""
+    filter_label: str = "Filter"
+    reset_href: str = ""
+    new_person_html: str = ""
+    new_person_label: str = "+ New person - pre-seed identity before first contact"
+    new_person_open: bool = False
+    empty_label: str = "No people found."
+
+
+@dataclass(frozen=True)
 class MessageAttachment:
     label: str
     href: str = ""

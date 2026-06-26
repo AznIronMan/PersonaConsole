@@ -44,6 +44,9 @@ Recommended first extraction targets:
 - Reference admin parity fixture.
   - Public-safe spec and fuller operator workspace fixture shipped in
     PersonaCore `1.0.10`.
+- People list surface.
+  - Initial typed filter/table/relationship/notes renderer shipped in
+    PersonaCore `1.0.11`.
 - Command preview/queue panels.
 - Media/workflow status panels.
 - Worker, scheduling, and availability/live monitor panels.

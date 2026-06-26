@@ -52,6 +52,10 @@ from .models import (
     MessageTranscriptItem,
     NavGroup,
     NavItem,
+    PeopleSurfaceConfig,
+    PersonListRow,
+    PersonRelationshipSummary,
+    PersonTag,
     PersonaCoreConfig,
     PersonaConsoleConfig,
     StatusPill,
@@ -111,6 +115,11 @@ from .privacy import (
     privacy_render_mode,
     render_private_text,
 )
+from .people import (
+    PEOPLE_FEATURE,
+    people_surface_feature_enabled,
+    render_people_surface,
+)
 
 __all__ = [
     "NavGroup",
@@ -151,8 +160,13 @@ __all__ = [
     "ModuleSnapshot",
     "NavItem",
     "OWNER_PRIVATE_ADMIN_FEATURE",
+    "PEOPLE_FEATURE",
     "AdminPrivacyContext",
     "OwnerPrivateScopePolicy",
+    "PeopleSurfaceConfig",
+    "PersonListRow",
+    "PersonRelationshipSummary",
+    "PersonTag",
     "PersonaCoreConfig",
     "PersonaConsoleConfig",
     "PrivacyRenderMode",
@@ -177,6 +191,7 @@ __all__ = [
     "format_dashboard_metric_value",
     "media_surface_feature_enabled",
     "message_surface_feature_enabled",
+    "people_surface_feature_enabled",
     "owner_private_scope_for_content",
     "privacy_render_mode",
     "register_static_assets",
@@ -197,6 +212,7 @@ __all__ = [
     "render_media_surface",
     "render_message_surface",
     "render_nav_groups",
+    "render_people_surface",
     "render_private_text",
     "render_shell_html",
     "render_status_pill",
@@ -211,7 +227,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 
 
 def configure_jinja_loader(*args, **kwargs):

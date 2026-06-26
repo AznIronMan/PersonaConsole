@@ -40,6 +40,15 @@ _SURFACE_EXPORTS = (
     "render_message_surface",
     "render_surface_sections",
 )
+_PEOPLE_EXPORTS = (
+    "PEOPLE_FEATURE",
+    "PeopleSurfaceConfig",
+    "PersonListRow",
+    "PersonRelationshipSummary",
+    "PersonTag",
+    "people_surface_feature_enabled",
+    "render_people_surface",
+)
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -140,11 +149,13 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "adapter_health_exports", _ADAPTER_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "token_health_exports", _TOKEN_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "surface_exports", _SURFACE_EXPORTS))
+        checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.append(_adapter_health_render_check(module))
         checks.append(_token_health_render_check(module))
         checks.append(_surface_render_check(module))
+        checks.append(_people_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -338,6 +349,61 @@ def _surface_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "surface_render", "message and media surfaces render with owner-private redaction")
+
+
+def _people_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-people-note"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_people_surface(
+            module.PeopleSurfaceConfig(
+                enabled=True,
+                search_action="/people",
+                rows=[
+                    module.PersonListRow(
+                        "person",
+                        "Example person",
+                        external_id="CN0001",
+                        trust_label="internal",
+                        trust_tone="info",
+                        linked_users=1,
+                        tags=[module.PersonTag("supportive", tone="good")],
+                        relationship=module.PersonRelationshipSummary(
+                            label="Persona",
+                            score="+42",
+                            tone="good",
+                            score_percent=71,
+                            lanes=[module.PersonTag("trusted", tone="info")],
+                        ),
+                        notes="Public note summary",
+                    ),
+                    module.PersonListRow(
+                        "owner-private",
+                        "Owner private",
+                        notes=raw_value,
+                        notes_safe_alternate="safe people summary",
+                        notes_privacy_scope="owner_private",
+                    ),
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "people_render", "people surface render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-people-surface" in html
+        and "Example person" in html
+        and "safe people summary" in html
+        and "+42" in html
+        and raw_value not in html
+    )
+    return _check(ok, "people_render", "people surface renders with owner-private redaction")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

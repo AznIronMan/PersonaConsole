@@ -317,20 +317,76 @@ HTML snapshots, JSON endpoints, database queries, and media/artifact byte
 routes must apply the same runtime policy before returning raw owner-private
 data.
 
+## People Surface
+
+The people surface is a shared, opt-in module for canonical person lists,
+reference-style filtering, tags, relationship summaries, and notes previews.
+The consuming runtime owns person lookup, auth, create/edit routes, aliases,
+database schema, and any private tier mapping.
+
+```python
+from personacore import (
+    PEOPLE_FEATURE,
+    AdminPrivacyContext,
+    OwnerPrivateScopePolicy,
+    PeopleSurfaceConfig,
+    PersonListRow,
+    PersonRelationshipSummary,
+    PersonTag,
+    render_people_surface,
+)
+
+policy = OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+context = AdminPrivacyContext(access_tier="operator", viewer_person_key="operator")
+
+html = render_people_surface(
+    PeopleSurfaceConfig(
+        enabled=True,
+        search_action="/people",
+        rows=[
+            PersonListRow(
+                "person-1",
+                "Example Person",
+                external_id="CN0001",
+                trust_label="internal",
+                tags=[PersonTag("supportive", tone="good")],
+                relationship=PersonRelationshipSummary(
+                    label="Persona",
+                    score="+42",
+                    tone="good",
+                    score_percent=71,
+                ),
+                notes="Operator-visible summary",
+            )
+        ],
+    ),
+    features={PEOPLE_FEATURE: True},
+    privacy_policy=policy,
+    privacy_context=context,
+)
+```
+
+Rows with `notes_privacy_scope` use the same owner-private rendering contract
+as messages and media: owner contexts can see raw notes for their matching
+scope, while operators and moderators receive safe alternates or withheld
+placeholders. This protects the shared HTML render only; consumer JSON,
+snapshot, query, and file routes must enforce the same policy before returning
+raw private data.
+
 ## Consumer Integration Doctor
 
 After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.10
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.11
 ```
 
 The doctor verifies that `persona_console` and `personacore` import, report the
 same version, expose adapter-health, token-health, owner-private, and
-message/activity/media helpers, and can render a generic shell plus redacted
-feature panels. It does not read runtime secrets, databases, private routes, or
-consumer settings. Filesystem paths are omitted from output unless
+message/activity/media/people helpers, and can render a generic shell plus
+redacted feature panels. It does not read runtime secrets, databases, private
+routes, or consumer settings. Filesystem paths are omitted from output unless
 `--show-paths` is explicitly passed for local diagnostics.
 
 ## Dashboard Summary Cards
