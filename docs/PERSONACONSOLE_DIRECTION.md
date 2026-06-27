@@ -58,8 +58,8 @@ private behavior inside their own repos.
 ## Migration Direction
 
 1. Keep the existing shell stable.
-2. Add a public `personacore` import path while keeping `persona_console` as a
-   v1.x compatibility alias.
+2. Use `personaconsole` as the canonical public import path while keeping
+   `personacore` and `persona_console` as deprecated v1.x compatibility shims.
 3. Extract shared dashboard/body styles so existing runtime pages do not rely
    on copied inline CSS.
 4. Use the best current private console as the reference for first-class

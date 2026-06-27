@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     REVIEW_FEATURE,
     AdminPrivacyContext,
     DashboardAction,

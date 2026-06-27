@@ -1,6 +1,6 @@
-"""Public PersonaCore import path for the shared admin console runtime."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console import (
+from personaconsole import (
     ACTIVITY_FEATURE,
     ADAPTER_HEALTH_FEATURE,
     AdapterHealthCard,
@@ -177,7 +177,7 @@ from persona_console import (
     token_health_lookup,
     token_health_provider_keys,
 )
-from persona_console import __version__
+from personaconsole import __version__
 
 __all__ = [
     "ACTIVITY_FEATURE",

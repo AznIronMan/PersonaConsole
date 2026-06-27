@@ -1,6 +1,6 @@
-"""Journal surface re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.journal import (
+from personaconsole.journal import (
     JOURNAL_FEATURE,
     JOURNAL_THEME_KEYS,
     build_journal_calendar,
@@ -9,7 +9,7 @@ from persona_console.journal import (
     journal_theme_options,
     render_journal_surface,
 )
-from persona_console.models import (
+from personaconsole.models import (
     JournalCalendarDay,
     JournalDetail,
     JournalEntry,

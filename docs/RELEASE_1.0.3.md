@@ -1,4 +1,4 @@
-# PersonaCore 1.0.3
+# PersonaConsole 1.0.3
 
 Released: 2026-06-24
 

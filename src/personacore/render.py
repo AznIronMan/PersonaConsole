@@ -1,6 +1,6 @@
-"""Render helper re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.render import (
+from personaconsole.render import (
     active_nav_label,
     render_live_controls,
     render_nav_groups,

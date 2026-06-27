@@ -1,11 +1,11 @@
-import personacore
+import personaconsole
 
 
 PRIVATE_HOSTS = ("private-login.example", "private-chat.example", "private-home.example")
 
 
-def _brand() -> personacore.BrandAssets:
-    return personacore.BrandAssets(
+def _brand() -> personaconsole.BrandAssets:
+    return personaconsole.BrandAssets(
         name="Example <Persona>",
         small_logo_url="/assets/small.svg",
         large_logo_url="/assets/large.svg",
@@ -17,10 +17,10 @@ def _brand() -> personacore.BrandAssets:
 
 def _connectors():
     return (
-        personacore.ConnectorGroup(
+        personaconsole.ConnectorGroup(
             "Connect",
             connectors=(
-                personacore.ConnectorOption(
+                personaconsole.ConnectorOption(
                     "web_chat",
                     "Web Chat",
                     href="/login/web-chat",
@@ -31,7 +31,7 @@ def _connectors():
                     configured=True,
                     selected=True,
                 ),
-                personacore.ConnectorOption(
+                personaconsole.ConnectorOption(
                     "social",
                     "Social",
                     action="connect",
@@ -46,23 +46,23 @@ def _connectors():
 
 
 def test_public_splash_renders_brand_media_links_and_muted_controls():
-    html = personacore.render_public_splash_page(
-        personacore.PublicSplashPageConfig(
+    html = personaconsole.render_public_splash_page(
+        personaconsole.PublicSplashPageConfig(
             brand=_brand(),
             title="Example <Persona>",
             subtitle="Public home",
             description="Generic homepage",
-            media=personacore.PublicMediaConfig(
+            media=personaconsole.PublicMediaConfig(
                 kind="video",
-                sources=(personacore.PublicMediaSource("/media/hero.mp4", "video/mp4"),),
+                sources=(personaconsole.PublicMediaSource("/media/hero.mp4", "video/mp4"),),
                 poster_url="/media/poster.jpg",
                 audio_src="/media/hero.mp3",
             ),
             chat_label="Chat now",
             chat_href="/chat",
-            social_links=(personacore.PublicLink("Updates", "/updates", external=False),),
+            social_links=(personaconsole.PublicLink("Updates", "/updates", external=False),),
             update_form_action="/updates",
-            legal_notices=(personacore.LegalNotice("terms", "Terms", body="Generic legal copy."),),
+            legal_notices=(personaconsole.LegalNotice("terms", "Terms", body="Generic legal copy."),),
         )
     )
 
@@ -82,8 +82,8 @@ def test_public_splash_renders_brand_media_links_and_muted_controls():
 
 
 def test_login_renders_connector_status_and_escaped_generic_data():
-    html = personacore.render_login_page(
-        personacore.LoginPageConfig(
+    html = personaconsole.render_login_page(
+        personaconsole.LoginPageConfig(
             brand=_brand(),
             title="Sign in",
             subtitle="Choose a provider",
@@ -108,14 +108,14 @@ def test_login_renders_connector_status_and_escaped_generic_data():
 
 
 def test_chat_page_renders_api_hooks_settings_modal_and_composer():
-    html = personacore.render_chat_page(
-        personacore.ChatPageConfig(
+    html = personaconsole.render_chat_page(
+        personaconsole.ChatPageConfig(
             brand=_brand(),
             title="Chat",
             subtitle="Runtime-owned chat processing",
-            media=personacore.PublicMediaConfig(kind="image", src="/media/chat.jpg"),
+            media=personaconsole.PublicMediaConfig(kind="image", src="/media/chat.jpg"),
             connector_groups=_connectors(),
-            settings_themes=personacore.public_theme_options("matrix"),
+            settings_themes=personaconsole.public_theme_options("matrix"),
         )
     )
 
@@ -130,20 +130,20 @@ def test_chat_page_renders_api_hooks_settings_modal_and_composer():
 
 
 def test_public_settings_surface_is_feature_gated_and_renders_forms():
-    config = personacore.PublicSettingsSurfaceConfig(
+    config = personaconsole.PublicSettingsSurfaceConfig(
         enabled=True,
         brand=_brand(),
-        splash_media=personacore.PublicMediaConfig(kind="video", src="/media/splash.mp4"),
-        login_media=personacore.PublicMediaConfig(kind="image", src="/media/login.jpg"),
-        chat_media=personacore.PublicMediaConfig(kind="image", src="/media/chat.jpg"),
+        splash_media=personaconsole.PublicMediaConfig(kind="video", src="/media/splash.mp4"),
+        login_media=personaconsole.PublicMediaConfig(kind="image", src="/media/login.jpg"),
+        chat_media=personaconsole.PublicMediaConfig(kind="image", src="/media/chat.jpg"),
         connector_groups=_connectors(),
-        social_links=(personacore.PublicLink("Updates", "/updates", external=False),),
-        theme_options=personacore.public_theme_options("studio"),
+        social_links=(personaconsole.PublicLink("Updates", "/updates", external=False),),
+        theme_options=personaconsole.public_theme_options("studio"),
         settings_action="/settings/public-presence",
     )
 
-    disabled = personacore.render_public_settings_surface(config, features={personacore.PUBLIC_PRESENCE_FEATURE: False})
-    html = personacore.render_public_settings_surface(config, features={personacore.PUBLIC_PRESENCE_FEATURE: True})
+    disabled = personaconsole.render_public_settings_surface(config, features={personaconsole.PUBLIC_PRESENCE_FEATURE: False})
+    html = personaconsole.render_public_settings_surface(config, features={personaconsole.PUBLIC_PRESENCE_FEATURE: True})
 
     assert disabled == ""
     assert "pc-public-settings-surface" in html
@@ -158,7 +158,7 @@ def test_public_settings_surface_is_feature_gated_and_renders_forms():
 def test_public_css_keeps_connector_buttons_and_fallback_logos_stable():
     css = (
         __import__("pathlib")
-        .Path("src/persona_console/static/persona-public.css")
+        .Path("src/personaconsole/static/persona-public.css")
         .read_text(encoding="utf-8")
     )
 
@@ -169,12 +169,12 @@ def test_public_css_keeps_connector_buttons_and_fallback_logos_stable():
 
 
 def test_admin_shell_uses_brand_assets_without_breaking_icon_fallback():
-    html = personacore.render_shell_html(
-        personacore.PersonaCoreConfig(
+    html = personaconsole.render_shell_html(
+        personaconsole.PersonaConsoleConfig(
             brand_name="Example Runtime",
             page_title="Dashboard",
             brand_assets=_brand(),
-            nav_groups=[personacore.NavGroup("Core", [personacore.NavItem("Home", "/")])],
+            nav_groups=[personaconsole.NavGroup("Core", [personaconsole.NavItem("Home", "/")])],
         ),
         "<section>body</section>",
     )

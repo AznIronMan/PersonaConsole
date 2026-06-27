@@ -26,6 +26,6 @@ runtime data remain consumer-owned.
 ```bash
 PYTHONPATH=src python -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.13
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.13.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.13.html
 python3 -m compileall -q src tests examples
 ```

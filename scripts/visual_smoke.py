@@ -38,16 +38,16 @@ class FixtureHandler(http.server.SimpleHTTPRequestHandler):
             self._send_html((self.output_dir / "index.html").read_text(encoding="utf-8"))
             return
         if path == "/public/splash":
-            self._send_html(render_public_splash_fixture_page(static_base_url="/src/persona_console/static"))
+            self._send_html(render_public_splash_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/public/login":
-            self._send_html(render_login_fixture_page(static_base_url="/src/persona_console/static"))
+            self._send_html(render_login_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/public/chat":
-            self._send_html(render_chat_fixture_page(static_base_url="/src/persona_console/static"))
+            self._send_html(render_chat_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/settings/public-presence":
-            self._send_html(render_public_settings_fixture_page(static_base_url="/src/persona_console/static"))
+            self._send_html(render_public_settings_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/fragments/dashboard":
             self._send_html(render_dashboard_fragment())
@@ -91,7 +91,7 @@ def write_fixture(output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     html_path = output_dir / "index.html"
     html_path.write_text(
-        render_fixture_page(static_base_url="/src/persona_console/static"),
+        render_fixture_page(static_base_url="/src/personaconsole/static"),
         encoding="utf-8",
     )
     return html_path

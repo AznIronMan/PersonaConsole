@@ -1,6 +1,6 @@
-"""Public PersonaCore privacy helper import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.privacy import (
+from personaconsole.privacy import (
     OWNER_PRIVATE_ADMIN_FEATURE,
     WITHHELD_PRIVATE_TEXT,
     AdminPrivacyContext,

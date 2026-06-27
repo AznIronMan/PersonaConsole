@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     PEOPLE_FEATURE,
     AdminPrivacyContext,
     OwnerPrivateScopePolicy,

@@ -1,12 +1,12 @@
 # Configuration Model
 
-PersonaCore should use configuration to make one distro fit many runtimes.
+PersonaConsole should use configuration to make one distro fit many runtimes.
 Configuration should be explicit, typed where practical, and safe to expose in
 public examples.
 
 ## Layers
 
-- `PersonaCoreConfig` or the current compatibility `PersonaConsoleConfig`:
+- `PersonaConsoleConfig` or the current compatibility `PersonaConsoleConfig`:
   shell-level configuration for brand label, page title, nav, badges, status
   pills, user pill, theme, static paths, live refresh, and layout width.
 - Feature settings: runtime-level switches that decide which shared modules are
@@ -22,7 +22,7 @@ public examples.
 ## Public Example Shape
 
 ```python
-from persona_console import NavGroup, NavItem, PersonaConsoleConfig
+from personaconsole import NavGroup, NavItem, PersonaConsoleConfig
 
 config = PersonaConsoleConfig(
     brand_name="Example Persona",
@@ -51,13 +51,13 @@ config = PersonaConsoleConfig(
 Public examples must remain generic. Private consumers can inject private
 labels, paths, and data at runtime from their own repositories.
 
-As the public API moves to PersonaCore naming, examples should prefer:
+As the public API moves to PersonaConsole naming, examples should prefer:
 
 ```python
-from personacore import NavGroup, NavItem, PersonaCoreConfig
+from personaconsole import NavGroup, NavItem, PersonaConsoleConfig
 ```
 
-The older `persona_console` path should remain available as a compatibility
+The older `personaconsole` path should remain available as a compatibility
 alias during the v1.x transition.
 
 ## Format Recommendation
@@ -95,14 +95,14 @@ Feature flags should hide navigation and UI modules by default when disabled.
 They should not import optional dependencies or private adapters unless the
 feature is enabled and the consumer provides the integration.
 
-Navigation items may declare a `feature` key. PersonaCore hides feature-gated
+Navigation items may declare a `feature` key. PersonaConsole hides feature-gated
 navigation when that feature is disabled or absent. This is only a UI/module
 switch; consumers must still enforce permissions in their own server routes.
 
 ## Reference Admin Parity Fixture
 
 `examples/fixture_app.py` is the public-safe reference fixture for consumer
-alignment. It shows how one `PersonaCoreConfig` can present a fuller admin
+alignment. It shows how one `PersonaConsoleConfig` can present a fuller admin
 workspace with grouped overview, conversations, operations, and system
 navigation while still keeping all real routes and data consumer-owned.
 
@@ -114,7 +114,7 @@ consistent:
   consumer repo.
 - Feed shared render primitives with safe counts, summaries, and status data.
 - Keep route auth, mutation policy, database queries, secrets, restart
-  controls, and owner-private scope aliases outside PersonaCore.
+  controls, and owner-private scope aliases outside PersonaConsole.
 
 See [Reference Admin Parity Spec](REFERENCE_ADMIN_PARITY_SPEC.md) for the
 shared composition contract.
@@ -122,12 +122,12 @@ shared composition contract.
 ## Owner-Private Visibility
 
 Owner-private visibility is a shared, opt-in policy helper for content that only
-the linked owner account should see raw. PersonaCore provides generic policy and
+the linked owner account should see raw. PersonaConsole provides generic policy and
 rendering primitives; consuming runtimes provide their own scope names, aliases,
 person mappings, database filters, and file-route checks.
 
 ```python
-from personacore import AdminPrivacyContext, OwnerPrivateScopePolicy, render_private_text
+from personaconsole import AdminPrivacyContext, OwnerPrivateScopePolicy, render_private_text
 
 policy = OwnerPrivateScopePolicy(
     owner_private_scopes={"owner_private": ["owner"]},
@@ -155,13 +155,13 @@ same runtime policy before returning raw owner-private data.
 
 ## Token Health
 
-Token health is a shared, opt-in feature. PersonaCore should not read private
+Token health is a shared, opt-in feature. PersonaConsole should not read private
 `.env` files or runtime databases on its own. A consuming runtime enables the
 feature, names the checks it wants to expose, and passes a settings/env mapping
 or lookup callable into the redacted report builder.
 
 ```python
-from personacore import TokenHealthCheck, TokenHealthConfig, build_token_health_report
+from personaconsole import TokenHealthCheck, TokenHealthConfig, build_token_health_report
 
 token_health = TokenHealthConfig(
     enabled=True,
@@ -200,7 +200,7 @@ For common public providers, consumers can start from sanitized presets and
 override source names locally:
 
 ```python
-from personacore import (
+from personaconsole import (
     TOKEN_HEALTH_FEATURE,
     build_token_health_report,
     token_health_config_for_providers,
@@ -229,11 +229,11 @@ should stay in the consumer repository.
 ## Adapter Health
 
 Adapter health is a shared, opt-in feature for runtime-owned provider, route,
-queue, worker, and policy status. PersonaCore renders the cards and summary
+queue, worker, and policy status. PersonaConsole renders the cards and summary
 shell; consuming runtimes own the actual checks and pass only display-safe data.
 
 ```python
-from personacore import AdapterHealthCard, AdapterHealthConfig, AdapterHealthSparkBucket
+from personaconsole import AdapterHealthCard, AdapterHealthConfig, AdapterHealthSparkBucket
 
 adapter_health = AdapterHealthConfig(
     enabled=True,
@@ -261,13 +261,13 @@ restart rights, or provider access; those remain runtime-owned.
 ## Message, Activity, And Media Surfaces
 
 Message, activity, and media/artifact surfaces are shared, opt-in UI modules
-for consumer-owned data. PersonaCore renders the shell, lists, transcript
+for consumer-owned data. PersonaConsole renders the shell, lists, transcript
 bubbles, attachment chips, activity rows, media cards, badges, and empty states;
 the consuming runtime still owns the queries, route authorization, file byte
 serving, and mutation endpoints.
 
 ```python
-from personacore import (
+from personaconsole import (
     MESSAGES_FEATURE,
     AdminPrivacyContext,
     DashboardAction,
@@ -327,7 +327,7 @@ html = render_message_surface(
 ```
 
 If a row or card declares a privacy scope and no policy is supplied,
-PersonaCore fails closed: it renders the safe alternate when present, otherwise
+PersonaConsole fails closed: it renders the safe alternate when present, otherwise
 a withheld placeholder, and it strips raw href/preview URLs from the shared
 HTML. This is a UI safeguard, not a substitute for server enforcement. Consumer
 HTML snapshots, JSON endpoints, database queries, and media/artifact byte
@@ -342,7 +342,7 @@ The consuming runtime owns person lookup, auth, create/edit routes, aliases,
 database schema, and any private tier mapping.
 
 ```python
-from personacore import (
+from personaconsole import (
     PEOPLE_FEATURE,
     AdminPrivacyContext,
     OwnerPrivateScopePolicy,
@@ -394,11 +394,11 @@ raw private data.
 
 The review surface is a shared, opt-in module for operator-gated decision
 boards. Consumers provide the normalized rows, agenda routes, queue summaries,
-filters, actions, and authorization; PersonaCore renders the scan-friendly
+filters, actions, and authorization; PersonaConsole renders the scan-friendly
 surface and applies safe-alternate owner-private summaries where configured.
 
 ```python
-from personacore import (
+from personaconsole import (
     REVIEW_FEATURE,
     AdminPrivacyContext,
     DashboardFilter,
@@ -459,12 +459,12 @@ database queries, and action routes must still enforce the same policy.
 
 The journal surface is a shared, opt-in reader for continuity pages. Consumers
 own entry lookup, calendar routing, persistence, auth, and private scope
-mapping. PersonaCore renders the dense calendar rail, the default paper page,
+mapping. PersonaConsole renders the dense calendar rail, the default paper page,
 theme options, markers, provenance details, page-turn links, and safe
 owner-private fallbacks.
 
 ```python
-from personacore import (
+from personaconsole import (
     JOURNAL_FEATURE,
     AdminPrivacyContext,
     JournalEntry,
@@ -519,13 +519,13 @@ policy says the viewer can see that scope.
 
 Public presence is the shared, reusable layer for persona-facing splash,
 login, chat, connector-choice, media hero, social link, legal modal, logo, and
-admin settings surfaces. PersonaCore renders generic HTML/CSS/JS from escaped
+admin settings surfaces. PersonaConsole renders generic HTML/CSS/JS from escaped
 configuration; it does not own auth, cookies, OAuth callbacks, provider SDK
 calls, connector secrets, chat processors, uploads, settings persistence, or
 deployment wiring.
 
 ```python
-from personacore import (
+from personaconsole import (
     PUBLIC_PRESENCE_FEATURE,
     BrandAssets,
     ConnectorGroup,
@@ -601,7 +601,7 @@ Consumers should persist any changed logo, media, social-link, connector, and
 theme values in their own settings store.
 
 PersonaEngine can later provide provider-neutral connector/capability metadata
-that consumers pass into PersonaCore, but PersonaCore should remain a renderer
+that consumers pass into PersonaConsole, but PersonaConsole should remain a renderer
 and configuration model only.
 
 ## Workflow Surfaces
@@ -613,7 +613,7 @@ Consumers pass already-authorized display data and own all mutations, provider
 calls, restarts, secret reads, and private routes.
 
 ```python
-from personacore import (
+from personaconsole import (
     AGENT_OPS_FEATURE,
     OPERATIONS_FEATURE,
     PERSONA_RUNTIME_FEATURE,
@@ -667,10 +667,10 @@ contexts.
 
 Shared controls are small UI primitives that keep list and queue pages visually
 consistent without moving URL construction, database filters, or authorization
-into PersonaCore.
+into PersonaConsole.
 
 ```python
-from personacore import StatusTab, render_status_tabs
+from personaconsole import StatusTab, render_status_tabs
 
 html = render_status_tabs(
     [
@@ -682,7 +682,7 @@ html = render_status_tabs(
 )
 ```
 
-`render_status_tabs(...)` emits both the generic PersonaCore classes
+`render_status_tabs(...)` emits both the generic PersonaConsole classes
 (`pc-status-tabs`, `pc-status-tab`, `pc-status-tab-count`) and the legacy class
 hooks (`status-tabs`, `status-tab`, `status-tab-count`) so consumers can migrate
 page by page without breaking existing admin tests or styles.
@@ -690,7 +690,7 @@ page by page without breaking existing admin tests or styles.
 Flash and action banners share the same incremental migration approach:
 
 ```python
-from personacore import FlashBanner, flash_url, render_flash_banners
+from personaconsole import FlashBanner, flash_url, render_flash_banners
 
 html = render_flash_banners(
     [
@@ -716,10 +716,10 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.18
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.18
 ```
 
-The doctor verifies that `persona_console` and `personacore` import, report the
+The doctor verifies that `personaconsole` and `personaconsole` import, report the
 same version, expose adapter-health, token-health, owner-private, and
 message/activity/media/people/review/journal/operations helpers plus shared
 controls, and can render a generic shell plus redacted feature panels. It does
@@ -731,10 +731,10 @@ passed for local diagnostics.
 
 Repeated count/status cards should stay generic. Consumers own the underlying
 database queries, routes, and labels, then pass a safe mapping plus display
-specs into PersonaCore:
+specs into PersonaConsole:
 
 ```python
-from personacore import DashboardMetricSpec, render_dashboard_summary_grid
+from personaconsole import DashboardMetricSpec, render_dashboard_summary_grid
 
 html = render_dashboard_summary_grid(
     {"messages": 42, "review_pending": 3, "provider": "example-provider"},
@@ -756,4 +756,4 @@ duplicated summary-card markup.
 - Keep render helpers tolerant of missing optional data.
 - Keep runtime-owned mutation endpoints in the consumer app unless the mutation
   is truly generic.
-- Keep secret-bearing and deployment-specific behavior out of PersonaCore.
+- Keep secret-bearing and deployment-specific behavior out of PersonaConsole.

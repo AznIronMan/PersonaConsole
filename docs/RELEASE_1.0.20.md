@@ -17,7 +17,7 @@ deployment support.
 
 ## Consumer Boundary
 
-PersonaCore still owns only public-safe render models, escaped markup, and
+PersonaConsole still owns only public-safe render models, escaped markup, and
 shared CSS/JS. Consumers own hosting topology, auth, cookies, OAuth callbacks,
 provider secrets, chat processing, settings persistence, uploads, and
 deployment.
@@ -27,6 +27,6 @@ deployment.
 ```bash
 PYTHONPATH=src python3 -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.20
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.20.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.20.html
 PYTHONPATH=src python3 -m compileall src
 ```

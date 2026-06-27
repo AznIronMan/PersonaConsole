@@ -1,6 +1,6 @@
-"""Model re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.models import (
+from personaconsole.models import (
     AdapterHealthCard,
     AdapterHealthConfig,
     AdapterHealthSparkBucket,

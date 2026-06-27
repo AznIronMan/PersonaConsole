@@ -1,6 +1,6 @@
-"""Public presence re-exports for the PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.public_presence import (
+from personaconsole.public_presence import (
     PUBLIC_PRESENCE_FEATURE,
     PUBLIC_THEME_KEYS,
     public_presence_feature_enabled,

@@ -1,6 +1,6 @@
-"""Token health primitive re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.token_health import (
+from personaconsole.token_health import (
     TOKEN_HEALTH_FEATURE,
     build_token_health_report,
     render_token_health_panel,

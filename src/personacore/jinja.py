@@ -1,5 +1,5 @@
-"""Jinja integration re-export for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.jinja import configure_jinja_loader
+from personaconsole.jinja import configure_jinja_loader
 
 __all__ = ["configure_jinja_loader"]

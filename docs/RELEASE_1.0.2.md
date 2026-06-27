@@ -1,8 +1,8 @@
-# PersonaCore 1.0.2
+# PersonaConsole 1.0.2
 
 ## Summary
 
-`1.0.2` adds configurable token health as a shared PersonaCore feature
+`1.0.2` adds configurable token health as a shared PersonaConsole feature
 primitive.
 
 ## Changes
@@ -18,5 +18,5 @@ primitive.
 ## Consumer Notes
 
 Consumers should enable token health only when their own runtime settings
-provide the required token names or lookup callback. PersonaCore does not read
+provide the required token names or lookup callback. PersonaConsole does not read
 private `.env` files, databases, or deployment state directly.

@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     JOURNAL_FEATURE,
     JOURNAL_THEME_KEYS,
     AdminPrivacyContext,

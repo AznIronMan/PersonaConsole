@@ -1,13 +1,13 @@
-"""Review surface re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.models import (
+from personaconsole.models import (
     ReviewAgendaItem,
     ReviewBoardRow,
     ReviewQueueCard,
     ReviewQueueSection,
     ReviewSurfaceConfig,
 )
-from persona_console.review import (
+from personaconsole.review import (
     REVIEW_FEATURE,
     render_review_surface,
     review_surface_feature_enabled,

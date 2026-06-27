@@ -1,4 +1,4 @@
-# PersonaCore 1.0.5
+# PersonaConsole 1.0.5
 
 `1.0.5` adds public-safe owner-private admin visibility primitives for
 consuming runtimes.
@@ -11,15 +11,15 @@ consuming runtimes.
   classification.
 - Added `NavItem.feature` and feature-aware navigation rendering so runtimes can
   hide opt-in modules such as `owner_private_admin`.
-- Re-exported the privacy helpers through both `persona_console` and
-  `personacore` import paths.
+- Re-exported the privacy helpers through both `personaconsole` and
+  `personaconsole` import paths.
 - Added unit coverage for owner-only raw visibility, admin non-override
   behavior, safe alternate rendering, withheld placeholders, direct-message
   classification, and feature-gated navigation.
 
 ## Consumer Notes
 
-PersonaCore does not know private users, hosts, databases, or account mappings.
+PersonaConsole does not know private users, hosts, databases, or account mappings.
 Consumers must supply their own private scope policy and enforce it in every
 server-side HTML, JSON, query/snapshot, and media route that can expose raw
 owner-private content.

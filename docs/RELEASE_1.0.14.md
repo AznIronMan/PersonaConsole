@@ -21,7 +21,7 @@
 ## Consumer Notes
 
 Consumers still own review queries, filters, mutations, auth, owner-private
-scope mapping, route targets, and row-level action handlers. PersonaCore only
+scope mapping, route targets, and row-level action handlers. PersonaConsole only
 renders escaped, consumer-provided review rows and safe summaries.
 
 ## Verification
@@ -29,6 +29,6 @@ renders escaped, consumer-provided review rows and safe summaries.
 ```bash
 PYTHONPATH=src python -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.14
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.14.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.14.html
 python3 -m compileall -q src tests examples
 ```

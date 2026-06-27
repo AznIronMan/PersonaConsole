@@ -11,7 +11,7 @@ from examples.fixture_app import (
 )
 
 
-def test_fixture_uses_public_personacore_config_name():
+def test_fixture_uses_public_personaconsole_config_name():
     config = build_fixture_config()
 
     assert config.brand_name == "Example Persona"
@@ -116,4 +116,4 @@ def test_fixture_static_output_path_can_be_relative_inside_repo():
 
     static_base = _default_static_base_for_output(output)
 
-    assert static_base.endswith(str(Path("src") / "persona_console" / "static"))
+    assert static_base.endswith(str(Path("src") / "personaconsole" / "static"))

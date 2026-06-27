@@ -1,6 +1,6 @@
-"""Adapter health re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.adapter_health import (
+from personaconsole.adapter_health import (
     ADAPTER_HEALTH_FEATURE,
     adapter_health_feature_enabled,
     render_adapter_health_panel,

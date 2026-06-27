@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     DashboardData,
     TOKEN_HEALTH_FEATURE,
     TokenHealthCheck,

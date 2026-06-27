@@ -21,10 +21,10 @@ fixture admin into a fuller operator workspace target.
 
 ## Compatibility
 
-- The Python package remains `personacore`, with `persona_console` kept as the
+- The Python package remains `personaconsole`, with `personaconsole` kept as the
   compatibility import path.
 - No private runtime data, routes, auth policy, secrets, or deployment state
-  were added to PersonaCore.
+  were added to PersonaConsole.
 - The new fixture panels are static example HTML composed with existing shared
   primitives. Consumers still own real people, task, log, settings, mutation,
   and authorization behavior.
@@ -34,6 +34,6 @@ fixture admin into a fuller operator workspace target.
 ```bash
 PYTHONPATH=src python -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.10
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture.html
 PYTHONPATH=src python3 scripts/visual_smoke.py
 ```

@@ -25,7 +25,7 @@ consumer admin consoles.
 
 Consumers still own message queries, thread selection, platform normalization,
 auth, private scope mapping, pagination, and raw/file route enforcement.
-PersonaCore only renders escaped display rows and applies the configured
+PersonaConsole only renders escaped display rows and applies the configured
 owner-private safe-alternate behavior to provided values.
 
 ## Verification
@@ -33,5 +33,5 @@ owner-private safe-alternate behavior to provided values.
 ```bash
 PYTHONPATH=src python -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.12
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.12.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.12.html
 ```

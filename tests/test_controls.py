@@ -1,9 +1,9 @@
 from urllib.parse import parse_qs, urlsplit
 
-from persona_console import FlashBanner, flash_query_params, flash_url, render_flash_banners, StatusTab, render_status_tabs
+from personaconsole import FlashBanner, flash_query_params, flash_url, render_flash_banners, StatusTab, render_status_tabs
 
 
-def test_status_tabs_render_legacy_and_personacore_classes():
+def test_status_tabs_render_legacy_and_personaconsole_classes():
     html = render_status_tabs(
         [
             StatusTab("All", "/review", 12, active=True),
@@ -33,7 +33,7 @@ def test_status_tabs_empty_without_label_returns_empty_string():
     assert "pc-status-tabs" in html
 
 
-def test_flash_banners_render_legacy_and_personacore_classes():
+def test_flash_banners_render_legacy_and_personaconsole_classes():
     html = render_flash_banners(
         [
             FlashBanner(

@@ -1,6 +1,6 @@
 # Release 1.0.8
 
-`1.0.8` adds adapter/runtime health cards as an opt-in shared PersonaCore
+`1.0.8` adds adapter/runtime health cards as an opt-in shared PersonaConsole
 feature.
 
 ## Added
@@ -9,7 +9,7 @@ feature.
   `AdapterHealthCard`, `AdapterHealthSparkBucket`,
   `adapter_health_feature_enabled(...)`, and
   `render_adapter_health_panel(...)`.
-- Added `personacore.adapter_health` as the public submodule import path.
+- Added `personaconsole.adapter_health` as the public submodule import path.
 - Updated dashboard adapter-card rendering to use the shared adapter-health
   panel while preserving existing `DashboardData.adapters` compatibility.
 - Updated the consumer integration doctor to verify adapter-health exports and
@@ -19,7 +19,7 @@ feature.
 
 ## Safety
 
-- PersonaCore does not probe provider APIs, inspect private runtime routes,
+- PersonaConsole does not probe provider APIs, inspect private runtime routes,
   read credentials, restart services, or query consumer databases.
 - Consuming runtimes provide public-safe labels, counts, timestamps, policy
   notes, and optional sparkline buckets from their own already-authorized

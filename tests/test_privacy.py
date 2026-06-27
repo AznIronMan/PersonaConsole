@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     OWNER_PRIVATE_ADMIN_FEATURE,
     AdminPrivacyContext,
     NavGroup,

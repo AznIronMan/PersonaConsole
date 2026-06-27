@@ -20,7 +20,7 @@
 - Added optional `brand_assets` support to `PersonaConsoleConfig` so the admin
   shell can use small logos, large logos, and wordmarks while preserving the
   existing `icon_url` fallback.
-- Added `personacore.public_presence` as a public re-export module.
+- Added `personaconsole.public_presence` as a public re-export module.
 - Updated the fixture app with generic public splash, login, chat, and public
   settings routes.
 - Updated the consumer integration doctor to verify public presence exports,
@@ -29,13 +29,13 @@
 
 ## Consumer Boundary
 
-PersonaCore owns rendering and public-safe configuration models only. Consumer
+PersonaConsole owns rendering and public-safe configuration models only. Consumer
 runtimes own auth, cookies, login codes, OAuth callbacks, provider secrets,
 chat processing, uploads, settings persistence, legal copy, and deployment
 wiring.
 
 PersonaEngine can later provide provider-neutral connector/capability metadata
-that consumers pass into PersonaCore. PersonaCore should not call providers,
+that consumers pass into PersonaConsole. PersonaConsole should not call providers,
 store secrets, decide connector truth, or implement private runtime routes.
 
 Public media starts muted by default. Consumers can configure video sources,
@@ -47,6 +47,6 @@ whether the rendered page should expose sound controls.
 ```bash
 PYTHONPATH=src python3 -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.19
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.19.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.19.html
 PYTHONPATH=src python3 -m compileall src
 ```

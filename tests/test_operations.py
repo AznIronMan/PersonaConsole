@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     AGENT_OPS_FEATURE,
     OPERATIONS_FEATURE,
     PERSONA_RUNTIME_FEATURE,

@@ -6,7 +6,7 @@ restart smokes.
 ## Changes
 
 - Added `run_consumer_integration_doctor(...)` and `doctor_report_to_text(...)`
-  through both `persona_console` and `personacore` import paths.
+  through both `personaconsole` and `personaconsole` import paths.
 - Added `scripts/consumer_integration_doctor.py` for source-checkout and mounted
   source deployments.
 - The doctor checks importability, version alignment, installed package metadata
@@ -17,11 +17,11 @@ restart smokes.
 
 ## Consumer Notes
 
-Run this after updating PersonaCore, changing a mounted source directory, or
+Run this after updating PersonaConsole, changing a mounted source directory, or
 rebuilding/restarting consumer services:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.7
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.7
 ```
 
 Use `--json` when wiring this into a consumer-specific smoke script. The doctor

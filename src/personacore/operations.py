@@ -1,6 +1,6 @@
-"""Operations, persona-runtime, and agent-ops re-exports for PersonaCore."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.models import (
+from personaconsole.models import (
     AgentOpsSurfaceConfig,
     AgentSessionRow,
     BridgeStatusCard,
@@ -14,7 +14,7 @@ from persona_console.models import (
     PersonaRuntimeSurfaceConfig,
     SurfaceAction,
 )
-from persona_console.operations import (
+from personaconsole.operations import (
     AGENT_OPS_FEATURE,
     OPERATIONS_FEATURE,
     PERSONA_RUNTIME_FEATURE,

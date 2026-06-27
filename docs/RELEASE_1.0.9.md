@@ -1,7 +1,7 @@
 # Release 1.0.9
 
 `1.0.9` adds reusable message, activity, and media/artifact surfaces as
-opt-in shared PersonaCore modules.
+opt-in shared PersonaConsole modules.
 
 ## Added
 
@@ -12,7 +12,7 @@ opt-in shared PersonaCore modules.
   `MediaSurfaceConfig`, `MediaArtifactCard`, and `SurfaceBadge`.
 - Added `render_message_surface(...)`, `render_activity_surface(...)`,
   `render_media_surface(...)`, and `render_surface_sections(...)`.
-- Added `personacore.surfaces` as the public submodule import path.
+- Added `personaconsole.surfaces` as the public submodule import path.
 - Updated the public fixture console so generic visual QA includes message,
   activity, and media surfaces with a redacted owner-private example.
 - Updated the consumer integration doctor to verify the new exports and a
@@ -20,7 +20,7 @@ opt-in shared PersonaCore modules.
 
 ## Safety
 
-- PersonaCore does not query consumer databases, inspect private routes, read
+- PersonaConsole does not query consumer databases, inspect private routes, read
   runtime files, or serve media bytes.
 - When a row or card declares a privacy scope, the shared renderer shows raw
   text only when the provided owner-private policy and context allow it.

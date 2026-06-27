@@ -4,12 +4,12 @@ These decisions set the direction for the first public PersonaConsole baseline.
 
 ## Settled Direction
 
-1. Public imports should move toward `personacore`. The existing
-   `persona_console` import path should remain as a compatibility alias through
+1. Public imports should move toward `personaconsole`. The existing
+   `personaconsole` import path should remain as a compatibility alias through
    the v1.x transition so existing private consumers do not need a lockstep
    migration.
-2. Public package distribution uses the `personacore` project name starting at
-   the fresh sanitized `v1.0.1` baseline. The internal `persona_console`
+2. Public package distribution uses the `personaconsole` project name starting at
+   the fresh sanitized `v1.0.1` baseline. The internal `personaconsole`
    package remains available as the v1.x compatibility implementation path.
 3. Public GitHub should start from a fresh sanitized v1.0.1 baseline. The
    release note should state that prior private development was sanitized at
@@ -29,7 +29,7 @@ These decisions set the direction for the first public PersonaConsole baseline.
 
 ## Remaining Questions
 
-1. What exact compatibility timeline should `persona_console` have after the
-   `personacore` import path exists?
+1. What exact compatibility timeline should `personaconsole` have after the
+   `personaconsole` import path exists?
 2. How much release automation should be added after the first allowlisted
    export script: GitHub Actions, package build checks, or manual release notes?

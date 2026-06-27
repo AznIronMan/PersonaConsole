@@ -1,6 +1,6 @@
-"""Surface primitive re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.surfaces import (
+from personaconsole.surfaces import (
     ACTIVITY_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,

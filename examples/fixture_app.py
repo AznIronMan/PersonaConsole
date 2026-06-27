@@ -6,7 +6,7 @@ from html import escape
 import os
 from pathlib import Path
 
-from personacore import (
+from personaconsole import (
     ACTIVITY_FEATURE,
     AGENT_OPS_FEATURE,
     JOURNAL_FEATURE,
@@ -68,7 +68,7 @@ from personacore import (
     PersonListRow,
     PersonRelationshipSummary,
     PersonTag,
-    PersonaCoreConfig,
+    PersonaConsoleConfig,
     PersonaPanel,
     PersonaRuntimeSurfaceConfig,
     PublicLink,
@@ -284,8 +284,8 @@ def build_public_settings_surface_config() -> PublicSettingsSurfaceConfig:
     )
 
 
-def build_fixture_config(*, static_base_url: str = "/persona-console/static") -> PersonaCoreConfig:
-    return PersonaCoreConfig(
+def build_fixture_config(*, static_base_url: str = "/persona-console/static") -> PersonaConsoleConfig:
+    return PersonaConsoleConfig(
         brand_name="Example Persona",
         page_title="Admin Overview",
         page_subtitle="Reference-style shared admin workspace",
@@ -363,7 +363,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.20-fixture",
+        app_version="v1.0.21-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -1217,7 +1217,7 @@ def create_app():
 
 def _default_static_base_for_output(output: Path) -> str:
     root = Path(__file__).resolve().parents[1]
-    static_dir = Path(__file__).resolve().parents[1] / "src" / "persona_console" / "static"
+    static_dir = Path(__file__).resolve().parents[1] / "src" / "personaconsole" / "static"
     output_parent = output.resolve().parent
     try:
         output_parent.relative_to(root)

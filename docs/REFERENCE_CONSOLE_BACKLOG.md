@@ -1,6 +1,6 @@
 # Reference Console Backlog
 
-PersonaCore should use the best current private admin console as the design and
+PersonaConsole should use the best current private admin console as the design and
 workflow reference, but public source and docs must stay generic. This backlog
 names reusable admin patterns only; private names, paths, routes, hosts,
 screenshots, data, and runtime policy stay outside the public repo.
@@ -17,11 +17,11 @@ screenshots, data, and runtime policy stay outside the public repo.
   labels, hrefs, badges, tones, and optional data providers.
 - Keep the public fixture aligned with the shared composition target in
   [Reference Admin Parity Spec](REFERENCE_ADMIN_PARITY_SPEC.md). The first
-  fuller generic fixture target shipped in PersonaCore `1.0.10`; the typed
-  people surface shipped in PersonaCore `1.0.11`; operations, persona-runtime,
-  continuity, bridge, and agent-ops surfaces shipped in PersonaCore `1.0.17`;
-  the themed journal reader shipped in PersonaCore `1.0.18`; public presence
-  splash/login/chat and connector settings surfaces shipped in PersonaCore
+  fuller generic fixture target shipped in PersonaConsole `1.0.10`; the typed
+  people surface shipped in PersonaConsole `1.0.11`; operations, persona-runtime,
+  continuity, bridge, and agent-ops surfaces shipped in PersonaConsole `1.0.17`;
+  the themed journal reader shipped in PersonaConsole `1.0.18`; public presence
+  splash/login/chat and connector settings surfaces shipped in PersonaConsole
   `1.0.19`.
 
 ## First Dashboard Modules
@@ -42,7 +42,7 @@ screenshots, data, and runtime policy stay outside the public repo.
 6. Adapter health cards:
    provider route, last in/out timestamps, queued/failed counts, policy detail,
    sparkline buckets, and action hints. Initial shared renderer shipped in
-   PersonaCore `1.0.8`.
+   PersonaConsole `1.0.8`.
 7. Flow chart:
    lightweight bar visualization for inbound/outbound activity with optional
    provider segments.
@@ -56,9 +56,9 @@ screenshots, data, and runtime policy stay outside the public repo.
 
 - Footer status region with live refresh.
 - Restart/update banner slot. Flash/action banner primitives shipped in
-  PersonaCore `1.0.16`; lifecycle semantics remain runtime-owned.
+  PersonaConsole `1.0.16`; lifecycle semantics remain runtime-owned.
 - Page refresh and live-refresh controls as configurable shell primitives.
-  PersonaCore `1.0.16` adds `pc-*` class hooks to the existing live-refresh
+  PersonaConsole `1.0.16` adds `pc-*` class hooks to the existing live-refresh
   shell controls.
 - Account menu extension point.
 - Runtime lifecycle control slot for private/local deployments.
@@ -68,7 +68,7 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Message browser with conversation list, selected thread, platform badges,
   transcript bubbles, attachments, reactions, and audit-link slots.
   Initial public-safe list, transcript, attachment, activity, and media card
-  primitives shipped in PersonaCore `1.0.9`.
+  primitives shipped in PersonaConsole `1.0.9`.
 - Conversation transcript table for forensic/admin views.
 - Review queue cards and tables with summary metrics, tags, decision actions,
   and pending-change integration hooks.
@@ -80,26 +80,26 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Media/artifact cards for generated or uploaded assets with preview,
   classification, sendable status, and action slots.
 - Generic task, log, and settings posture panels for reference-console parity.
-  Initial public-safe fixture examples shipped in PersonaCore `1.0.10`; typed
-  operations/settings/log renderers shipped in PersonaCore `1.0.17`.
+  Initial public-safe fixture examples shipped in PersonaConsole `1.0.10`; typed
+  operations/settings/log renderers shipped in PersonaConsole `1.0.17`.
 - Persona runtime, continuity, bridge, and agent-session posture panels.
-  Initial typed public-safe renderers shipped in PersonaCore `1.0.17`.
+  Initial typed public-safe renderers shipped in PersonaConsole `1.0.17`.
 - People list surface with filter bar, tags, relationship summary, notes
   preview, new-person slot, and owner-private note fallback. Initial typed
-  renderer shipped in PersonaCore `1.0.11`.
+  renderer shipped in PersonaConsole `1.0.11`.
 - Journal reader surface with calendar rail, default paper page, selectable
   white-paper/script/typewriter/terminal/archive themes, provenance details,
   page turns, and owner-private entry fallback. Initial typed renderer shipped
-  in PersonaCore `1.0.18`.
+  in PersonaConsole `1.0.18`.
 - Public presence surfaces for public splash/homepage, media hero, login,
   chat, connector choices, social links, legal modals, and admin settings.
-  Initial typed renderers and static assets shipped in PersonaCore `1.0.19`;
+  Initial typed renderers and static assets shipped in PersonaConsole `1.0.19`;
   provider truth, auth, callbacks, chat processing, settings persistence, and
-  deployment wiring remain outside PersonaCore.
+  deployment wiring remain outside PersonaConsole.
 
 ## Implementation Rules
 
-- Keep PersonaCore inputs generic: dataclasses plus plain dictionaries.
+- Keep PersonaConsole inputs generic: dataclasses plus plain dictionaries.
 - Treat renderer output as public-safe HTML from escaped data; body HTML remains
   trusted only when explicitly passed by the consumer.
 - Do not import runtime databases, auth, private routes, secrets, or deployment

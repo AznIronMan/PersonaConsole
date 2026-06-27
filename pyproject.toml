@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "personacore"
-version = "1.0.20"
+name = "personaconsole"
+version = "1.0.21"
 description = "Reusable admin console shell, dashboard primitives, navigation, and style system for persona runtimes."
 requires-python = ">=3.11"
 dependencies = [
@@ -30,8 +30,8 @@ visual = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-persona_console = [
+personaconsole = [
   "static/*.css",
   "static/*.js",
-  "templates/persona_console/*.html",
+  "templates/personaconsole/*.html",
 ]

@@ -1,6 +1,6 @@
 # Reference Admin Parity Spec
 
-PersonaCore consumers should be able to feel like one admin family while still
+PersonaConsole consumers should be able to feel like one admin family while still
 owning their private auth, routes, data, deployment, and business logic. This
 spec defines the shared public target for that consistency.
 
@@ -12,11 +12,11 @@ through configuration.
 ## Goals
 
 - Make consumer admins feel familiar across runtimes.
-- Keep feature availability driven by `PersonaCoreConfig.features`,
+- Keep feature availability driven by `PersonaConsoleConfig.features`,
   navigation groups, badges, status pills, theme tokens, and consumer-owned
   body data.
 - Keep raw private data, credentials, database access, deployment state, and
-  mutation policy out of PersonaCore.
+  mutation policy out of PersonaConsole.
 - Preserve server-side privacy enforcement. UI hiding is only presentation.
 
 ## Shell Contract
@@ -76,62 +76,62 @@ hidden with feature flags instead of leaving dead links.
 
 ## Module Surface Contract
 
-PersonaCore should supply reusable primitives for common module surfaces:
+PersonaConsole should supply reusable primitives for common module surfaces:
 
 - `messages`: platform/filter chips, selected-thread metrics, action links,
   conversation list, selected thread, transcript bubbles, attachments, badges,
-  and redacted owner-private fallbacks. PersonaCore `1.0.12` supplies the
+  and redacted owner-private fallbacks. PersonaConsole `1.0.12` supplies the
   typed browser controls and two-column message surface; consumers still own
   lookups, auth, pagination, and private scope mapping.
 - `activity`: public/group/social activity rows and timeline events.
 - `media`: artifact cards, preview placeholders, status labels, and redacted
   owner-private fallbacks.
 - `people`: profile and relationship summaries rendered from consumer-owned
-  data. PersonaCore `1.0.11` supplies the typed filter/table/notes surface;
+  data. PersonaConsole `1.0.11` supplies the typed filter/table/notes surface;
   consumers still own lookups, auth, edits, and private scope mapping.
 - `review`: queue metrics, pending rows, decision context, and action slots.
-  PersonaCore `1.0.14` supplies the typed review-board, agenda, and queue-card
-  primitives. PersonaCore `1.0.15` supplies the shared status-tab control for
+  PersonaConsole `1.0.14` supplies the typed review-board, agenda, and queue-card
+  primitives. PersonaConsole `1.0.15` supplies the shared status-tab control for
   filtered queue/list pages; consumers still own queries, auth, mutations, and
   private scope mapping.
 - `journal`: calendar-driven continuity reader, paper-style default page,
   selectable themes, markers, provenance details, and owner-private safe
-  alternates. PersonaCore `1.0.18` supplies the typed journal surface and
+  alternates. PersonaConsole `1.0.18` supplies the typed journal surface and
   built-in theme catalog; consumers still own entry lookup, settings,
   permissions, storage, and private scope mapping.
 - `public_presence`: public splash/homepage, login, chat shell, media hero,
   connector-choice UI, logos, social links, legal modals, and admin settings
-  form. PersonaCore `1.0.19` supplies typed public presence models, full-page
+  form. PersonaConsole `1.0.19` supplies typed public presence models, full-page
   renderers, static CSS/JS, and a settings surface; consumers and PersonaEngine
   own connector capability truth, auth, provider callbacks, secrets, chat
   processing, persistence, uploads, and deployment wiring.
 - `flash`: transient success/warning/error banners and optional action links.
-  PersonaCore `1.0.16` supplies shared flash/action banner markup plus redirect
+  PersonaConsole `1.0.16` supplies shared flash/action banner markup plus redirect
   query helpers; consumers still own POST handlers, permissions, and target
   routes.
 - `tasks`: task status tables and operator next actions.
 - `workers`: queue latency, retry state, and adapter/runtime cards.
 - `logs`: sanitized runtime events and warning summaries.
 - `settings`: feature flags, integration posture, and safe configuration
-  status. PersonaCore `1.0.17` supplies typed operations rows/cards/settings
+  status. PersonaConsole `1.0.17` supplies typed operations rows/cards/settings
   posture and safe log summaries; consumers still own task execution, worker
   control, secret reads, and mutations.
 - `persona`: persona-state panels, continuity rows, trait/rule summaries, and
-  memory-promotion posture. PersonaCore `1.0.17` supplies public-safe panel and
+  memory-promotion posture. PersonaConsole `1.0.17` supplies public-safe panel and
   continuity renderers while consumers keep runtime business logic private.
 - `agent_ops`: bridge status, preflight posture, and agent-session summaries.
-  PersonaCore `1.0.17` supplies read-only bridge/session markup while consumers
+  PersonaConsole `1.0.17` supplies read-only bridge/session markup while consumers
   own provider calls, sessions, permissions, and infrastructure controls.
 - `health`: service, credential, adapter, and runtime checks.
 
-If a module is not yet a typed PersonaCore renderer, consumers can still match
+If a module is not yet a typed PersonaConsole renderer, consumers can still match
 the shared shell by composing generic panels, cards, tables, tags, and status
 pills while the reusable primitive is extracted.
 
 ## Privacy Contract
 
 Owner-private protection is always server-enforced by the consuming runtime.
-The PersonaCore UI helpers can render safe alternates or withheld placeholders,
+The PersonaConsole UI helpers can render safe alternates or withheld placeholders,
 but they do not replace route authorization.
 
 Required behavior:
@@ -162,7 +162,7 @@ For each consuming runtime:
    render primitives.
 5. Keep auth, database queries, mutation routes, restart controls, secrets,
    and private deployment state in the consumer repo.
-6. Run the PersonaCore doctor, the runtime's focused admin tests, and a render
+6. Run the PersonaConsole doctor, the runtime's focused admin tests, and a render
    or login smoke before release.
 
 ## Acceptance Checklist
@@ -179,7 +179,7 @@ For each consuming runtime:
 - Public/group/social engagement remains visible under normal policy.
 - Consumer-specific route names, private scope aliases, hosts, paths,
   usernames, credentials, screenshots, and deployment state are not committed
-  to PersonaCore.
+  to PersonaConsole.
 
 ## Fixture Target
 

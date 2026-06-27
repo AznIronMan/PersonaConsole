@@ -1,12 +1,12 @@
-"""People surface re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.models import (
+from personaconsole.models import (
     PeopleSurfaceConfig,
     PersonListRow,
     PersonRelationshipSummary,
     PersonTag,
 )
-from persona_console.people import (
+from personaconsole.people import (
     PEOPLE_FEATURE,
     people_surface_feature_enabled,
     render_people_surface,

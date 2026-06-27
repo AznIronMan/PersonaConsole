@@ -1,15 +1,3 @@
-from __future__ import annotations
+"""Deprecated compatibility wrapper for ``personaconsole.fastapi``."""
 
-from importlib.resources import files
-
-
-def register_static_assets(app: object, *, mount_path: str = "/persona-console/static") -> None:
-    """Mount PersonaConsole static assets on a FastAPI app."""
-
-    try:
-        from fastapi.staticfiles import StaticFiles
-    except ImportError as exc:  # pragma: no cover - only hit without FastAPI.
-        raise RuntimeError("FastAPI is required to mount PersonaConsole assets") from exc
-
-    static_dir = files("persona_console").joinpath("static")
-    app.mount(mount_path, StaticFiles(directory=str(static_dir)), name="persona_console_static")
+from personaconsole.fastapi import *  # noqa: F401,F403

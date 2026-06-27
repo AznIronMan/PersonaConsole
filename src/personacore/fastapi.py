@@ -1,5 +1,5 @@
-"""FastAPI integration re-export for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.fastapi import register_static_assets
+from personaconsole.fastapi import register_static_assets
 
 __all__ = ["register_static_assets"]

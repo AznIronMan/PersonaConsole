@@ -1,6 +1,6 @@
-"""Dashboard primitive re-exports for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.dashboard import (
+from personaconsole.dashboard import (
     dashboard_metrics_from_counts,
     format_dashboard_metric_value,
     render_dashboard_activity,

@@ -1,6 +1,6 @@
-"""Consumer integration doctor re-export for the public PersonaCore import path."""
+"""Deprecated personacore compatibility wrapper for personaconsole."""
 
-from persona_console.doctor import (
+from personaconsole.doctor import (
     ConsumerIntegrationDoctorReport,
     DoctorCheck,
     ModuleSnapshot,

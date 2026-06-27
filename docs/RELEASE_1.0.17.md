@@ -9,11 +9,11 @@ continuity, bridges, and agent sessions.
   persona panels, continuity rows, bridge status cards, and agent-session rows.
 - Added `render_operations_surface(...)`,
   `render_persona_runtime_surface(...)`, `render_agent_ops_surface(...)`, and
-  `render_workflow_sections(...)` under both `persona_console` and
-  `personacore`.
+  `render_workflow_sections(...)` under both `personaconsole` and
+  `personaconsole`.
 - Added feature constants and enabled checks:
   `OPERATIONS_FEATURE`, `PERSONA_RUNTIME_FEATURE`, and `AGENT_OPS_FEATURE`.
-- Added `personacore.operations` as a public re-export module.
+- Added `personaconsole.operations` as a public re-export module.
 - Updated the public fixture to use typed workflow surfaces instead of static
   task/log/settings placeholder panels.
 - Updated the consumer integration doctor to verify the new exports and safe
@@ -21,7 +21,7 @@ continuity, bridges, and agent sessions.
 
 ## Consumer Boundary
 
-PersonaCore renders escaped, read-only operational posture. Consumers still own
+PersonaConsole renders escaped, read-only operational posture. Consumers still own
 task execution, worker controls, settings mutation, secret lookup, provider
 calls, agent-session lifecycle, route authorization, and persistence.
 
@@ -34,6 +34,6 @@ the shared HTML.
 ```bash
 PYTHONPATH=src python3 -m pytest tests
 PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.17
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture-1.0.17.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture-1.0.17.html
 PYTHONPATH=src python3 -m compileall src
 ```

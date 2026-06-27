@@ -6,9 +6,10 @@ helpers, feature-ready CSS/JS, and rendering primitives so multiple persona
 admins can run from one configurable core instead of maintaining forked console
 copies.
 
-The public repository is named PersonaConsole. The current Python distribution
-and import compatibility still expose `personacore` and `persona_console` so
-existing v1.x consumers do not need a lockstep package rename. A runtime may
+The public repository and Python distribution are named PersonaConsole. The
+canonical import path is `personaconsole`; deprecated `personacore` and
+`persona_console` import shims remain during the v1.x rollout so old deployed
+consumers do not need a lockstep package rename. A runtime may
 present as a focused, branded console, but the common implementation should stay
 here when the behavior is reusable.
 
@@ -37,34 +38,35 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
 
 ## Integration Surfaces
 
-- `personacore` is the preferred public import path. `persona_console` remains
-  available as the current compatibility import path.
-- `persona_console.render_shell_html(...)` renders a complete page shell for
+- `personaconsole` is the preferred public import path. `personacore` and
+  `persona_console` remain as deprecated compatibility shims during the v1.x
+  rollout.
+- `personaconsole.render_shell_html(...)` renders a complete page shell for
   admins that build page bodies as trusted HTML strings.
-- `personacore.render_dashboard_sections(...)` renders generic dashboard
+- `personaconsole.render_dashboard_sections(...)` renders generic dashboard
   primitives such as attention cards, filters, metrics, route cards, health
   strips, token health, adapter cards, flow charts, queue summaries, and
   activity rows.
-- `personacore.dashboard_metrics_from_counts(...)` and
-  `personacore.render_dashboard_summary_grid(...)` turn consumer-owned count
+- `personaconsole.dashboard_metrics_from_counts(...)` and
+  `personaconsole.render_dashboard_summary_grid(...)` turn consumer-owned count
   or status mappings into reusable dashboard summary cards without moving route,
   database, or runtime ownership into PersonaConsole.
-- `personacore.TokenHealthConfig` and
-  `personacore.build_token_health_report(...)` provide an opt-in, redacted
+- `personaconsole.TokenHealthConfig` and
+  `personaconsole.build_token_health_report(...)` provide an opt-in, redacted
   credential health primitive for provider tokens and webhook secrets. Consumers
   supply their own settings/env lookup and PersonaConsole only reports configured,
-  missing, required, and optional states. `personacore.TOKEN_HEALTH_FEATURE`
-  and `personacore.token_health_config_for_providers(...)` give runtimes a
+  missing, required, and optional states. `personaconsole.TOKEN_HEALTH_FEATURE`
+  and `personaconsole.token_health_config_for_providers(...)` give runtimes a
   common feature flag and public provider presets for integrations such as
   Meta, Instagram, X, Discord, and webhooks.
-- `personacore.AdapterHealthConfig` and
-  `personacore.render_adapter_health_panel(...)` provide an opt-in adapter and
+- `personaconsole.AdapterHealthConfig` and
+  `personaconsole.render_adapter_health_panel(...)` provide an opt-in adapter and
   runtime health panel for provider routes, recent in/out activity, queue
   counts, policy notes, action hints, and compact sparkline buckets. Consumers
   own the underlying health probes and pass only public-safe display data.
-- `personacore.MessageSurfaceConfig`,
-  `personacore.ActivitySurfaceConfig`, `personacore.MediaSurfaceConfig`, and
-  `personacore.render_surface_sections(...)` provide opt-in conversation,
+- `personaconsole.MessageSurfaceConfig`,
+  `personaconsole.ActivitySurfaceConfig`, `personaconsole.MediaSurfaceConfig`, and
+  `personaconsole.render_surface_sections(...)` provide opt-in conversation,
   activity, and media/artifact admin surfaces. The message surface supports
   platform/filter chips, selected-thread metrics, action links, a conversation
   rail, transcript bubbles, attachments, badges, and owner-private redaction.
@@ -72,20 +74,20 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   while rendering safe alternates or withheld placeholders for non-owner
   admins; consumers must still enforce the same policy in their HTML, JSON,
   query, snapshot, and file routes.
-- `personacore.PeopleSurfaceConfig` and
-  `personacore.render_people_surface(...)` provide the shared dense people
+- `personaconsole.PeopleSurfaceConfig` and
+  `personaconsole.render_people_surface(...)` provide the shared dense people
   table, filter bar, tag chips, relationship summary, notes preview, and
   owner-private note redaction hooks used by consumer-owned people pages.
-- `personacore.ReviewSurfaceConfig` and
-  `personacore.render_review_surface(...)` provide a shared review-board
+- `personaconsole.ReviewSurfaceConfig` and
+  `personaconsole.render_review_surface(...)` provide a shared review-board
   surface for operator-gated decision rows, agenda cards, publishing queue
   summaries, and owner-private safe-alternate summaries.
-- `personacore.JournalSurfaceConfig` and
-  `personacore.render_journal_surface(...)` provide a shared journal reader
+- `personaconsole.JournalSurfaceConfig` and
+  `personaconsole.render_journal_surface(...)` provide a shared journal reader
   with a calendar rail, paper-style default page layout, selectable theme
   catalog, provenance details, page-turn links, and owner-private redaction.
-- `personacore.BrandAssets`, `personacore.PublicMediaConfig`,
-  `personacore.ConnectorOption`, `personacore.ConnectorGroup`, and the public
+- `personaconsole.BrandAssets`, `personaconsole.PublicMediaConfig`,
+  `personaconsole.ConnectorOption`, `personaconsole.ConnectorGroup`, and the public
   renderers `render_public_splash_page(...)`, `render_login_page(...)`,
   `render_chat_page(...)`, and `render_public_settings_surface(...)` provide
   reusable public-facing homepage, login, chat, connector-choice, media hero,
@@ -96,32 +98,32 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   deployment-agnostic: a consumer can export the splash page to a static host
   or CDN while rendering login and chat from separate runtime-owned app
   servers.
-- `personacore.OperationsSurfaceConfig`,
-  `personacore.PersonaRuntimeSurfaceConfig`,
-  `personacore.AgentOpsSurfaceConfig`, and
-  `personacore.render_workflow_sections(...)` provide shared operations,
+- `personaconsole.OperationsSurfaceConfig`,
+  `personaconsole.PersonaRuntimeSurfaceConfig`,
+  `personaconsole.AgentOpsSurfaceConfig`, and
+  `personaconsole.render_workflow_sections(...)` provide shared operations,
   persona-state, continuity, bridge, and agent-session panels. Consumers still
   own task execution, settings mutations, provider calls, and private route
   authorization.
-- `personacore.StatusTab` and `personacore.render_status_tabs(...)` provide a
+- `personaconsole.StatusTab` and `personaconsole.render_status_tabs(...)` provide a
   shared dense tab control for queue/list status filters while leaving URL
   construction, counts, and filtering semantics in the consuming runtime.
-- `personacore.FlashBanner`, `personacore.render_flash_banners(...)`, and
-  `personacore.flash_url(...)` provide shared flash/action banner markup and
+- `personaconsole.FlashBanner`, `personaconsole.render_flash_banners(...)`, and
+  `personaconsole.flash_url(...)` provide shared flash/action banner markup and
   redirect query helpers while leaving action routes in the consuming runtime.
-- `personacore.run_consumer_integration_doctor(...)` verifies consumer installs
+- `personaconsole.run_consumer_integration_doctor(...)` verifies consumer installs
   or source mounts by checking version alignment, required shared exports,
   owner-private helpers, token-health helpers, adapter-health helpers,
   message/media/activity helpers, people helpers, review helpers, journal
   helpers, operations helpers, shared controls, and generic render smokes.
-- `persona_console.register_static_assets(app, ...)` mounts shared CSS and JS
+- `personaconsole.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
-- `persona_console.configure_jinja_loader(templates)` adds PersonaConsole
+- `personaconsole.configure_jinja_loader(templates)` adds PersonaConsole
   templates/macros to a `Jinja2Templates` instance.
 
 ## Package Identity
 
-The public package distribution is `personacore`. The sanitized `v1.0.1`
+The public package distribution is `personaconsole`. The sanitized `v1.0.1`
 baseline starts the public history, `v1.0.2` adds configurable token health as
 a shared feature primitive, `v1.0.3` carries public-safe export workflow
 cleanup, `v1.0.4` adds reusable dashboard summary-card helpers for consumer
@@ -149,9 +151,9 @@ navigation, paper-style default rendering, and owner-private safe alternates.
 `v1.0.19` adds reusable public presence surfaces for branded splash, login,
 chat, connector choices, configurable media heroes, and the admin settings
 form. `v1.0.20` polishes public presence visual defaults for connector
-buttons, fallback logos, and split static/app-server deployments.
-The existing `persona_console` Python package remains in the source tree as a
-compatibility implementation path for v1.x consumers.
+buttons, fallback logos, and split static/app-server deployments. `v1.0.21`
+renames the distribution and canonical import to `personaconsole` while keeping
+deprecated `personacore` and `persona_console` shims for rollout safety.
 
 ## Public Safety
 
@@ -184,7 +186,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.20
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.21
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -235,6 +237,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.18](docs/RELEASE_1.0.18.md)
 - [Release 1.0.19](docs/RELEASE_1.0.19.md)
 - [Release 1.0.20](docs/RELEASE_1.0.20.md)
+- [Release 1.0.21](docs/RELEASE_1.0.21.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)
@@ -245,7 +248,7 @@ The `examples/` directory includes a generic fixture admin console for public
 examples and future screenshot QA.
 
 ```bash
-PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personacore-fixture.html
+PYTHONPATH=src python3 examples/fixture_app.py --output /tmp/personaconsole-fixture.html
 ```
 
 When FastAPI and Uvicorn are installed:

@@ -1,4 +1,4 @@
-from persona_console import (
+from personaconsole import (
     ACTIVITY_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
