@@ -18,7 +18,8 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Keep the public fixture aligned with the shared composition target in
   [Reference Admin Parity Spec](REFERENCE_ADMIN_PARITY_SPEC.md). The first
   fuller generic fixture target shipped in PersonaCore `1.0.10`; the typed
-  people surface shipped in PersonaCore `1.0.11`.
+  people surface shipped in PersonaCore `1.0.11`; operations, persona-runtime,
+  continuity, bridge, and agent-ops surfaces shipped in PersonaCore `1.0.17`.
 
 ## First Dashboard Modules
 
@@ -77,8 +78,9 @@ screenshots, data, and runtime policy stay outside the public repo.
   classification, sendable status, and action slots.
 - Generic task, log, and settings posture panels for reference-console parity.
   Initial public-safe fixture examples shipped in PersonaCore `1.0.10`; typed
-  renderers should be extracted only when repeated consumer usage proves the
-  shape is stable.
+  operations/settings/log renderers shipped in PersonaCore `1.0.17`.
+- Persona runtime, continuity, bridge, and agent-session posture panels.
+  Initial typed public-safe renderers shipped in PersonaCore `1.0.17`.
 - People list surface with filter bar, tags, relationship summary, notes
   preview, new-person slot, and owner-private note fallback. Initial typed
   renderer shipped in PersonaCore `1.0.11`.

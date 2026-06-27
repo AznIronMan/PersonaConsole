@@ -6,13 +6,20 @@ from pathlib import Path
 
 from personacore import (
     ACTIVITY_FEATURE,
+    AGENT_OPS_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
+    OPERATIONS_FEATURE,
     PEOPLE_FEATURE,
+    PERSONA_RUNTIME_FEATURE,
     REVIEW_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
+    AgentOpsSurfaceConfig,
+    AgentSessionRow,
     AdminPrivacyContext,
+    BridgeStatusCard,
+    ContinuityItem,
     DashboardAction,
     DashboardActivityItem,
     DashboardAdapterCard,
@@ -37,12 +44,19 @@ from personacore import (
     MessageTranscriptItem,
     NavGroup,
     NavItem,
+    OperationsSurfaceConfig,
+    OpsLogEvent,
+    OpsSettingItem,
+    OpsStatusCard,
+    OpsTableRow,
     OwnerPrivateScopePolicy,
     PeopleSurfaceConfig,
     PersonListRow,
     PersonRelationshipSummary,
     PersonTag,
     PersonaCoreConfig,
+    PersonaPanel,
+    PersonaRuntimeSurfaceConfig,
     ReviewAgendaItem,
     ReviewBoardRow,
     ReviewQueueCard,
@@ -50,6 +64,7 @@ from personacore import (
     ReviewSurfaceConfig,
     StatusTab,
     StatusPill,
+    SurfaceAction,
     SurfaceBadge,
     ThemeTokens,
     TokenHealthCheck,
@@ -62,12 +77,8 @@ from personacore import (
     render_shell_html,
     render_status_tabs,
     render_surface_sections,
+    render_workflow_sections,
 )
-
-TASKS_FEATURE = "tasks"
-WORKERS_FEATURE = "workers"
-LOGS_FEATURE = "logs"
-SETTINGS_FEATURE = "settings"
 
 
 def build_fixture_config(*, static_base_url: str = "/persona-console/static") -> PersonaCoreConfig:
@@ -82,10 +93,9 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             MEDIA_FEATURE: True,
             PEOPLE_FEATURE: True,
             REVIEW_FEATURE: True,
-            TASKS_FEATURE: True,
-            WORKERS_FEATURE: True,
-            LOGS_FEATURE: True,
-            SETTINGS_FEATURE: True,
+            OPERATIONS_FEATURE: True,
+            PERSONA_RUNTIME_FEATURE: True,
+            AGENT_OPS_FEATURE: True,
         },
         nav_groups=[
             NavGroup(
@@ -109,22 +119,30 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                 "Operations",
                 [
                     NavItem("Review Queue", "/review", active="review", badge="review"),
-                    NavItem("Tasks", "/tasks", active="tasks", badge="tasks", feature=TASKS_FEATURE),
-                    NavItem("Workers", "/workers", active="workers", badge="workers", feature=WORKERS_FEATURE),
+                    NavItem("Operations", "/operations", active="operations", badge="tasks", feature=OPERATIONS_FEATURE),
+                    NavItem("Persona", "/persona", active="persona", badge="persona", feature=PERSONA_RUNTIME_FEATURE),
                 ],
                 key="operations",
             ),
             NavGroup(
                 "System",
                 [
-                    NavItem("Logs", "/logs", active="logs", badge="logs", feature=LOGS_FEATURE),
-                    NavItem("Settings", "/settings", active="settings", feature=SETTINGS_FEATURE),
+                    NavItem("Agent Ops", "/agent-ops", active="agent-ops", badge="agent_ops", feature=AGENT_OPS_FEATURE),
+                    NavItem("Settings", "/settings", active="settings", feature=OPERATIONS_FEATURE),
                     NavItem("Health", "/health", active="health"),
                 ],
                 key="system",
             ),
         ],
-        nav_badges={"messages": 12, "people": 3, "media": 9, "review": 4, "tasks": 6, "workers": 1, "logs": 2},
+        nav_badges={
+            "messages": 12,
+            "people": 3,
+            "media": 9,
+            "review": 4,
+            "tasks": 6,
+            "persona": 2,
+            "agent_ops": 3,
+        },
         status_pills=[
             StatusPill("Runtime active", "good"),
             StatusPill("Admin active", "good"),
@@ -137,7 +155,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.16-fixture",
+        app_version="v1.0.17-fixture",
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -492,58 +510,193 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    operator_workspace = """
-<section class="pc-dashboard-panel pc-reference-workspace">
-  <div class="pc-dashboard-panel-head">
-    <div>
-      <div class="pc-dashboard-section-title">Operator Workspace</div>
-      <p class="pc-dashboard-section-meta">Reference module mix for consumer-owned routes and data.</p>
-    </div>
-    <span class="pc-dashboard-status"><span class="pc-dashboard-status-dot"></span>3 modules</span>
-  </div>
-  <div class="grid">
-    <article class="card">
-      <div class="panel-head">
-        <h3>Task Queue</h3>
-        <span class="pc-dashboard-tag">runtime-owned</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Task</th><th>Status</th><th>Next action</th></tr></thead>
-          <tbody>
-            <tr><td>Review pending replies</td><td>Waiting</td><td>Operator decision</td></tr>
-            <tr><td>Refresh profile rollups</td><td>Running</td><td>Watch worker latency</td></tr>
-            <tr><td>Publish ready artifact</td><td>Held</td><td>Confirm destination</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </article>
-    <article class="card">
-      <div class="panel-head">
-        <h3>Log Tail</h3>
-        <span class="pc-dashboard-tag">sanitized</span>
-      </div>
-      <pre>[09:45] review queued for operator
-[09:38] conversation summary refreshed
-[09:34] owner-private raw fields withheld
-[09:31] worker latency warning</pre>
-    </article>
-    <article class="card">
-      <div class="panel-head">
-        <h3>Settings Posture</h3>
-        <span class="pc-dashboard-tag">feature flags</span>
-      </div>
-      <div class="pc-token-health-summary">
-        <span><strong>on</strong> messages</span>
-        <span><strong>on</strong> people</span>
-        <span><strong>on</strong> media</span>
-        <span><strong>on</strong> owner-private guards</span>
-      </div>
-      <p class="hint">Mutation routes, restart controls, and secret lookups stay in the consumer runtime.</p>
-    </article>
-  </div>
-</section>
-"""
+    workflow_surfaces = render_workflow_sections(
+        operations=OperationsSurfaceConfig(
+            enabled=True,
+            status_cards=[
+                OpsStatusCard(
+                    "Workers",
+                    "lagging",
+                    "/workers",
+                    "One queue is above target latency.",
+                    "background queue",
+                    tone="warn",
+                    badges=[SurfaceBadge("runtime-owned", "info")],
+                    actions=[SurfaceAction("Inspect", "/workers")],
+                ),
+                OpsStatusCard(
+                    "Tasks",
+                    "6 open",
+                    "/tasks",
+                    "Operator and runtime-owned work queues.",
+                    tone="info",
+                    actions=[SurfaceAction("Open queue", "/tasks")],
+                ),
+            ],
+            tasks=[
+                OpsTableRow(
+                    "reply-review",
+                    "Review pending replies",
+                    "waiting",
+                    "/tasks/reply-review",
+                    "Needs an operator decision before send.",
+                    owner="operator",
+                    timestamp="09:45",
+                    tone="warn",
+                    actions=[SurfaceAction("Review", "/review?kind=messages", "warn")],
+                ),
+                OpsTableRow(
+                    "profile-rollups",
+                    "Refresh profile rollups",
+                    "running",
+                    "/tasks/profile-rollups",
+                    "Runtime worker is rebuilding public-safe summaries.",
+                    owner="worker",
+                    timestamp="09:38",
+                    tone="info",
+                ),
+            ],
+            logs=[
+                OpsLogEvent(
+                    "Review",
+                    "Operator queued a decision",
+                    "09:45",
+                    "review",
+                    "info",
+                    "/logs/review",
+                    tone="info",
+                ),
+                OpsLogEvent(
+                    "Privacy",
+                    "raw fixture private log line",
+                    "09:34",
+                    "privacy",
+                    "warn",
+                    "/logs/private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private log line summarized for operators.",
+                    tone="warn",
+                ),
+            ],
+            settings=[
+                OpsSettingItem("Messages enabled", True, "enabled", "/settings/messages", tone="good"),
+                OpsSettingItem("Webhook secret", True, "configured", "/settings/webhook", secret=True, tone="info"),
+                OpsSettingItem("Media review hold", False, "disabled", "/settings/media-review", changed=True, tone="warn"),
+            ],
+        ),
+        persona=PersonaRuntimeSurfaceConfig(
+            enabled=True,
+            panels=[
+                PersonaPanel(
+                    "Traits",
+                    8,
+                    "/persona/traits",
+                    "Active runtime trait rules are available for operator inspection.",
+                    tone="info",
+                    badges=[SurfaceBadge("rules", "info")],
+                    actions=[SurfaceAction("Open", "/persona/traits")],
+                ),
+                PersonaPanel(
+                    "Continuity",
+                    12,
+                    "/persona/continuity",
+                    "Recent continuity records have safe summaries.",
+                    tone="good",
+                ),
+                PersonaPanel(
+                    "raw fixture private persona panel",
+                    summary="raw fixture private persona summary",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private persona state summarized for operators.",
+                    tone="warn",
+                ),
+            ],
+            continuity=[
+                ContinuityItem(
+                    "Memory",
+                    "Review-safe memory promotion",
+                    "Candidate memory is ready for a normal review queue.",
+                    "/persona/memory/promotion",
+                    "09:25",
+                    "promotion",
+                    tone="warn",
+                    actions=[SurfaceAction("Review", "/review?kind=memory", "warn")],
+                ),
+                ContinuityItem(
+                    "Journal",
+                    "raw fixture private continuity title",
+                    "raw fixture private continuity summary",
+                    "/persona/private-continuity",
+                    "09:12",
+                    "journal",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private continuity item summarized for operators.",
+                    tone="info",
+                ),
+            ],
+        ),
+        agent_ops=AgentOpsSurfaceConfig(
+            enabled=True,
+            bridges=[
+                BridgeStatusCard(
+                    "Webhook",
+                    "healthy",
+                    "/agent-ops/webhook",
+                    "verify/reply",
+                    "Webhook bridge is reachable.",
+                    "2m ago",
+                    tone="good",
+                    counts=[{"label": "0 failed", "tone": "good"}, {"label": "12 handled", "tone": "info"}],
+                ),
+                BridgeStatusCard(
+                    "SMS bridge",
+                    "held",
+                    "/agent-ops/sms",
+                    "inbound",
+                    "Inbound bridge is configured but paused.",
+                    "14m ago",
+                    tone="warn",
+                    counts=["1 held"],
+                    actions=[SurfaceAction("Inspect", "/agent-ops/sms", "warn")],
+                ),
+            ],
+            statuses=[
+                OpsStatusCard("Preflight", "ready", "/agent-ops/preflight", "Local read-only checks are green.", tone="good"),
+            ],
+            sessions=[
+                AgentSessionRow(
+                    "fixture-session",
+                    "Fixture agent session",
+                    "review",
+                    "/agent-ops/sessions/fixture",
+                    "Summarize operator-visible workflow gaps.",
+                    model="example-model",
+                    reasoning="standard",
+                    repo="example-runtime",
+                    updated="09:20",
+                    tone="warn",
+                    actions=[SurfaceAction("Open", "/agent-ops/sessions/fixture")],
+                ),
+                AgentSessionRow(
+                    "private-session",
+                    "raw fixture private agent session",
+                    "held",
+                    "/agent-ops/private-session",
+                    objective="raw fixture private agent objective",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private agent session summarized for operators.",
+                    tone="info",
+                ),
+            ],
+        ),
+        features={
+            OPERATIONS_FEATURE: True,
+            PERSONA_RUNTIME_FEATURE: True,
+            AGENT_OPS_FEATURE: True,
+        },
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     hold_form = """
 <section class="panel">
   <div class="panel-head">
@@ -678,7 +831,7 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    return render_dashboard_sections(dashboard) + people_surface + review_surface + surfaces + operator_workspace + hold_form
+    return render_dashboard_sections(dashboard) + people_surface + review_surface + workflow_surfaces + surfaces + hold_form
 
 
 def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:

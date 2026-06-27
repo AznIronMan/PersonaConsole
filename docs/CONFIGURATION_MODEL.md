@@ -453,6 +453,65 @@ strips raw links for non-owner contexts and renders the configured safe
 alternate or withheld placeholder. Consumer HTML snapshots, JSON endpoints,
 database queries, and action routes must still enforce the same policy.
 
+## Workflow Surfaces
+
+The operations workflow layer is shared, opt-in markup for repeated runtime
+admin pages: worker/task posture, safe log rows, feature/settings summaries,
+persona state panels, continuity items, bridge status, and agent-session rows.
+Consumers pass already-authorized display data and own all mutations, provider
+calls, restarts, secret reads, and private routes.
+
+```python
+from personacore import (
+    AGENT_OPS_FEATURE,
+    OPERATIONS_FEATURE,
+    PERSONA_RUNTIME_FEATURE,
+    AgentOpsSurfaceConfig,
+    AgentSessionRow,
+    BridgeStatusCard,
+    ContinuityItem,
+    OperationsSurfaceConfig,
+    OpsLogEvent,
+    OpsSettingItem,
+    OpsStatusCard,
+    OpsTableRow,
+    PersonaPanel,
+    PersonaRuntimeSurfaceConfig,
+    SurfaceAction,
+    render_workflow_sections,
+)
+
+html = render_workflow_sections(
+    operations=OperationsSurfaceConfig(
+        enabled=True,
+        status_cards=[OpsStatusCard("Workers", "lagging", "/workers", "Queue above target")],
+        tasks=[OpsTableRow("reply-review", "Review pending replies", "waiting", "/tasks/reply-review")],
+        logs=[OpsLogEvent("Privacy", "safe log summary", level="warn")],
+        settings=[OpsSettingItem("Webhook secret", True, "configured", secret=True)],
+    ),
+    persona=PersonaRuntimeSurfaceConfig(
+        enabled=True,
+        panels=[PersonaPanel("Traits", 8, "/persona/traits", "Active runtime rules")],
+        continuity=[ContinuityItem("Memory", "Review-safe memory", "Ready for review")],
+    ),
+    agent_ops=AgentOpsSurfaceConfig(
+        enabled=True,
+        bridges=[BridgeStatusCard("Webhook", "healthy", counts=[{"label": "0 failed", "tone": "good"}])],
+        sessions=[AgentSessionRow("session", "Fixture session", "review", objective="Inspect workflow gaps")],
+    ),
+    features={
+        OPERATIONS_FEATURE: True,
+        PERSONA_RUNTIME_FEATURE: True,
+        AGENT_OPS_FEATURE: True,
+    },
+)
+```
+
+Secret settings render only configured/not-configured posture, never raw
+values. Rows that declare a privacy scope use the same safe-alternate contract
+as messages, people, and review rows; raw hrefs are stripped for non-owner
+contexts.
+
 ## Shared Controls
 
 Shared controls are small UI primitives that keep list and queue pages visually
@@ -506,16 +565,16 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.16
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.17
 ```
 
 The doctor verifies that `persona_console` and `personacore` import, report the
 same version, expose adapter-health, token-health, owner-private, and
-message/activity/media/people/review helpers plus shared controls, and can
-render a generic shell plus redacted feature panels. It does not read runtime
-secrets, databases, private routes, or consumer settings. Filesystem paths are
-omitted from output unless `--show-paths` is explicitly passed for local
-diagnostics.
+message/activity/media/people/review/operations helpers plus shared controls,
+and can render a generic shell plus redacted feature panels. It does not read
+runtime secrets, databases, private routes, or consumer settings. Filesystem
+paths are omitted from output unless `--show-paths` is explicitly passed for
+local diagnostics.
 
 ## Dashboard Summary Cards
 

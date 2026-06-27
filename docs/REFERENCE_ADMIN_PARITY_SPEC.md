@@ -102,7 +102,15 @@ PersonaCore should supply reusable primitives for common module surfaces:
 - `workers`: queue latency, retry state, and adapter/runtime cards.
 - `logs`: sanitized runtime events and warning summaries.
 - `settings`: feature flags, integration posture, and safe configuration
-  status.
+  status. PersonaCore `1.0.17` supplies typed operations rows/cards/settings
+  posture and safe log summaries; consumers still own task execution, worker
+  control, secret reads, and mutations.
+- `persona`: persona-state panels, continuity rows, trait/rule summaries, and
+  memory-promotion posture. PersonaCore `1.0.17` supplies public-safe panel and
+  continuity renderers while consumers keep runtime business logic private.
+- `agent_ops`: bridge status, preflight posture, and agent-session summaries.
+  PersonaCore `1.0.17` supplies read-only bridge/session markup while consumers
+  own provider calls, sessions, permissions, and infrastructure controls.
 - `health`: service, credential, adapter, and runtime checks.
 
 If a module is not yet a typed PersonaCore renderer, consumers can still match

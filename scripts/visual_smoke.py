@@ -108,7 +108,9 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                     expect(page.locator(".pc-token-health")).to_be_visible()
                     expect(page.locator(".pc-dashboard-adapter-grid")).to_be_visible()
                     expect(page.locator(".pc-people-surface")).to_be_visible()
-                    expect(page.locator(".pc-reference-workspace")).to_be_visible()
+                    expect(page.locator(".pc-operations-surface")).to_be_visible()
+                    expect(page.locator(".pc-persona-surface")).to_be_visible()
+                    expect(page.locator(".pc-agent-ops-surface")).to_be_visible()
                     expect(page.locator("#live-pill")).to_be_visible()
                     if name == "mobile":
                         toggle = page.locator(".admin-mobile-toggle")

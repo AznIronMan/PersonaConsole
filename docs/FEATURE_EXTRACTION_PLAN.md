@@ -47,6 +47,8 @@ Recommended first extraction targets:
 - People list surface.
   - Initial typed filter/table/relationship/notes renderer shipped in
     PersonaCore `1.0.11`.
+- Operations, persona runtime, continuity, bridge, and agent-ops surfaces.
+  - Initial typed runtime posture renderers shipped in PersonaCore `1.0.17`.
 - Command preview/queue panels.
 - Media/workflow status panels.
 - Worker, scheduling, and availability/live monitor panels.

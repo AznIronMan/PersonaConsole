@@ -59,6 +59,30 @@ _REVIEW_EXPORTS = (
     "render_review_surface",
     "review_surface_feature_enabled",
 )
+_OPERATIONS_EXPORTS = (
+    "AGENT_OPS_FEATURE",
+    "OPERATIONS_FEATURE",
+    "PERSONA_RUNTIME_FEATURE",
+    "AgentOpsSurfaceConfig",
+    "AgentSessionRow",
+    "BridgeStatusCard",
+    "ContinuityItem",
+    "OperationsSurfaceConfig",
+    "OpsLogEvent",
+    "OpsSettingItem",
+    "OpsStatusCard",
+    "OpsTableRow",
+    "PersonaPanel",
+    "PersonaRuntimeSurfaceConfig",
+    "SurfaceAction",
+    "agent_ops_surface_feature_enabled",
+    "operations_surface_feature_enabled",
+    "persona_runtime_surface_feature_enabled",
+    "render_agent_ops_surface",
+    "render_operations_surface",
+    "render_persona_runtime_surface",
+    "render_workflow_sections",
+)
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -169,6 +193,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "surface_exports", _SURFACE_EXPORTS))
         checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
         checks.extend(_export_checks(module, "review_exports", _REVIEW_EXPORTS))
+        checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.extend(_export_checks(module, "control_exports", _CONTROL_EXPORTS))
@@ -178,6 +203,7 @@ def run_consumer_integration_doctor(
         checks.append(_surface_render_check(module))
         checks.append(_people_render_check(module))
         checks.append(_review_render_check(module))
+        checks.append(_operations_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -541,6 +567,101 @@ def _review_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "review_render", "review surface renders with owner-private redaction")
+
+
+def _operations_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-operations"
+    raw_url = "/doctor/raw-private-operations"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_workflow_sections(
+            operations=module.OperationsSurfaceConfig(
+                enabled=True,
+                status_cards=[
+                    module.OpsStatusCard(
+                        "Workers",
+                        "lagging",
+                        "/workers",
+                        "Queue above target",
+                        tone="warn",
+                        actions=[module.SurfaceAction("Inspect", "/workers/inspect")],
+                    )
+                ],
+                logs=[
+                    module.OpsLogEvent(
+                        "Privacy",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe operations log",
+                    )
+                ],
+                settings=[module.OpsSettingItem("Webhook secret", "raw-doctor-secret", "configured", secret=True)],
+            ),
+            persona=module.PersonaRuntimeSurfaceConfig(
+                enabled=True,
+                panels=[
+                    module.PersonaPanel(
+                        raw_value,
+                        summary=raw_value,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe persona panel",
+                    )
+                ],
+                continuity=[
+                    module.ContinuityItem(
+                        "Memory",
+                        raw_value,
+                        raw_value,
+                        raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe continuity item",
+                    )
+                ],
+            ),
+            agent_ops=module.AgentOpsSurfaceConfig(
+                enabled=True,
+                bridges=[module.BridgeStatusCard("Webhook", "healthy", counts=[{"label": "0 failed", "tone": "good"}])],
+                sessions=[
+                    module.AgentSessionRow(
+                        "session",
+                        raw_value,
+                        "held",
+                        raw_url,
+                        objective=raw_value,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe agent session",
+                    )
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(
+            False,
+            "operations_render",
+            "operations/persona/agent surfaces render failed",
+            f"{exc.__class__.__name__}: {exc}",
+        )
+    ok = (
+        "pc-operations-surface" in html
+        and "pc-persona-surface" in html
+        and "pc-agent-ops-surface" in html
+        and "safe operations log" in html
+        and "safe persona panel" in html
+        and "safe continuity item" in html
+        and "safe agent session" in html
+        and "raw-doctor-secret" not in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "operations_render", "operations/persona/agent surfaces render with safe alternates")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

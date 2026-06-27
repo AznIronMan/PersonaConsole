@@ -6,12 +6,12 @@ from persona_console.doctor import doctor_report_to_text, run_consumer_integrati
 
 
 def test_consumer_integration_doctor_passes_current_source():
-    report = run_consumer_integration_doctor(expected_version="1.0.16")
+    report = run_consumer_integration_doctor(expected_version="1.0.17")
     data = report.as_dict()
 
     assert report.ok is True
-    assert data["persona_console"]["version"] == "1.0.16"
-    assert data["personacore"]["version"] == "1.0.16"
+    assert data["persona_console"]["version"] == "1.0.17"
+    assert data["personacore"]["version"] == "1.0.17"
     assert data["persona_console"]["path"] == ""
     assert data["personacore"]["path"] == ""
     assert "raw-doctor-secret" not in str(data)
@@ -21,6 +21,7 @@ def test_consumer_integration_doctor_passes_current_source():
     assert any(check["key"] == "surface_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "people_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "review_render" and check["ok"] for check in data["checks"])
+    assert any(check["key"] == "operations_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "owner_private_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "shell_render" and check["ok"] for check in data["checks"])
 
@@ -33,7 +34,7 @@ def test_consumer_integration_doctor_detects_expected_version_mismatch():
 
 
 def test_consumer_integration_doctor_text_is_public_safe_by_default():
-    report = run_consumer_integration_doctor(expected_version="1.0.16")
+    report = run_consumer_integration_doctor(expected_version="1.0.17")
     text = doctor_report_to_text(report)
 
     assert "PersonaCore consumer integration doctor: ok" in text
@@ -41,6 +42,7 @@ def test_consumer_integration_doctor_text_is_public_safe_by_default():
     assert "raw-doctor-private-message" not in text
     assert "raw-doctor-private-people-note" not in text
     assert "raw-doctor-private-review-summary" not in text
+    assert "raw-doctor-private-operations" not in text
     assert report.persona_console.path == ""
     assert report.personacore.path == ""
 
@@ -51,7 +53,7 @@ def test_consumer_integration_doctor_script_json():
             sys.executable,
             "scripts/consumer_integration_doctor.py",
             "--expected-version",
-            "1.0.16",
+            "1.0.17",
             "--json",
         ],
         check=True,
@@ -61,10 +63,11 @@ def test_consumer_integration_doctor_script_json():
 
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["persona_console"]["version"] == "1.0.16"
-    assert payload["personacore"]["version"] == "1.0.16"
+    assert payload["persona_console"]["version"] == "1.0.17"
+    assert payload["personacore"]["version"] == "1.0.17"
     assert payload["persona_console"]["path"] == ""
     assert "raw-doctor-secret" not in result.stdout
     assert "raw-doctor-private-message" not in result.stdout
     assert "raw-doctor-private-people-note" not in result.stdout
     assert "raw-doctor-private-review-summary" not in result.stdout
+    assert "raw-doctor-private-operations" not in result.stdout

@@ -266,6 +266,17 @@ class SurfaceBadge:
 
 
 @dataclass(frozen=True)
+class SurfaceAction:
+    label: str
+    href: str = ""
+    tone: str = "neutral"
+    method: str = ""
+    title: str = ""
+    disabled: bool = False
+    feature: str = ""
+
+
+@dataclass(frozen=True)
 class StatusTab:
     label: str
     href: str = ""
@@ -412,6 +423,157 @@ class ReviewSurfaceConfig:
     empty_label: str = "No decision rows found."
     agenda_title: str = "Review Agenda"
     agenda_subtitle: str = "Direct routes"
+
+
+@dataclass(frozen=True)
+class OpsStatusCard:
+    label: str
+    status: str
+    href: str = ""
+    detail: str = ""
+    meta: str = ""
+    tone: str = "neutral"
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class OpsTableRow:
+    key: str
+    label: str
+    status: str = ""
+    href: str = ""
+    detail: str = ""
+    owner: str = ""
+    timestamp: str = ""
+    tone: str = "neutral"
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class OpsLogEvent:
+    label: str
+    message: str
+    timestamp: str = ""
+    source: str = ""
+    level: str = ""
+    href: str = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class OpsSettingItem:
+    label: str
+    value: str | int | float | bool = ""
+    status: str = ""
+    href: str = ""
+    detail: str = ""
+    tone: str = "neutral"
+    secret: bool = False
+    changed: bool = False
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class OperationsSurfaceConfig:
+    enabled: bool = False
+    feature: str = "operations"
+    title: str = "Operations"
+    subtitle: str = "Workers, tasks, logs, and settings posture"
+    status_cards: Sequence[OpsStatusCard | Mapping[str, object]] = field(default_factory=tuple)
+    tasks: Sequence[OpsTableRow | Mapping[str, object]] = field(default_factory=tuple)
+    logs: Sequence[OpsLogEvent | Mapping[str, object]] = field(default_factory=tuple)
+    settings: Sequence[OpsSettingItem | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No operational items found."
+
+
+@dataclass(frozen=True)
+class PersonaPanel:
+    label: str
+    value: str | int | float = ""
+    href: str = ""
+    summary: str = ""
+    detail: str = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class ContinuityItem:
+    label: str
+    title: str
+    summary: str = ""
+    href: str = ""
+    timestamp: str = ""
+    kind: str = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaRuntimeSurfaceConfig:
+    enabled: bool = False
+    feature: str = "persona"
+    title: str = "Persona Runtime"
+    subtitle: str = "Persona state, continuity, and memory posture"
+    panels: Sequence[PersonaPanel | Mapping[str, object]] = field(default_factory=tuple)
+    continuity: Sequence[ContinuityItem | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No persona runtime items found."
+
+
+@dataclass(frozen=True)
+class BridgeStatusCard:
+    label: str
+    status: str
+    href: str = ""
+    route: str = ""
+    detail: str = ""
+    last_seen: str = ""
+    tone: str = "neutral"
+    counts: Sequence[str | Mapping[str, object]] = field(default_factory=tuple)
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AgentSessionRow:
+    key: str
+    title: str
+    status: str = ""
+    href: str = ""
+    objective: str = ""
+    model: str = ""
+    reasoning: str = ""
+    repo: str = ""
+    updated: str = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AgentOpsSurfaceConfig:
+    enabled: bool = False
+    feature: str = "agent_ops"
+    title: str = "Bridge And Agent Ops"
+    subtitle: str = "Integration bridges, sessions, preflight, and read-only operational posture"
+    bridges: Sequence[BridgeStatusCard | Mapping[str, object]] = field(default_factory=tuple)
+    sessions: Sequence[AgentSessionRow | Mapping[str, object]] = field(default_factory=tuple)
+    statuses: Sequence[OpsStatusCard | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No bridge or agent operations found."
 
 
 @dataclass(frozen=True)

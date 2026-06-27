@@ -42,6 +42,15 @@ def test_personacore_reexports_core_api():
     assert personacore.ReviewSurfaceConfig is persona_console.ReviewSurfaceConfig
     assert personacore.ReviewBoardRow is persona_console.ReviewBoardRow
     assert personacore.render_review_surface is persona_console.render_review_surface
+    assert personacore.OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE == "operations"
+    assert personacore.PERSONA_RUNTIME_FEATURE == persona_console.PERSONA_RUNTIME_FEATURE == "persona"
+    assert personacore.AGENT_OPS_FEATURE == persona_console.AGENT_OPS_FEATURE == "agent_ops"
+    assert personacore.OperationsSurfaceConfig is persona_console.OperationsSurfaceConfig
+    assert personacore.PersonaRuntimeSurfaceConfig is persona_console.PersonaRuntimeSurfaceConfig
+    assert personacore.AgentOpsSurfaceConfig is persona_console.AgentOpsSurfaceConfig
+    assert personacore.render_operations_surface is persona_console.render_operations_surface
+    assert personacore.render_persona_runtime_surface is persona_console.render_persona_runtime_surface
+    assert personacore.render_agent_ops_surface is persona_console.render_agent_ops_surface
     assert personacore.FlashBanner is persona_console.FlashBanner
     assert personacore.render_flash_banners is persona_console.render_flash_banners
     assert personacore.flash_url is persona_console.flash_url
@@ -69,6 +78,13 @@ def test_personacore_reexports_core_api():
     assert "REVIEW_FEATURE" in personacore.__all__
     assert "ReviewSurfaceConfig" in personacore.__all__
     assert "render_review_surface" in personacore.__all__
+    assert "OPERATIONS_FEATURE" in personacore.__all__
+    assert "OperationsSurfaceConfig" in personacore.__all__
+    assert "render_operations_surface" in personacore.__all__
+    assert "PERSONA_RUNTIME_FEATURE" in personacore.__all__
+    assert "render_persona_runtime_surface" in personacore.__all__
+    assert "AGENT_OPS_FEATURE" in personacore.__all__
+    assert "render_agent_ops_surface" in personacore.__all__
     assert "FlashBanner" in personacore.__all__
     assert "render_flash_banners" in personacore.__all__
     assert "flash_url" in personacore.__all__
@@ -84,8 +100,10 @@ def test_personacore_submodules_reexport_existing_implementation():
         AdapterHealthConfig,
         DashboardMetricSpec,
         MessageSurfaceConfig,
+        OperationsSurfaceConfig,
         PeopleSurfaceConfig,
         PersonaCoreConfig,
+        PersonaRuntimeSurfaceConfig,
         FlashBanner,
         StatusTab,
     )
@@ -95,6 +113,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     from personacore.render import render_nav_groups
     from personacore.review import REVIEW_FEATURE, render_review_surface
     from personacore.surfaces import render_message_surface, render_surface_sections
+    from personacore.operations import OPERATIONS_FEATURE, OperationsSurfaceConfig as OpsConfig, render_operations_surface
     from personacore.token_health import build_token_health_report, token_health_config_for_providers
     from personacore.doctor import run_consumer_integration_doctor
 
@@ -103,6 +122,9 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert MessageSurfaceConfig is persona_console.MessageSurfaceConfig
     assert PeopleSurfaceConfig is persona_console.PeopleSurfaceConfig
     assert DashboardMetricSpec is persona_console.DashboardMetricSpec
+    assert OperationsSurfaceConfig is persona_console.OperationsSurfaceConfig
+    assert PersonaRuntimeSurfaceConfig is persona_console.PersonaRuntimeSurfaceConfig
+    assert OpsConfig is persona_console.OperationsSurfaceConfig
     assert FlashBanner is persona_console.FlashBanner
     assert StatusTab is persona_console.StatusTab
     assert flash_url is persona_console.flash_url
@@ -120,6 +142,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert render_people_surface is persona_console.render_people_surface
     assert REVIEW_FEATURE == persona_console.REVIEW_FEATURE
     assert render_review_surface is persona_console.render_review_surface
+    assert OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE
+    assert render_operations_surface is persona_console.render_operations_surface
     assert build_token_health_report is persona_console.build_token_health_report
     assert token_health_config_for_providers is persona_console.token_health_config_for_providers
     assert run_consumer_integration_doctor is persona_console.run_consumer_integration_doctor
@@ -140,4 +164,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.16"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.17"

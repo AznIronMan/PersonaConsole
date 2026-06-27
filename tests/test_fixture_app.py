@@ -10,8 +10,9 @@ def test_fixture_uses_public_personacore_config_name():
     assert config.nav_badges["review"] == 4
     assert config.nav_badges["people"] == 3
     assert config.features["people"] is True
-    assert config.features["tasks"] is True
-    assert config.features["settings"] is True
+    assert config.features["operations"] is True
+    assert config.features["persona"] is True
+    assert config.features["agent_ops"] is True
     assert config.live_interval == 30
 
 
@@ -22,7 +23,6 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Example Persona" in html
     assert "pc-dashboard-overview" in html
     assert "Operator Attention" in html
-    assert "Operator Workspace" in html
     assert "pc-people-surface" in html
     assert "Example Consumer" in html
     assert "Owner-private notes are summarized for operators." in html
@@ -33,9 +33,18 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private queue summarized for operators." in html
     assert "raw fixture private review summary" not in html
     assert "raw fixture private queue summary" not in html
-    assert "Task Queue" in html
-    assert "Log Tail" in html
+    assert "pc-operations-surface" in html
+    assert "Review pending replies" in html
+    assert "Owner-private log line summarized for operators." in html
+    assert "raw fixture private log line" not in html
     assert "Settings Posture" in html
+    assert "pc-persona-surface" in html
+    assert "Owner-private persona state summarized for operators." in html
+    assert "Owner-private continuity item summarized for operators." in html
+    assert "raw fixture private persona" not in html
+    assert "pc-agent-ops-surface" in html
+    assert "Owner-private agent session summarized for operators." in html
+    assert "raw fixture private agent" not in html
     assert "Adapter health" in html
     assert "pc-adapter-health" in html
     assert "pc-message-surface" in html
