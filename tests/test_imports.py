@@ -42,6 +42,13 @@ def test_personacore_reexports_core_api():
     assert personacore.ReviewSurfaceConfig is persona_console.ReviewSurfaceConfig
     assert personacore.ReviewBoardRow is persona_console.ReviewBoardRow
     assert personacore.render_review_surface is persona_console.render_review_surface
+    assert personacore.JOURNAL_FEATURE == persona_console.JOURNAL_FEATURE == "journal"
+    assert len(personacore.JOURNAL_THEME_KEYS) == 12
+    assert personacore.JournalSurfaceConfig is persona_console.JournalSurfaceConfig
+    assert personacore.JournalEntry is persona_console.JournalEntry
+    assert personacore.JournalCalendarDay is persona_console.JournalCalendarDay
+    assert personacore.render_journal_surface is persona_console.render_journal_surface
+    assert personacore.journal_theme_options is persona_console.journal_theme_options
     assert personacore.OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE == "operations"
     assert personacore.PERSONA_RUNTIME_FEATURE == persona_console.PERSONA_RUNTIME_FEATURE == "persona"
     assert personacore.AGENT_OPS_FEATURE == persona_console.AGENT_OPS_FEATURE == "agent_ops"
@@ -78,6 +85,10 @@ def test_personacore_reexports_core_api():
     assert "REVIEW_FEATURE" in personacore.__all__
     assert "ReviewSurfaceConfig" in personacore.__all__
     assert "render_review_surface" in personacore.__all__
+    assert "JOURNAL_FEATURE" in personacore.__all__
+    assert "JOURNAL_THEME_KEYS" in personacore.__all__
+    assert "JournalSurfaceConfig" in personacore.__all__
+    assert "render_journal_surface" in personacore.__all__
     assert "OPERATIONS_FEATURE" in personacore.__all__
     assert "OperationsSurfaceConfig" in personacore.__all__
     assert "render_operations_surface" in personacore.__all__
@@ -112,6 +123,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     from personacore.privacy import OwnerPrivateScopePolicy, render_private_text
     from personacore.render import render_nav_groups
     from personacore.review import REVIEW_FEATURE, render_review_surface
+    from personacore.journal import JOURNAL_FEATURE, render_journal_surface
     from personacore.surfaces import render_message_surface, render_surface_sections
     from personacore.operations import OPERATIONS_FEATURE, OperationsSurfaceConfig as OpsConfig, render_operations_surface
     from personacore.token_health import build_token_health_report, token_health_config_for_providers
@@ -142,6 +154,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert render_people_surface is persona_console.render_people_surface
     assert REVIEW_FEATURE == persona_console.REVIEW_FEATURE
     assert render_review_surface is persona_console.render_review_surface
+    assert JOURNAL_FEATURE == persona_console.JOURNAL_FEATURE
+    assert render_journal_surface is persona_console.render_journal_surface
     assert OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE
     assert render_operations_surface is persona_console.render_operations_surface
     assert build_token_health_report is persona_console.build_token_health_report
@@ -164,4 +178,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.17"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.18"

@@ -82,6 +82,7 @@ features = {
     "messages": True,
     "media": False,
     "owner_private_admin": False,
+    "journal": True,
     "review": True,
     "token_health": False,
     "workers": False,
@@ -453,6 +454,66 @@ strips raw links for non-owner contexts and renders the configured safe
 alternate or withheld placeholder. Consumer HTML snapshots, JSON endpoints,
 database queries, and action routes must still enforce the same policy.
 
+## Journal Surface
+
+The journal surface is a shared, opt-in reader for continuity pages. Consumers
+own entry lookup, calendar routing, persistence, auth, and private scope
+mapping. PersonaCore renders the dense calendar rail, the default paper page,
+theme options, markers, provenance details, page-turn links, and safe
+owner-private fallbacks.
+
+```python
+from personacore import (
+    JOURNAL_FEATURE,
+    AdminPrivacyContext,
+    JournalEntry,
+    JournalSurfaceConfig,
+    OwnerPrivateScopePolicy,
+    build_journal_calendar,
+    journal_theme_options,
+    render_journal_surface,
+)
+
+policy = OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+context = AdminPrivacyContext(access_tier="operator", viewer_person_key="operator")
+
+entries = [
+    JournalEntry(
+        "entry-1",
+        "2026-06-24",
+        "Quiet continuity page",
+        "Operator-visible journal text.",
+        href="/journal?date=2026-06-24",
+    )
+]
+
+html = render_journal_surface(
+    JournalSurfaceConfig(
+        enabled=True,
+        month_label="2026-06",
+        calendar=build_journal_calendar("2026-06", entries, selected_date="2026-06-24"),
+        entry=entries[0],
+        entries=entries,
+        theme="paper",
+        theme_options=journal_theme_options("paper"),
+    ),
+    features={JOURNAL_FEATURE: True},
+    privacy_policy=policy,
+    privacy_context=context,
+)
+```
+
+The built-in theme keys are `paper`, `white-paper`, `typewriter`, `script`,
+`sepia`, `ledger`, `night-ink`, `violet-archive`, `matrix`,
+`amber-terminal`, `blueprint`, and `glass`. Use `paper` as the default journal
+reader theme, then let consuming runtimes choose a character-appropriate
+setting from their own console settings.
+
+Entries and calendar days with a privacy scope strip raw hrefs for non-owner
+contexts and render the safe alternate or withheld placeholder. Raw details,
+source links, page-turn URLs, and actions only render when the provided privacy
+policy says the viewer can see that scope.
+
 ## Workflow Surfaces
 
 The operations workflow layer is shared, opt-in markup for repeated runtime
@@ -565,16 +626,16 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.17
+PYTHONPATH=/path/to/personacore/src python3 /path/to/personacore/scripts/consumer_integration_doctor.py --expected-version 1.0.18
 ```
 
 The doctor verifies that `persona_console` and `personacore` import, report the
 same version, expose adapter-health, token-health, owner-private, and
-message/activity/media/people/review/operations helpers plus shared controls,
-and can render a generic shell plus redacted feature panels. It does not read
-runtime secrets, databases, private routes, or consumer settings. Filesystem
-paths are omitted from output unless `--show-paths` is explicitly passed for
-local diagnostics.
+message/activity/media/people/review/journal/operations helpers plus shared
+controls, and can render a generic shell plus redacted feature panels. It does
+not read runtime secrets, databases, private routes, or consumer settings.
+Filesystem paths are omitted from output unless `--show-paths` is explicitly
+passed for local diagnostics.
 
 ## Dashboard Summary Cards
 

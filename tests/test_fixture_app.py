@@ -13,6 +13,7 @@ def test_fixture_uses_public_personacore_config_name():
     assert config.features["operations"] is True
     assert config.features["persona"] is True
     assert config.features["agent_ops"] is True
+    assert config.features["journal"] is True
     assert config.live_interval == 30
 
 
@@ -33,6 +34,10 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private queue summarized for operators." in html
     assert "raw fixture private review summary" not in html
     assert "raw fixture private queue summary" not in html
+    assert "pc-journal-surface" in html
+    assert "pc-journal-theme-paper" in html
+    assert "A steady day in the runtime" in html
+    assert "pc-journal-theme-swatch-matrix" in html
     assert "pc-operations-surface" in html
     assert "Review pending replies" in html
     assert "Owner-private log line summarized for operators." in html

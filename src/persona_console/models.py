@@ -577,6 +577,88 @@ class AgentOpsSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class JournalMarker:
+    label: str
+    tone: str = "neutral"
+    title: str = ""
+
+
+@dataclass(frozen=True)
+class JournalDetail:
+    label: str
+    value: str | int | float | bool = ""
+    tone: str = "neutral"
+
+
+@dataclass(frozen=True)
+class JournalCalendarDay:
+    date: str
+    day: str | int
+    href: str = ""
+    in_month: bool = True
+    has_entry: bool = False
+    selected: bool = False
+    title: str = ""
+    markers: Sequence[JournalMarker | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    privacy_scope: str = ""
+
+
+@dataclass(frozen=True)
+class JournalEntry:
+    key: str
+    date: str
+    title: str
+    text: str = ""
+    href: str = ""
+    subtitle: str = ""
+    author_label: str = "Persona"
+    privacy_label: str = ""
+    timestamp: str = ""
+    summary: str = ""
+    legacy: bool = False
+    legacy_label: str = "Legacy continuity format"
+    previous_href: str = ""
+    next_href: str = ""
+    previous_label: str = "Previous Page"
+    next_label: str = "Next Page"
+    details_title: str = "Source And Provenance"
+    details: Sequence[JournalDetail | Mapping[str, object]] = field(default_factory=tuple)
+    markers: Sequence[JournalMarker | SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+
+
+@dataclass(frozen=True)
+class JournalThemeOption:
+    key: str
+    label: str
+    href: str = ""
+    selected: bool = False
+    title: str = ""
+
+
+@dataclass(frozen=True)
+class JournalSurfaceConfig:
+    enabled: bool = False
+    feature: str = "journal"
+    title: str = "Journal"
+    subtitle: str = "Continuity pages"
+    month_label: str = ""
+    previous_month_href: str = ""
+    next_month_href: str = ""
+    previous_month_label: str = "Prev"
+    next_month_label: str = "Next"
+    calendar: Sequence[JournalCalendarDay | Mapping[str, object]] = field(default_factory=tuple)
+    entry: JournalEntry | Mapping[str, object] | None = None
+    entries: Sequence[JournalEntry | Mapping[str, object]] = field(default_factory=tuple)
+    theme: str = "paper"
+    theme_options: Sequence[JournalThemeOption | Mapping[str, object] | str] = field(default_factory=tuple)
+    empty_label: str = "No journal entry selected."
+    calendar_empty_label: str = "No journal days available."
+
+
+@dataclass(frozen=True)
 class MessageAttachment:
     label: str
     href: str = ""

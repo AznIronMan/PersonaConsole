@@ -1141,6 +1141,370 @@ pre {
 .pc-setting-row .pc-workflow-row-meta-inline {
   align-items: center;
 }
+.pc-journal-surface {
+  --pc-journal-paper-bg: rgb(240 230 216);
+  --pc-journal-paper-text: rgb(36 30 26);
+  --pc-journal-paper-muted: rgb(126 64 84);
+  --pc-journal-paper-line: rgb(73 63 55);
+  --pc-journal-paper-accent: rgb(183 78 114);
+  --pc-journal-paper-font: Georgia, "Times New Roman", serif;
+  display: grid;
+  gap: 14px;
+}
+.pc-journal-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 340px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.pc-journal-calendar-panel,
+.pc-journal-page {
+  min-width: 0;
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc-surface) 76%, black);
+}
+.pc-journal-calendar-panel {
+  padding: 13px;
+}
+.pc-journal-calendar-head,
+.pc-journal-page-turner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+.pc-journal-calendar-head {
+  margin-bottom: 12px;
+}
+.pc-journal-calendar-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--pc-text);
+  font-size: 13px;
+  font-weight: 820;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-journal-month-link,
+.pc-journal-turn-link {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 72%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pc-surface-muted) 72%, transparent);
+  color: color-mix(in srgb, var(--pc-text) 84%, var(--pc-muted));
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 0 9px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.pc-journal-month-link.is-disabled,
+.pc-journal-turn-link.is-disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+.pc-journal-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.pc-journal-calendar-label {
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-weight: 760;
+  text-align: center;
+}
+.pc-journal-calendar-day {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 80%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pc-bg) 28%, transparent);
+  color: color-mix(in srgb, var(--pc-text) 88%, var(--pc-muted));
+  font-size: 12px;
+  font-weight: 760;
+  text-decoration: none;
+}
+.pc-journal-calendar-day.is-muted {
+  opacity: 0.42;
+}
+.pc-journal-calendar-day.has-entry {
+  border-color: color-mix(in srgb, var(--pc-journal-paper-accent) 58%, var(--pc-border));
+  background: color-mix(in srgb, var(--pc-journal-paper-accent) 14%, var(--pc-bg));
+  color: var(--pc-text);
+}
+.pc-journal-calendar-day.is-selected {
+  outline: 2px solid color-mix(in srgb, var(--pc-journal-paper-accent) 78%, var(--pc-accent));
+  outline-offset: 1px;
+}
+.pc-journal-calendar-day i {
+  position: absolute;
+  left: calc(50% - 3px);
+  bottom: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pc-journal-paper-accent);
+}
+.pc-journal-calendar-day .pc-journal-markers {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  gap: 2px;
+}
+.pc-journal-calendar-day .pc-journal-marker {
+  width: 4px;
+  height: 4px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+.pc-journal-page {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+.pc-journal-paper {
+  min-height: 520px;
+  display: grid;
+  align-content: start;
+  gap: 15px;
+  border: 1px solid var(--pc-journal-paper-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(to bottom, transparent 31px, color-mix(in srgb, var(--pc-journal-paper-line) 18%, transparent) 32px) 0 0 / 100% 32px,
+    var(--pc-journal-paper-bg);
+  color: var(--pc-journal-paper-text);
+  padding: 28px;
+}
+.pc-journal-eyebrow {
+  margin: 0;
+  color: var(--pc-journal-paper-muted);
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0;
+}
+.pc-journal-paper h2 {
+  margin: 0;
+  color: var(--pc-journal-paper-text);
+  font-size: 28px;
+  font-weight: 820;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+.pc-journal-entry-meta,
+.pc-journal-markers,
+.pc-journal-actions,
+.pc-journal-theme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pc-journal-entry-meta span,
+.pc-journal-marker,
+.pc-journal-theme-option {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--pc-journal-paper-line) 54%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pc-journal-paper-bg) 72%, transparent);
+  color: var(--pc-journal-paper-muted);
+  font-size: 11px;
+  font-weight: 740;
+  line-height: 1;
+  padding: 0 7px;
+}
+.pc-journal-prose {
+  display: grid;
+  gap: 14px;
+  color: var(--pc-journal-paper-text);
+  font-family: var(--pc-journal-paper-font);
+  font-size: 18px;
+  line-height: 1.55;
+}
+.pc-journal-prose p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.pc-journal-legacy-note {
+  margin: 0;
+  color: var(--pc-journal-paper-muted);
+  font-size: 13px;
+  font-weight: 680;
+}
+.pc-journal-action {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--pc-journal-paper-line) 66%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pc-journal-paper-accent) 14%, var(--pc-journal-paper-bg));
+  color: var(--pc-journal-paper-text);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+  text-decoration: none;
+}
+.pc-journal-action.is-disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.pc-journal-page-turner {
+  padding: 0 1px;
+}
+.pc-journal-details {
+  border: 1px solid color-mix(in srgb, var(--pc-border) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc-bg) 22%, transparent);
+}
+.pc-journal-details summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: var(--pc-accent-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+.pc-journal-details dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0 12px 12px;
+}
+.pc-journal-detail {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 70%, transparent);
+  border-radius: 7px;
+  padding: 8px;
+}
+.pc-journal-detail dt,
+.pc-journal-detail dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-journal-detail dt {
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+.pc-journal-detail dd {
+  color: var(--pc-text);
+  font-size: 12px;
+}
+.pc-journal-theme-options {
+  justify-content: flex-end;
+}
+.pc-journal-theme-option {
+  border-color: color-mix(in srgb, var(--pc-border) 76%, transparent);
+  background: color-mix(in srgb, var(--pc-surface-muted) 72%, transparent);
+  color: var(--pc-muted);
+  text-decoration: none;
+}
+.pc-journal-theme-option.is-active {
+  border-color: color-mix(in srgb, var(--pc-accent) 58%, var(--pc-border));
+  background: var(--pc-accent-surface);
+  color: var(--pc-accent-soft);
+}
+.pc-journal-theme-white-paper {
+  --pc-journal-paper-bg: rgb(252 252 249);
+  --pc-journal-paper-text: rgb(20 22 24);
+  --pc-journal-paper-muted: rgb(83 93 104);
+  --pc-journal-paper-line: rgb(202 210 216);
+  --pc-journal-paper-accent: rgb(61 99 146);
+  --pc-journal-paper-font: ui-serif, Georgia, "Times New Roman", serif;
+}
+.pc-journal-theme-typewriter {
+  --pc-journal-paper-bg: rgb(247 244 236);
+  --pc-journal-paper-text: rgb(27 27 24);
+  --pc-journal-paper-muted: rgb(92 84 70);
+  --pc-journal-paper-line: rgb(188 178 156);
+  --pc-journal-paper-accent: rgb(58 62 64);
+  --pc-journal-paper-font: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.pc-journal-theme-script {
+  --pc-journal-paper-bg: rgb(255 247 239);
+  --pc-journal-paper-text: rgb(58 34 43);
+  --pc-journal-paper-muted: rgb(151 83 105);
+  --pc-journal-paper-line: rgb(222 177 185);
+  --pc-journal-paper-accent: rgb(190 72 116);
+  --pc-journal-paper-font: "Snell Roundhand", "Bradley Hand", "Brush Script MT", cursive;
+}
+.pc-journal-theme-sepia {
+  --pc-journal-paper-bg: rgb(232 211 178);
+  --pc-journal-paper-text: rgb(53 35 19);
+  --pc-journal-paper-muted: rgb(117 72 33);
+  --pc-journal-paper-line: rgb(147 105 63);
+  --pc-journal-paper-accent: rgb(139 77 35);
+}
+.pc-journal-theme-ledger {
+  --pc-journal-paper-bg: rgb(224 236 214);
+  --pc-journal-paper-text: rgb(28 49 37);
+  --pc-journal-paper-muted: rgb(65 99 78);
+  --pc-journal-paper-line: rgb(143 170 138);
+  --pc-journal-paper-accent: rgb(42 112 82);
+  --pc-journal-paper-font: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.pc-journal-theme-night-ink {
+  --pc-journal-paper-bg: rgb(12 14 18);
+  --pc-journal-paper-text: rgb(226 231 240);
+  --pc-journal-paper-muted: rgb(156 166 184);
+  --pc-journal-paper-line: rgb(60 70 87);
+  --pc-journal-paper-accent: rgb(95 175 255);
+}
+.pc-journal-theme-violet-archive {
+  --pc-journal-paper-bg: rgb(24 18 31);
+  --pc-journal-paper-text: rgb(245 238 255);
+  --pc-journal-paper-muted: rgb(202 177 232);
+  --pc-journal-paper-line: rgb(92 72 112);
+  --pc-journal-paper-accent: rgb(190 132 255);
+}
+.pc-journal-theme-matrix {
+  --pc-journal-paper-bg: rgb(0 16 8);
+  --pc-journal-paper-text: rgb(167 255 190);
+  --pc-journal-paper-muted: rgb(92 196 124);
+  --pc-journal-paper-line: rgb(21 86 45);
+  --pc-journal-paper-accent: rgb(38 255 112);
+  --pc-journal-paper-font: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.pc-journal-theme-amber-terminal {
+  --pc-journal-paper-bg: rgb(22 14 3);
+  --pc-journal-paper-text: rgb(255 205 113);
+  --pc-journal-paper-muted: rgb(221 154 59);
+  --pc-journal-paper-line: rgb(108 68 20);
+  --pc-journal-paper-accent: rgb(255 179 58);
+  --pc-journal-paper-font: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.pc-journal-theme-blueprint {
+  --pc-journal-paper-bg: rgb(11 37 65);
+  --pc-journal-paper-text: rgb(218 240 255);
+  --pc-journal-paper-muted: rgb(144 197 231);
+  --pc-journal-paper-line: rgb(75 129 168);
+  --pc-journal-paper-accent: rgb(125 213 255);
+}
+.pc-journal-theme-glass {
+  --pc-journal-paper-bg: color-mix(in srgb, var(--pc-surface) 68%, transparent);
+  --pc-journal-paper-text: var(--pc-text);
+  --pc-journal-paper-muted: var(--pc-muted);
+  --pc-journal-paper-line: color-mix(in srgb, var(--pc-border) 70%, transparent);
+  --pc-journal-paper-accent: var(--pc-accent-soft);
+}
 .pc-message-surface,
 .pc-activity-surface,
 .pc-media-surface,
@@ -2223,8 +2587,22 @@ pre {
     width: fit-content;
   }
   .pc-message-layout,
+  .pc-journal-layout,
   .pc-media-card {
     grid-template-columns: 1fr;
+  }
+  .pc-journal-theme-options {
+    justify-content: flex-start;
+  }
+  .pc-journal-paper {
+    min-height: 420px;
+    padding: 20px;
+  }
+  .pc-journal-paper h2 {
+    font-size: 24px;
+  }
+  .pc-journal-prose {
+    font-size: 16px;
   }
   .pc-workflow-row {
     grid-template-columns: 1fr;

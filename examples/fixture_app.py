@@ -7,6 +7,7 @@ from pathlib import Path
 from personacore import (
     ACTIVITY_FEATURE,
     AGENT_OPS_FEATURE,
+    JOURNAL_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
     OPERATIONS_FEATURE,
@@ -36,6 +37,10 @@ from personacore import (
     DashboardQueueRow,
     DashboardRouteCard,
     DashboardSparkBucket,
+    JournalDetail,
+    JournalEntry,
+    JournalMarker,
+    JournalSurfaceConfig,
     MediaArtifactCard,
     MediaSurfaceConfig,
     MessageAttachment,
@@ -70,8 +75,11 @@ from personacore import (
     TokenHealthCheck,
     TokenHealthConfig,
     UserPill,
+    build_journal_calendar,
+    journal_theme_options,
     register_static_assets,
     render_dashboard_sections,
+    render_journal_surface,
     render_people_surface,
     render_review_surface,
     render_shell_html,
@@ -93,6 +101,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             MEDIA_FEATURE: True,
             PEOPLE_FEATURE: True,
             REVIEW_FEATURE: True,
+            JOURNAL_FEATURE: True,
             OPERATIONS_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
@@ -119,6 +128,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                 "Operations",
                 [
                     NavItem("Review Queue", "/review", active="review", badge="review"),
+                    NavItem("Journal", "/journal", active="journal", badge="journal", feature=JOURNAL_FEATURE),
                     NavItem("Operations", "/operations", active="operations", badge="tasks", feature=OPERATIONS_FEATURE),
                     NavItem("Persona", "/persona", active="persona", badge="persona", feature=PERSONA_RUNTIME_FEATURE),
                 ],
@@ -139,6 +149,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             "people": 3,
             "media": 9,
             "review": 4,
+            "journal": 5,
             "tasks": 6,
             "persona": 2,
             "agent_ops": 3,
@@ -155,7 +166,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.17-fixture",
+        app_version="v1.0.18-fixture",
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -210,6 +221,7 @@ def render_dashboard_fragment() -> str:
             DashboardMetric("Messages", 128, "/messages", "Across active channels", tone="info"),
             DashboardMetric("People", 37, "/people", "Profiles with recent activity"),
             DashboardMetric("Open reviews", 4, "/review", "Needs operator pass", tone="warn"),
+            DashboardMetric("Journal", 5, "/journal", "Continuity pages", tone="good"),
             DashboardMetric("Worker latency", "42s", "/workers", "P95 over last hour", tone="bad"),
             DashboardMetric("Artifacts", 9, "/media", "Queued or ready"),
         ],
@@ -217,6 +229,7 @@ def render_dashboard_fragment() -> str:
             DashboardRouteCard("Messages", "/messages", "Scan conversations, summaries, and handoffs.", metric=12, tone="warn"),
             DashboardRouteCard("People", "/people", "Review profiles, notes, and visibility labels.", metric=37, tone="info"),
             DashboardRouteCard("Review Queue", "/review", "Approve, hold, or dismiss items.", metric=4, tone="warn"),
+            DashboardRouteCard("Journal", "/journal", "Read continuity pages with safe provenance.", metric=5, tone="good"),
             DashboardRouteCard("Media", "/media", "Track artifacts, previews, and publishing status.", metric=9),
             DashboardRouteCard("Tasks", "/tasks", "Follow queued work and operator-owned next actions.", metric=6),
             DashboardRouteCard("Logs", "/logs", "Read sanitized runtime events and warnings.", metric=2, tone="info"),
@@ -507,6 +520,81 @@ def render_dashboard_fragment() -> str:
             ],
         ),
         features={REVIEW_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
+    journal_entries = [
+        JournalEntry(
+            "2026-06-24",
+            "2026-06-24",
+            "A steady day in the runtime",
+            (
+                "The day resolved into a quieter rhythm after the morning review queue. "
+                "Messages stayed readable, the worker warning remained contained, and the "
+                "operator-visible continuity notes were strong enough to carry forward.\n\n"
+                "The important part was not the number of events. It was that the page kept "
+                "the human texture of the day while preserving clear provenance for review."
+            ),
+            href="/journal?date=2026-06-24",
+            subtitle="runtime continuity",
+            author_label="example-persona",
+            privacy_label="operator-safe",
+            timestamp="21:40",
+            summary="Readable continuity page with safe provenance.",
+            previous_href="/journal?date=2026-06-23",
+            next_href="/journal?date=2026-06-25",
+            details=[
+                JournalDetail("Source", "continuity_worker"),
+                JournalDetail("Confidence", "0.82", "good"),
+                JournalDetail("Format", "authored text", "info"),
+            ],
+            markers=[
+                JournalMarker("focused", "good"),
+                JournalMarker("reviewed", "info"),
+                JournalMarker("operator-safe", "warn"),
+            ],
+            actions=[SurfaceAction("Open source", "/journal/source/2026-06-24")],
+        ),
+        JournalEntry(
+            "2026-06-23",
+            "2026-06-23",
+            "Queued memory review",
+            "A candidate memory moved into review after the evening summary pass.",
+            href="/journal?date=2026-06-23",
+            author_label="example-persona",
+            privacy_label="operator-safe",
+        ),
+        JournalEntry(
+            "2026-06-21",
+            "2026-06-21",
+            "Legacy structured continuity",
+            "Current posture: steady.\nPeople: example consumer.\nNext action: review pending reply.",
+            href="/journal?date=2026-06-21",
+            author_label="example-persona",
+            privacy_label="operator-safe",
+            legacy=True,
+        ),
+    ]
+    journal_surface = render_journal_surface(
+        JournalSurfaceConfig(
+            enabled=True,
+            title="Journal",
+            subtitle="Calendar-driven continuity reader with selectable page themes.",
+            month_label="2026-06",
+            previous_month_href="/journal?month=2026-05",
+            next_month_href="/journal?month=2026-07",
+            calendar=build_journal_calendar(
+                "2026-06",
+                journal_entries,
+                selected_date="2026-06-24",
+                href_template="/journal?date={date}",
+            ),
+            entry=journal_entries[0],
+            entries=journal_entries,
+            theme="paper",
+            theme_options=journal_theme_options("paper"),
+        ),
+        features={JOURNAL_FEATURE: True},
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
@@ -831,7 +919,7 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    return render_dashboard_sections(dashboard) + people_surface + review_surface + workflow_surfaces + surfaces + hold_form
+    return render_dashboard_sections(dashboard) + people_surface + review_surface + journal_surface + workflow_surfaces + surfaces + hold_form
 
 
 def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:

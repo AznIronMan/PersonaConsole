@@ -19,7 +19,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   [Reference Admin Parity Spec](REFERENCE_ADMIN_PARITY_SPEC.md). The first
   fuller generic fixture target shipped in PersonaCore `1.0.10`; the typed
   people surface shipped in PersonaCore `1.0.11`; operations, persona-runtime,
-  continuity, bridge, and agent-ops surfaces shipped in PersonaCore `1.0.17`.
+  continuity, bridge, and agent-ops surfaces shipped in PersonaCore `1.0.17`;
+  the themed journal reader shipped in PersonaCore `1.0.18`.
 
 ## First Dashboard Modules
 
@@ -84,6 +85,10 @@ screenshots, data, and runtime policy stay outside the public repo.
 - People list surface with filter bar, tags, relationship summary, notes
   preview, new-person slot, and owner-private note fallback. Initial typed
   renderer shipped in PersonaCore `1.0.11`.
+- Journal reader surface with calendar rail, default paper page, selectable
+  white-paper/script/typewriter/terminal/archive themes, provenance details,
+  page turns, and owner-private entry fallback. Initial typed renderer shipped
+  in PersonaCore `1.0.18`.
 
 ## Implementation Rules
 

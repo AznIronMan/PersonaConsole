@@ -49,6 +49,12 @@ from .models import (
     DashboardRouteCard,
     DashboardSparkBucket,
     FlashBanner,
+    JournalCalendarDay,
+    JournalDetail,
+    JournalEntry,
+    JournalMarker,
+    JournalSurfaceConfig,
+    JournalThemeOption,
     MediaArtifactCard,
     MediaSurfaceConfig,
     MessageAttachment,
@@ -157,6 +163,15 @@ from .operations import (
     render_persona_runtime_surface,
     render_workflow_sections,
 )
+from .journal import (
+    JOURNAL_FEATURE,
+    JOURNAL_THEME_KEYS,
+    build_journal_calendar,
+    journal_surface_feature_enabled,
+    journal_theme_key,
+    journal_theme_options,
+    render_journal_surface,
+)
 
 __all__ = [
     "NavGroup",
@@ -190,6 +205,14 @@ __all__ = [
     "DashboardRouteCard",
     "DashboardSparkBucket",
     "FlashBanner",
+    "JOURNAL_FEATURE",
+    "JOURNAL_THEME_KEYS",
+    "JournalCalendarDay",
+    "JournalDetail",
+    "JournalEntry",
+    "JournalMarker",
+    "JournalSurfaceConfig",
+    "JournalThemeOption",
     "MEDIA_FEATURE",
     "MESSAGES_FEATURE",
     "MediaArtifactCard",
@@ -243,6 +266,7 @@ __all__ = [
     "adapter_health_feature_enabled",
     "agent_ops_surface_feature_enabled",
     "build_token_health_report",
+    "build_journal_calendar",
     "can_view_raw_private",
     "canonical_privacy_scope",
     "configure_jinja_loader",
@@ -254,6 +278,9 @@ __all__ = [
     "flash_url",
     "media_surface_feature_enabled",
     "message_surface_feature_enabled",
+    "journal_surface_feature_enabled",
+    "journal_theme_key",
+    "journal_theme_options",
     "operations_surface_feature_enabled",
     "people_surface_feature_enabled",
     "persona_runtime_surface_feature_enabled",
@@ -276,6 +303,7 @@ __all__ = [
     "render_dashboard_summary_grid",
     "render_adapter_health_panel",
     "render_flash_banners",
+    "render_journal_surface",
     "render_live_controls",
     "render_media_surface",
     "render_message_surface",
@@ -300,7 +328,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.17"
+__version__ = "1.0.18"
 
 
 def configure_jinja_loader(*args, **kwargs):

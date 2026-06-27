@@ -59,6 +59,21 @@ _REVIEW_EXPORTS = (
     "render_review_surface",
     "review_surface_feature_enabled",
 )
+_JOURNAL_EXPORTS = (
+    "JOURNAL_FEATURE",
+    "JOURNAL_THEME_KEYS",
+    "JournalCalendarDay",
+    "JournalDetail",
+    "JournalEntry",
+    "JournalMarker",
+    "JournalSurfaceConfig",
+    "JournalThemeOption",
+    "build_journal_calendar",
+    "journal_surface_feature_enabled",
+    "journal_theme_key",
+    "journal_theme_options",
+    "render_journal_surface",
+)
 _OPERATIONS_EXPORTS = (
     "AGENT_OPS_FEATURE",
     "OPERATIONS_FEATURE",
@@ -193,6 +208,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "surface_exports", _SURFACE_EXPORTS))
         checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
         checks.extend(_export_checks(module, "review_exports", _REVIEW_EXPORTS))
+        checks.extend(_export_checks(module, "journal_exports", _JOURNAL_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
@@ -203,6 +219,7 @@ def run_consumer_integration_doctor(
         checks.append(_surface_render_check(module))
         checks.append(_people_render_check(module))
         checks.append(_review_render_check(module))
+        checks.append(_journal_render_check(module))
         checks.append(_operations_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
@@ -567,6 +584,68 @@ def _review_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "review_render", "review surface renders with owner-private redaction")
+
+
+def _journal_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-journal"
+    raw_url = "/doctor/raw-private-journal"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_journal_surface(
+            module.JournalSurfaceConfig(
+                enabled=True,
+                title="Journal",
+                subtitle="Doctor smoke",
+                month_label="2026-06",
+                previous_month_href="/journal?month=2026-05",
+                next_month_href="/journal?month=2026-07",
+                calendar=[
+                    module.JournalCalendarDay(
+                        "2026-06-24",
+                        24,
+                        href=raw_url,
+                        has_entry=True,
+                        selected=True,
+                        privacy_scope="owner_private",
+                    )
+                ],
+                entry=module.JournalEntry(
+                    "doctor",
+                    "2026-06-24",
+                    raw_value,
+                    raw_value,
+                    href=raw_url,
+                    subtitle=raw_value,
+                    previous_href=raw_url + "-prev",
+                    next_href=raw_url + "-next",
+                    details=[module.JournalDetail("Source", raw_value)],
+                    actions=[module.SurfaceAction("Open raw", raw_url, method="post")],
+                    privacy_scope="owner_private",
+                    safe_alternate="safe journal page",
+                ),
+                theme="night-ink",
+                theme_options=module.journal_theme_options("night-ink"),
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "journal_render", "journal surface render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-journal-surface" in html
+        and "pc-journal-theme-night-ink" in html
+        and "safe journal page" in html
+        and "pc-journal-calendar-day" in html
+        and len(module.JOURNAL_THEME_KEYS) >= 12
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "journal_render", "journal surface renders themed pages with owner-private redaction")
 
 
 def _operations_render_check(module: Any) -> DoctorCheck:

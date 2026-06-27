@@ -94,6 +94,11 @@ PersonaCore should supply reusable primitives for common module surfaces:
   primitives. PersonaCore `1.0.15` supplies the shared status-tab control for
   filtered queue/list pages; consumers still own queries, auth, mutations, and
   private scope mapping.
+- `journal`: calendar-driven continuity reader, paper-style default page,
+  selectable themes, markers, provenance details, and owner-private safe
+  alternates. PersonaCore `1.0.18` supplies the typed journal surface and
+  built-in theme catalog; consumers still own entry lookup, settings,
+  permissions, storage, and private scope mapping.
 - `flash`: transient success/warning/error banners and optional action links.
   PersonaCore `1.0.16` supplies shared flash/action banner markup plus redirect
   query helpers; consumers still own POST handlers, permissions, and target
@@ -181,6 +186,8 @@ the shared composition target with generic labels and fake data:
 - Message, activity, and media surfaces with owner-private safe alternates.
 - People surface with tags, relationship summary, and owner-private note
   fallback.
+- Journal surface with a calendar rail, default paper reader, theme catalog,
+  and owner-private entry fallback.
 - Generic task, log, and settings posture panels.
 
 Use the fixture for visual QA and consumer alignment discussions. It should

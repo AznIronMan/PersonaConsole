@@ -47,6 +47,9 @@ Recommended first extraction targets:
 - People list surface.
   - Initial typed filter/table/relationship/notes renderer shipped in
     PersonaCore `1.0.11`.
+- Journal reader surface.
+  - Calendar-driven continuity reader with default paper theme and selectable
+    theme catalog shipped in PersonaCore `1.0.18`.
 - Operations, persona runtime, continuity, bridge, and agent-ops surfaces.
   - Initial typed runtime posture renderers shipped in PersonaCore `1.0.17`.
 - Command preview/queue panels.

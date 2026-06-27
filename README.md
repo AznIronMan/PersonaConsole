@@ -23,8 +23,9 @@ https://github.com/AznIronMan/PersonaCore.git
 PersonaCore should grow toward a shared feature catalog:
 
 - Admin shell, layout, navigation, status/user pills, and theme tokens.
-- Dashboard sections, health/status summaries, review queues, activity feeds,
-  message/conversation views, media/workflow panels, and live-refresh helpers.
+- Dashboard sections, health/status summaries, review queues, journal readers,
+  activity feeds, message/conversation views, media/workflow panels, and
+  live-refresh helpers.
 - Feature flags and capability settings that enable, disable, label, reorder,
   and theme modules per runtime.
 - Lazy integrations for optional frameworks and template engines.
@@ -79,6 +80,10 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   `personacore.render_review_surface(...)` provide a shared review-board
   surface for operator-gated decision rows, agenda cards, publishing queue
   summaries, and owner-private safe-alternate summaries.
+- `personacore.JournalSurfaceConfig` and
+  `personacore.render_journal_surface(...)` provide a shared journal reader
+  with a calendar rail, paper-style default page layout, selectable theme
+  catalog, provenance details, page-turn links, and owner-private redaction.
 - `personacore.OperationsSurfaceConfig`,
   `personacore.PersonaRuntimeSurfaceConfig`,
   `personacore.AgentOpsSurfaceConfig`, and
@@ -95,8 +100,8 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
 - `personacore.run_consumer_integration_doctor(...)` verifies consumer installs
   or source mounts by checking version alignment, required shared exports,
   owner-private helpers, token-health helpers, adapter-health helpers,
-  message/media/activity helpers, people helpers, review helpers, operations
-  helpers, shared controls, and generic render smokes.
+  message/media/activity helpers, people helpers, review helpers, journal
+  helpers, operations helpers, shared controls, and generic render smokes.
 - `persona_console.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
 - `persona_console.configure_jinja_loader(templates)` adds PersonaCore
@@ -127,8 +132,10 @@ rendering. `v1.0.15` adds a shared status-tab control for review queues and
 filtered list pages. `v1.0.16` adds shared flash/action banners, redirect
 query helpers, and PersonaCore class hooks for live-refresh controls.
 `v1.0.17` adds operations, persona runtime, continuity, bridge, and agent-ops
-surfaces. The existing `persona_console` Python package remains in the source
-tree as a compatibility implementation path for v1.x consumers.
+surfaces. `v1.0.18` adds a shared themed journal reader with calendar
+navigation, paper-style default rendering, and owner-private safe alternates.
+The existing `persona_console` Python package remains in the source tree as a
+compatibility implementation path for v1.x consumers.
 
 ## Public Safety
 
@@ -161,7 +168,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.17
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.18
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -209,6 +216,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.15](docs/RELEASE_1.0.15.md)
 - [Release 1.0.16](docs/RELEASE_1.0.16.md)
 - [Release 1.0.17](docs/RELEASE_1.0.17.md)
+- [Release 1.0.18](docs/RELEASE_1.0.18.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)
