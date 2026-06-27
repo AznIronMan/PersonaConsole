@@ -16,4 +16,6 @@ python3 -m pip install -e ".[fastapi]" uvicorn
 PYTHONPATH=src python3 -m uvicorn examples.fixture_app:create_app --factory --reload
 ```
 
-Open `http://127.0.0.1:8000/`.
+Open `http://127.0.0.1:8000/` for the admin fixture. Public presence fixture
+routes are available at `/public/splash`, `/public/login`, `/public/chat`, and
+`/settings/public-presence`.

@@ -80,6 +80,183 @@ class ThemeTokens:
 
 
 @dataclass(frozen=True)
+class BrandAssets:
+    name: str = ""
+    small_logo_url: str = ""
+    large_logo_url: str = ""
+    wordmark_url: str = ""
+    favicon_url: str = ""
+    signature_text: str = ""
+    alt_text: str = ""
+    home_url: str = "/"
+
+
+@dataclass(frozen=True)
+class PublicMediaSource:
+    src: str
+    mime_type: str = ""
+    media: str = ""
+    label: str = ""
+    poster_url: str = ""
+
+
+@dataclass(frozen=True)
+class PublicMediaConfig:
+    kind: str = "image"
+    src: str = ""
+    poster_url: str = ""
+    alt_text: str = ""
+    sources: Sequence[PublicMediaSource | Mapping[str, object]] = field(default_factory=tuple)
+    audio_src: str = ""
+    muted: bool = True
+    autoplay: bool = True
+    loop: bool = True
+    controls: bool = True
+    focus_x: str = "50%"
+    focus_y: str = "50%"
+    overlay: str = "medium"
+    interval_ms: int = 7000
+
+
+@dataclass(frozen=True)
+class PublicLink:
+    label: str
+    href: str
+    icon: str = ""
+    title: str = ""
+    external: bool = True
+    rel: str = "noopener noreferrer"
+
+
+@dataclass(frozen=True)
+class LegalNotice:
+    key: str
+    label: str
+    href: str = ""
+    body: str = ""
+
+
+@dataclass(frozen=True)
+class PublicThemeOption:
+    key: str
+    label: str
+    selected: bool = False
+    description: str = ""
+
+
+@dataclass(frozen=True)
+class ConnectorOption:
+    key: str
+    label: str
+    href: str = ""
+    action: str = ""
+    icon: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    description: str = ""
+    configured: bool = False
+    enabled: bool = True
+    selected: bool = False
+
+
+@dataclass(frozen=True)
+class ConnectorGroup:
+    label: str = ""
+    connectors: Sequence[ConnectorOption | Mapping[str, object]] = field(default_factory=tuple)
+    key: str = ""
+    description: str = ""
+
+
+@dataclass(frozen=True)
+class PublicSplashPageConfig:
+    brand: BrandAssets | Mapping[str, object] | None = None
+    title: str = "Persona"
+    subtitle: str = ""
+    description: str = ""
+    media: PublicMediaConfig | Mapping[str, object] | None = None
+    chat_label: str = "Chat"
+    chat_href: str = "/chat"
+    social_links: Sequence[PublicLink | Mapping[str, object]] = field(default_factory=tuple)
+    update_form_action: str = ""
+    update_form_label: str = "Get updates"
+    update_form_placeholder: str = "email@example.com"
+    update_form_source: str = "public-splash"
+    legal_notices: Sequence[LegalNotice | Mapping[str, object]] = field(default_factory=tuple)
+    static_base_url: str = "/persona-console/static"
+    theme: str = "studio"
+    page_title: str = ""
+    meta_description: str = ""
+
+
+@dataclass(frozen=True)
+class LoginPageConfig:
+    brand: BrandAssets | Mapping[str, object] | None = None
+    title: str = "Sign in"
+    subtitle: str = ""
+    media: PublicMediaConfig | Mapping[str, object] | None = None
+    connector_groups: Sequence[ConnectorGroup | Mapping[str, object]] = field(default_factory=tuple)
+    email_action: str = ""
+    email_label: str = "Email"
+    email_placeholder: str = "email@example.com"
+    email_enabled: bool = True
+    phone_action: str = ""
+    phone_label: str = "Phone"
+    phone_placeholder: str = "+1 555 0100"
+    phone_enabled: bool = False
+    next_url: str = ""
+    status_message: str = ""
+    status_tone: str = "neutral"
+    legal_notices: Sequence[LegalNotice | Mapping[str, object]] = field(default_factory=tuple)
+    static_base_url: str = "/persona-console/static"
+    theme: str = "studio"
+    page_title: str = ""
+
+
+@dataclass(frozen=True)
+class ChatPageConfig:
+    brand: BrandAssets | Mapping[str, object] | None = None
+    title: str = "Chat"
+    subtitle: str = ""
+    media: PublicMediaConfig | Mapping[str, object] | None = None
+    api_me_url: str = "/api/chat/me"
+    api_history_url: str = "/api/chat/history"
+    api_message_url: str = "/api/chat/message"
+    api_upload_url: str = ""
+    api_settings_url: str = "/api/chat/settings"
+    api_availability_url: str = ""
+    login_href: str = "/login"
+    logout_href: str = ""
+    composer_placeholder: str = "Type a message..."
+    initial_presence_label: str = "Available"
+    settings_themes: Sequence[PublicThemeOption | Mapping[str, object] | str] = field(default_factory=tuple)
+    connector_groups: Sequence[ConnectorGroup | Mapping[str, object]] = field(default_factory=tuple)
+    legal_notices: Sequence[LegalNotice | Mapping[str, object]] = field(default_factory=tuple)
+    static_base_url: str = "/persona-console/static"
+    theme: str = "studio"
+    page_title: str = ""
+
+
+@dataclass(frozen=True)
+class PublicSettingsSurfaceConfig:
+    enabled: bool = False
+    feature: str = "public_presence"
+    title: str = "Public Presence"
+    subtitle: str = "Splash, login, chat, connector, and media settings"
+    brand: BrandAssets | Mapping[str, object] | None = None
+    splash_media: PublicMediaConfig | Mapping[str, object] | None = None
+    login_media: PublicMediaConfig | Mapping[str, object] | None = None
+    chat_media: PublicMediaConfig | Mapping[str, object] | None = None
+    connector_groups: Sequence[ConnectorGroup | Mapping[str, object]] = field(default_factory=tuple)
+    social_links: Sequence[PublicLink | Mapping[str, object]] = field(default_factory=tuple)
+    theme_options: Sequence[PublicThemeOption | Mapping[str, object] | str] = field(default_factory=tuple)
+    brand_action: str = ""
+    media_action: str = ""
+    connector_action: str = ""
+    social_action: str = ""
+    settings_action: str = ""
+
+
+@dataclass(frozen=True)
 class PersonaConsoleConfig:
     brand_name: str
     page_title: str
@@ -92,6 +269,7 @@ class PersonaConsoleConfig:
     user: UserPill | Mapping[str, object] | None = None
     app_version: str = ""
     icon_url: str = ""
+    brand_assets: BrandAssets | Mapping[str, object] | None = None
     home_url: str = "/"
     static_base_url: str = "/persona-console/static"
     theme: ThemeTokens = field(default_factory=ThemeTokens)

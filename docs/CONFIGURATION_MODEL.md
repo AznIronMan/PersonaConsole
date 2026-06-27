@@ -82,6 +82,7 @@ features = {
     "messages": True,
     "media": False,
     "owner_private_admin": False,
+    "public_presence": True,
     "journal": True,
     "review": True,
     "token_health": False,
@@ -513,6 +514,95 @@ Entries and calendar days with a privacy scope strip raw hrefs for non-owner
 contexts and render the safe alternate or withheld placeholder. Raw details,
 source links, page-turn URLs, and actions only render when the provided privacy
 policy says the viewer can see that scope.
+
+## Public Presence Surfaces
+
+Public presence is the shared, reusable layer for persona-facing splash,
+login, chat, connector-choice, media hero, social link, legal modal, logo, and
+admin settings surfaces. PersonaCore renders generic HTML/CSS/JS from escaped
+configuration; it does not own auth, cookies, OAuth callbacks, provider SDK
+calls, connector secrets, chat processors, uploads, settings persistence, or
+deployment wiring.
+
+```python
+from personacore import (
+    PUBLIC_PRESENCE_FEATURE,
+    BrandAssets,
+    ConnectorGroup,
+    ConnectorOption,
+    LoginPageConfig,
+    PublicMediaConfig,
+    PublicMediaSource,
+    PublicSplashPageConfig,
+    render_login_page,
+    render_public_splash_page,
+)
+
+brand = BrandAssets(
+    name="Example Persona",
+    small_logo_url="/static/example-small.svg",
+    large_logo_url="/static/example-large.svg",
+    home_url="/",
+)
+
+media = PublicMediaConfig(
+    kind="video",
+    sources=[PublicMediaSource("/media/hero.mp4", "video/mp4")],
+    poster_url="/media/hero.jpg",
+    audio_src="/media/hero-audio.mp3",
+    muted=True,
+)
+
+connectors = [
+    ConnectorGroup(
+        "Connect",
+        connectors=[
+            ConnectorOption(
+                "web_chat",
+                "Web chat",
+                href="/login/web-chat",
+                status="Ready",
+                tone="good",
+                configured=True,
+            )
+        ],
+    )
+]
+
+home_html = render_public_splash_page(
+    PublicSplashPageConfig(
+        brand=brand,
+        title="Example Persona",
+        description="Generic public homepage.",
+        media=media,
+        chat_href="/chat",
+    )
+)
+
+login_html = render_login_page(
+    LoginPageConfig(
+        brand=brand,
+        title="Sign in",
+        connector_groups=connectors,
+        email_action="/login/email",
+    )
+)
+```
+
+`PublicMediaConfig` supports images, slideshows, video sources, poster images,
+optional separate audio, focus position, overlays, and muted-by-default sound
+controls. `ConnectorOption` and `ConnectorGroup` are display models only:
+`key`, `label`, `href`, `action`, `icon`, `status`, `tone`, `description`,
+`configured`, `enabled`, and `selected`.
+
+The admin side can render `PublicSettingsSurfaceConfig` with
+`render_public_settings_surface(...)` behind `features["public_presence"]`.
+Consumers should persist any changed logo, media, social-link, connector, and
+theme values in their own settings store.
+
+PersonaEngine can later provide provider-neutral connector/capability metadata
+that consumers pass into PersonaCore, but PersonaCore should remain a renderer
+and configuration model only.
 
 ## Workflow Surfaces
 

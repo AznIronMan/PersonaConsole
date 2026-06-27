@@ -1,6 +1,14 @@
 from pathlib import Path
 
-from examples.fixture_app import _default_static_base_for_output, build_fixture_config, render_fixture_page
+from examples.fixture_app import (
+    _default_static_base_for_output,
+    build_fixture_config,
+    render_chat_fixture_page,
+    render_fixture_page,
+    render_login_fixture_page,
+    render_public_settings_fixture_page,
+    render_public_splash_fixture_page,
+)
 
 
 def test_fixture_uses_public_personacore_config_name():
@@ -14,6 +22,8 @@ def test_fixture_uses_public_personacore_config_name():
     assert config.features["persona"] is True
     assert config.features["agent_ops"] is True
     assert config.features["journal"] is True
+    assert config.features["public_presence"] is True
+    assert config.brand_assets is not None
     assert config.live_interval == 30
 
 
@@ -50,6 +60,10 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "pc-agent-ops-surface" in html
     assert "Owner-private agent session summarized for operators." in html
     assert "raw fixture private agent" not in html
+    assert "pc-public-settings-surface" in html
+    assert "Public Presence" in html
+    assert "Small logo URL" in html
+    assert "Save media" in html
     assert "Adapter health" in html
     assert "pc-adapter-health" in html
     assert "pc-message-surface" in html
@@ -64,12 +78,41 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Token Health" in html
     assert "Webhook verify token" in html
     assert "/static-fixture/persona-console.css" in html
+    assert "/static-fixture/persona-public.css" in html
     assert "Example Persona" in html
     assert "Operator" in html
 
 
+def test_fixture_renders_public_presence_pages_with_generic_data():
+    splash = render_public_splash_fixture_page(static_base_url="/static-fixture")
+    login = render_login_fixture_page(static_base_url="/static-fixture")
+    chat = render_chat_fixture_page(static_base_url="/static-fixture")
+    settings = render_public_settings_fixture_page(static_base_url="/static-fixture")
+
+    assert "pc-public-splash" in splash
+    assert "Chat with Example Persona" in splash
+    assert "/static-fixture/persona-public.css" in splash
+    assert "pc-public-login-page" in login
+    assert "Choose any configured method" in login
+    assert "pc-connector-option" in login
+    assert "pc-public-chat-shell" in chat
+    assert "data-pc-chat-form" in chat
+    assert "pc-public-settings-surface" in settings
+    assert "Reusable splash, login, chat, media, and connector settings." in settings
+    assert "private-login.example" not in splash + login + chat + settings
+    assert "private-chat.example" not in splash + login + chat + settings
+
+
 def test_fixture_static_output_path_points_to_shared_assets(tmp_path):
     output = tmp_path / "fixture.html"
+
+    static_base = _default_static_base_for_output(output)
+
+    assert static_base == "/persona-console/static"
+
+
+def test_fixture_static_output_path_can_be_relative_inside_repo():
+    output = Path("build/fixture.html")
 
     static_base = _default_static_base_for_output(output)
 

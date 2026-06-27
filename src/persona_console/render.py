@@ -4,7 +4,7 @@ from dataclasses import asdict, is_dataclass
 from html import escape
 from typing import Any, Mapping, Sequence
 
-from .models import NavGroup, NavItem, PersonaConsoleConfig, StatusPill, UserPill
+from .models import BrandAssets, NavGroup, NavItem, PersonaConsoleConfig, StatusPill, UserPill
 from .privacy import feature_enabled
 
 
@@ -16,6 +16,20 @@ def _mapping(value: Any) -> dict[str, Any]:
     if isinstance(value, Mapping):
         return dict(value)
     return {}
+
+
+def _brand_assets(config: PersonaConsoleConfig) -> BrandAssets:
+    data = _mapping(config.brand_assets)
+    return BrandAssets(
+        name=str(data.get("name") or config.brand_name or ""),
+        small_logo_url=str(data.get("small_logo_url") or config.icon_url or ""),
+        large_logo_url=str(data.get("large_logo_url") or ""),
+        wordmark_url=str(data.get("wordmark_url") or ""),
+        favicon_url=str(data.get("favicon_url") or ""),
+        signature_text=str(data.get("signature_text") or ""),
+        alt_text=str(data.get("alt_text") or data.get("name") or config.brand_name or ""),
+        home_url=str(data.get("home_url") or config.home_url or "/"),
+    )
 
 
 def _nav_item(value: NavItem | Mapping[str, object]) -> NavItem:
@@ -287,16 +301,25 @@ def render_shell_html(
                 + " = function(options) { return window.__personaConsoleRefreshLiveTarget"
                 + " ? window.__personaConsoleRefreshLiveTarget(options) : false; };</script>"
             )
+    brand_assets = _brand_assets(config)
     icon = ""
-    if config.icon_url:
+    if brand_assets.small_logo_url:
         icon = (
             '<span class="admin-brand-icon-wrap" aria-hidden="true">'
-            f'<img class="admin-brand-icon" src="{escape(config.icon_url)}" alt="" width="32" height="32">'
+            f'<img class="admin-brand-icon" src="{escape(brand_assets.small_logo_url)}" alt="" width="32" height="32">'
             '</span>'
         )
+    wordmark = brand_assets.wordmark_url or brand_assets.large_logo_url
+    wordmark_html = ""
+    if wordmark:
+        wordmark_html = (
+            f'<img class="admin-brand-wordmark" src="{escape(wordmark)}" '
+            f'alt="{escape(brand_assets.alt_text or brand_assets.name)}" height="28">'
+        )
+    brand_name_html = "" if wordmark_html else f"<strong>{escape(brand_assets.name)}</strong>"
     brand = (
-        f'<a href="{escape(config.home_url)}" class="admin-brand">{icon}'
-        f'<span class="admin-brand-copy"><strong>{escape(config.brand_name)}</strong>'
+        f'<a href="{escape(brand_assets.home_url)}" class="admin-brand">{icon}'
+        f'<span class="admin-brand-copy">{wordmark_html}{brand_name_html}'
         '<span>admin</span></span></a>'
     )
     return f"""<!doctype html>

@@ -49,6 +49,21 @@ def test_personacore_reexports_core_api():
     assert personacore.JournalCalendarDay is persona_console.JournalCalendarDay
     assert personacore.render_journal_surface is persona_console.render_journal_surface
     assert personacore.journal_theme_options is persona_console.journal_theme_options
+    assert personacore.PUBLIC_PRESENCE_FEATURE == persona_console.PUBLIC_PRESENCE_FEATURE == "public_presence"
+    assert len(personacore.PUBLIC_THEME_KEYS) == 12
+    assert personacore.BrandAssets is persona_console.BrandAssets
+    assert personacore.PublicMediaConfig is persona_console.PublicMediaConfig
+    assert personacore.PublicMediaSource is persona_console.PublicMediaSource
+    assert personacore.PublicSplashPageConfig is persona_console.PublicSplashPageConfig
+    assert personacore.LoginPageConfig is persona_console.LoginPageConfig
+    assert personacore.ChatPageConfig is persona_console.ChatPageConfig
+    assert personacore.PublicSettingsSurfaceConfig is persona_console.PublicSettingsSurfaceConfig
+    assert personacore.ConnectorOption is persona_console.ConnectorOption
+    assert personacore.ConnectorGroup is persona_console.ConnectorGroup
+    assert personacore.render_public_splash_page is persona_console.render_public_splash_page
+    assert personacore.render_login_page is persona_console.render_login_page
+    assert personacore.render_chat_page is persona_console.render_chat_page
+    assert personacore.render_public_settings_surface is persona_console.render_public_settings_surface
     assert personacore.OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE == "operations"
     assert personacore.PERSONA_RUNTIME_FEATURE == persona_console.PERSONA_RUNTIME_FEATURE == "persona"
     assert personacore.AGENT_OPS_FEATURE == persona_console.AGENT_OPS_FEATURE == "agent_ops"
@@ -89,6 +104,12 @@ def test_personacore_reexports_core_api():
     assert "JOURNAL_THEME_KEYS" in personacore.__all__
     assert "JournalSurfaceConfig" in personacore.__all__
     assert "render_journal_surface" in personacore.__all__
+    assert "PUBLIC_PRESENCE_FEATURE" in personacore.__all__
+    assert "PublicSplashPageConfig" in personacore.__all__
+    assert "render_public_splash_page" in personacore.__all__
+    assert "render_login_page" in personacore.__all__
+    assert "render_chat_page" in personacore.__all__
+    assert "render_public_settings_surface" in personacore.__all__
     assert "OPERATIONS_FEATURE" in personacore.__all__
     assert "OperationsSurfaceConfig" in personacore.__all__
     assert "render_operations_surface" in personacore.__all__
@@ -115,6 +136,8 @@ def test_personacore_submodules_reexport_existing_implementation():
         PeopleSurfaceConfig,
         PersonaCoreConfig,
         PersonaRuntimeSurfaceConfig,
+        PublicSettingsSurfaceConfig,
+        PublicSplashPageConfig,
         FlashBanner,
         StatusTab,
     )
@@ -124,6 +147,7 @@ def test_personacore_submodules_reexport_existing_implementation():
     from personacore.render import render_nav_groups
     from personacore.review import REVIEW_FEATURE, render_review_surface
     from personacore.journal import JOURNAL_FEATURE, render_journal_surface
+    from personacore.public_presence import PUBLIC_PRESENCE_FEATURE, render_public_splash_page
     from personacore.surfaces import render_message_surface, render_surface_sections
     from personacore.operations import OPERATIONS_FEATURE, OperationsSurfaceConfig as OpsConfig, render_operations_surface
     from personacore.token_health import build_token_health_report, token_health_config_for_providers
@@ -136,6 +160,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert DashboardMetricSpec is persona_console.DashboardMetricSpec
     assert OperationsSurfaceConfig is persona_console.OperationsSurfaceConfig
     assert PersonaRuntimeSurfaceConfig is persona_console.PersonaRuntimeSurfaceConfig
+    assert PublicSettingsSurfaceConfig is persona_console.PublicSettingsSurfaceConfig
+    assert PublicSplashPageConfig is persona_console.PublicSplashPageConfig
     assert OpsConfig is persona_console.OperationsSurfaceConfig
     assert FlashBanner is persona_console.FlashBanner
     assert StatusTab is persona_console.StatusTab
@@ -156,6 +182,8 @@ def test_personacore_submodules_reexport_existing_implementation():
     assert render_review_surface is persona_console.render_review_surface
     assert JOURNAL_FEATURE == persona_console.JOURNAL_FEATURE
     assert render_journal_surface is persona_console.render_journal_surface
+    assert PUBLIC_PRESENCE_FEATURE == persona_console.PUBLIC_PRESENCE_FEATURE
+    assert render_public_splash_page is persona_console.render_public_splash_page
     assert OPERATIONS_FEATURE == persona_console.OPERATIONS_FEATURE
     assert render_operations_surface is persona_console.render_operations_surface
     assert build_token_health_report is persona_console.build_token_health_report
@@ -178,4 +206,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personacore"
-    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.18"
+    assert pyproject["project"]["version"] == personacore.__version__ == "1.0.19"

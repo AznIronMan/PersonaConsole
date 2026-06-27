@@ -14,7 +14,14 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from examples.fixture_app import render_dashboard_fragment, render_fixture_page
+from examples.fixture_app import (
+    render_chat_fixture_page,
+    render_dashboard_fragment,
+    render_fixture_page,
+    render_login_fixture_page,
+    render_public_settings_fixture_page,
+    render_public_splash_fixture_page,
+)
 
 
 class FixtureHandler(http.server.SimpleHTTPRequestHandler):
@@ -29,6 +36,18 @@ class FixtureHandler(http.server.SimpleHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
         if path in {"/", "/index.html"}:
             self._send_html((self.output_dir / "index.html").read_text(encoding="utf-8"))
+            return
+        if path == "/public/splash":
+            self._send_html(render_public_splash_fixture_page(static_base_url="/src/persona_console/static"))
+            return
+        if path == "/public/login":
+            self._send_html(render_login_fixture_page(static_base_url="/src/persona_console/static"))
+            return
+        if path == "/public/chat":
+            self._send_html(render_chat_fixture_page(static_base_url="/src/persona_console/static"))
+            return
+        if path == "/settings/public-presence":
+            self._send_html(render_public_settings_fixture_page(static_base_url="/src/persona_console/static"))
             return
         if path == "/fragments/dashboard":
             self._send_html(render_dashboard_fragment())
@@ -112,6 +131,7 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                     expect(page.locator(".pc-operations-surface")).to_be_visible()
                     expect(page.locator(".pc-persona-surface")).to_be_visible()
                     expect(page.locator(".pc-agent-ops-surface")).to_be_visible()
+                    expect(page.locator(".pc-public-settings-surface")).to_be_visible()
                     expect(page.locator("#live-pill")).to_be_visible()
                     if name == "mobile":
                         toggle = page.locator(".admin-mobile-toggle")
@@ -122,6 +142,24 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                         expect(page.locator(".admin-nav-groups")).to_be_visible()
                     page.screenshot(path=screenshot_dir / f"{name}.png", full_page=True)
                     page.close()
+
+                    for slug, selector in {
+                        "public-splash": ".pc-public-splash",
+                        "public-login": ".pc-public-login-page",
+                        "public-chat": ".pc-public-chat-shell",
+                        "public-settings": ".pc-public-settings-surface",
+                    }.items():
+                        public_page = browser.new_page(viewport=viewport)
+                        public_page.goto(url + slug.replace("public-", "public/") if slug != "public-settings" else url + "settings/public-presence", wait_until="networkidle")
+                        expect(public_page.locator(selector)).to_be_visible()
+                        if slug == "public-splash":
+                            expect(public_page.locator(".pc-public-primary-action")).to_be_visible()
+                        if slug == "public-login":
+                            expect(public_page.locator(".pc-connector-option").first).to_be_visible()
+                        if slug == "public-chat":
+                            expect(public_page.locator("[data-pc-chat-form]")).to_be_visible()
+                        public_page.screenshot(path=screenshot_dir / f"{name}-{slug}.png", full_page=True)
+                        public_page.close()
             finally:
                 browser.close()
 

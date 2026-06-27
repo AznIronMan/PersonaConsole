@@ -24,8 +24,8 @@ PersonaCore should grow toward a shared feature catalog:
 
 - Admin shell, layout, navigation, status/user pills, and theme tokens.
 - Dashboard sections, health/status summaries, review queues, journal readers,
-  activity feeds, message/conversation views, media/workflow panels, and
-  live-refresh helpers.
+  activity feeds, message/conversation views, media/workflow panels, public
+  splash/login/chat surfaces, and live-refresh helpers.
 - Feature flags and capability settings that enable, disable, label, reorder,
   and theme modules per runtime.
 - Lazy integrations for optional frameworks and template engines.
@@ -84,6 +84,15 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   `personacore.render_journal_surface(...)` provide a shared journal reader
   with a calendar rail, paper-style default page layout, selectable theme
   catalog, provenance details, page-turn links, and owner-private redaction.
+- `personacore.BrandAssets`, `personacore.PublicMediaConfig`,
+  `personacore.ConnectorOption`, `personacore.ConnectorGroup`, and the public
+  renderers `render_public_splash_page(...)`, `render_login_page(...)`,
+  `render_chat_page(...)`, and `render_public_settings_surface(...)` provide
+  reusable public-facing homepage, login, chat, connector-choice, media hero,
+  logo, social-link, legal-modal, and admin settings surfaces. PersonaCore
+  renders escaped generic choices only; consumers and PersonaEngine own
+  connector capability truth, auth, OAuth callbacks, provider secrets, chat
+  processing, persistence, uploads, and deployment wiring.
 - `personacore.OperationsSurfaceConfig`,
   `personacore.PersonaRuntimeSurfaceConfig`,
   `personacore.AgentOpsSurfaceConfig`, and
@@ -134,6 +143,9 @@ query helpers, and PersonaCore class hooks for live-refresh controls.
 `v1.0.17` adds operations, persona runtime, continuity, bridge, and agent-ops
 surfaces. `v1.0.18` adds a shared themed journal reader with calendar
 navigation, paper-style default rendering, and owner-private safe alternates.
+`v1.0.19` adds reusable public presence surfaces for branded splash, login,
+chat, connector choices, configurable media heroes, and the admin settings
+form.
 The existing `persona_console` Python package remains in the source tree as a
 compatibility implementation path for v1.x consumers.
 
@@ -168,7 +180,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.18
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.19
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -217,6 +229,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.16](docs/RELEASE_1.0.16.md)
 - [Release 1.0.17](docs/RELEASE_1.0.17.md)
 - [Release 1.0.18](docs/RELEASE_1.0.18.md)
+- [Release 1.0.19](docs/RELEASE_1.0.19.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

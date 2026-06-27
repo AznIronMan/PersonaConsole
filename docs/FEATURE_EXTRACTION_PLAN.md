@@ -50,6 +50,9 @@ Recommended first extraction targets:
 - Journal reader surface.
   - Calendar-driven continuity reader with default paper theme and selectable
     theme catalog shipped in PersonaCore `1.0.18`.
+- Public presence surfaces.
+  - Branded splash, login, chat, connector-choice, media hero, social-link,
+    legal-modal, and public settings renderers shipped in PersonaCore `1.0.19`.
 - Operations, persona runtime, continuity, bridge, and agent-ops surfaces.
   - Initial typed runtime posture renderers shipped in PersonaCore `1.0.17`.
 - Command preview/queue panels.

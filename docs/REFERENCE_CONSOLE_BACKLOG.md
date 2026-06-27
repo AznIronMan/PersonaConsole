@@ -20,7 +20,9 @@ screenshots, data, and runtime policy stay outside the public repo.
   fuller generic fixture target shipped in PersonaCore `1.0.10`; the typed
   people surface shipped in PersonaCore `1.0.11`; operations, persona-runtime,
   continuity, bridge, and agent-ops surfaces shipped in PersonaCore `1.0.17`;
-  the themed journal reader shipped in PersonaCore `1.0.18`.
+  the themed journal reader shipped in PersonaCore `1.0.18`; public presence
+  splash/login/chat and connector settings surfaces shipped in PersonaCore
+  `1.0.19`.
 
 ## First Dashboard Modules
 
@@ -89,6 +91,11 @@ screenshots, data, and runtime policy stay outside the public repo.
   white-paper/script/typewriter/terminal/archive themes, provenance details,
   page turns, and owner-private entry fallback. Initial typed renderer shipped
   in PersonaCore `1.0.18`.
+- Public presence surfaces for public splash/homepage, media hero, login,
+  chat, connector choices, social links, legal modals, and admin settings.
+  Initial typed renderers and static assets shipped in PersonaCore `1.0.19`;
+  provider truth, auth, callbacks, chat processing, settings persistence, and
+  deployment wiring remain outside PersonaCore.
 
 ## Implementation Rules
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
+from html import escape
 import os
 from pathlib import Path
 
@@ -13,13 +15,18 @@ from personacore import (
     OPERATIONS_FEATURE,
     PEOPLE_FEATURE,
     PERSONA_RUNTIME_FEATURE,
+    PUBLIC_PRESENCE_FEATURE,
     REVIEW_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
     AgentOpsSurfaceConfig,
     AgentSessionRow,
     AdminPrivacyContext,
+    BrandAssets,
     BridgeStatusCard,
+    ChatPageConfig,
+    ConnectorGroup,
+    ConnectorOption,
     ContinuityItem,
     DashboardAction,
     DashboardActivityItem,
@@ -41,6 +48,8 @@ from personacore import (
     JournalEntry,
     JournalMarker,
     JournalSurfaceConfig,
+    LegalNotice,
+    LoginPageConfig,
     MediaArtifactCard,
     MediaSurfaceConfig,
     MessageAttachment,
@@ -62,6 +71,11 @@ from personacore import (
     PersonaCoreConfig,
     PersonaPanel,
     PersonaRuntimeSurfaceConfig,
+    PublicLink,
+    PublicMediaConfig,
+    PublicMediaSource,
+    PublicSettingsSurfaceConfig,
+    PublicSplashPageConfig,
     ReviewAgendaItem,
     ReviewBoardRow,
     ReviewQueueCard,
@@ -77,16 +91,197 @@ from personacore import (
     UserPill,
     build_journal_calendar,
     journal_theme_options,
+    public_theme_options,
     register_static_assets,
+    render_chat_page,
     render_dashboard_sections,
     render_journal_surface,
+    render_login_page,
     render_people_surface,
+    render_public_settings_surface,
+    render_public_splash_page,
     render_review_surface,
     render_shell_html,
     render_status_tabs,
     render_surface_sections,
     render_workflow_sections,
 )
+
+
+_SPLASH_IMAGE = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 900'%3E"
+    "%3Crect width='1400' height='900' fill='%2310100f'/%3E"
+    "%3Cpath d='M0 620 C260 520 420 730 700 610 S1110 420 1400 520 V900 H0 Z' fill='%23ef476f' opacity='.74'/%3E"
+    "%3Cpath d='M0 170 C260 80 520 250 780 150 S1170 20 1400 130 V0 H0 Z' fill='%2312b5b0' opacity='.62'/%3E"
+    "%3Ccircle cx='1090' cy='330' r='190' fill='%23f7b538' opacity='.72'/%3E"
+    "%3C/svg%3E"
+)
+_LOGIN_IMAGE = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 1200'%3E"
+    "%3Crect width='900' height='1200' fill='%23181714'/%3E"
+    "%3Crect x='110' y='160' width='680' height='880' rx='24' fill='%23f8f4eb' opacity='.9'/%3E"
+    "%3Cpath d='M180 720 H720 M220 820 H640 M260 920 H600' stroke='%2312b5b0' stroke-width='42' stroke-linecap='round'/%3E"
+    "%3Ccircle cx='450' cy='440' r='150' fill='%23ef476f' opacity='.86'/%3E"
+    "%3C/svg%3E"
+)
+_CHAT_IMAGE = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 1200'%3E"
+    "%3Crect width='900' height='1200' fill='%23111111'/%3E"
+    "%3Cpath d='M100 220 H720 Q790 220 790 290 V410 Q790 480 720 480 H330 L180 600 V480 H100 Q40 480 40 410 V290 Q40 220 100 220 Z' fill='%2312b5b0' opacity='.82'/%3E"
+    "%3Cpath d='M180 660 H800 Q860 660 860 720 V850 Q860 910 800 910 H310 L160 1030 V910 H180 Q120 910 120 850 V720 Q120 660 180 660 Z' fill='%23ef476f' opacity='.82'/%3E"
+    "%3Ccircle cx='690' cy='360' r='58' fill='%23f7b538'/%3E"
+    "%3C/svg%3E"
+)
+_SMALL_LOGO = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E"
+    "%3Crect width='128' height='128' rx='24' fill='%2310100f'/%3E"
+    "%3Cpath d='M28 90 L64 24 L100 90 Z' fill='%23ef476f'/%3E"
+    "%3Ccircle cx='64' cy='76' r='14' fill='%2312b5b0'/%3E"
+    "%3C/svg%3E"
+)
+
+
+def fixture_public_brand() -> BrandAssets:
+    return BrandAssets(
+        name="Example Persona",
+        small_logo_url=_SMALL_LOGO,
+        large_logo_url=_SMALL_LOGO,
+        signature_text="shared public surface",
+        home_url="/public/splash",
+    )
+
+
+def fixture_connector_groups() -> tuple[ConnectorGroup, ...]:
+    return (
+        ConnectorGroup(
+            "Sign in or connect",
+            key="login",
+            description="Consumer runtimes provide the actual auth and provider routes.",
+            connectors=(
+                ConnectorOption(
+                    "web_chat",
+                    "Web Chat",
+                    href="/public/chat",
+                    icon="chat",
+                    status="Ready",
+                    tone="good",
+                    description="Browser chat entry point.",
+                    configured=True,
+                    selected=True,
+                ),
+                ConnectorOption(
+                    "email",
+                    "Email",
+                    href="/login/email",
+                    icon="@",
+                    status="Ready",
+                    tone="info",
+                    description="Email code login.",
+                    configured=True,
+                ),
+                ConnectorOption(
+                    "social",
+                    "Social",
+                    action="connect",
+                    icon="share",
+                    status="Needs setup",
+                    tone="warn",
+                    description="Provider route can be added by the runtime.",
+                    configured=False,
+                ),
+            ),
+        ),
+    )
+
+
+def build_public_splash_config(*, static_base_url: str = "/persona-console/static") -> PublicSplashPageConfig:
+    return PublicSplashPageConfig(
+        brand=fixture_public_brand(),
+        title="Example Persona",
+        subtitle="Public home",
+        description="A reusable splash page with configurable media, chat call-to-action, social links, and legal copy.",
+        media=PublicMediaConfig(
+            kind="slideshow",
+            sources=(
+                PublicMediaSource(_SPLASH_IMAGE, "image/svg+xml", label="Abstract public hero"),
+                PublicMediaSource(_LOGIN_IMAGE, "image/svg+xml", label="Paper login hero"),
+                PublicMediaSource(_CHAT_IMAGE, "image/svg+xml", label="Chat hero"),
+            ),
+            overlay="medium",
+            muted=True,
+        ),
+        chat_label="Chat with Example Persona",
+        chat_href="/public/chat",
+        social_links=(
+            PublicLink("Updates", "/public/updates", icon="news", external=False),
+            PublicLink("Community", "/public/community", icon="group", external=False),
+        ),
+        update_form_action="/public/updates",
+        legal_notices=(
+            LegalNotice("terms", "Terms", body="Consumer runtimes provide their own public legal copy."),
+            LegalNotice("privacy", "Privacy", href="/privacy"),
+        ),
+        static_base_url=static_base_url,
+        page_title="Example Persona Home",
+        meta_description="Generic public homepage fixture for PersonaCore.",
+    )
+
+
+def build_login_page_config(*, static_base_url: str = "/persona-console/static") -> LoginPageConfig:
+    return LoginPageConfig(
+        brand=fixture_public_brand(),
+        title="Sign in to chat",
+        subtitle="A media-led login surface with connector choices and muted-by-default controls.",
+        media=PublicMediaConfig(kind="image", src=_LOGIN_IMAGE, alt_text="Abstract login art", overlay="soft"),
+        connector_groups=fixture_connector_groups(),
+        email_action="/login/email",
+        phone_action="/login/phone",
+        phone_enabled=True,
+        next_url="/public/chat",
+        status_message="Choose any configured method to continue.",
+        status_tone="info",
+        legal_notices=(LegalNotice("terms", "Terms", body="Example terms appear in a reusable modal."),),
+        static_base_url=static_base_url,
+    )
+
+
+def build_chat_page_config(*, static_base_url: str = "/persona-console/static") -> ChatPageConfig:
+    return ChatPageConfig(
+        brand=fixture_public_brand(),
+        title="Chat with Example Persona",
+        subtitle="A generic chat shell; the consumer runtime owns identity, history, files, and message processing.",
+        media=PublicMediaConfig(kind="image", src=_CHAT_IMAGE, alt_text="Abstract chat art", overlay="strong"),
+        api_me_url="/api/chat/me",
+        api_history_url="/api/chat/history",
+        api_message_url="/api/chat/message",
+        api_upload_url="/api/chat/upload",
+        api_settings_url="/api/chat/settings",
+        login_href="/public/login",
+        logout_href="/logout",
+        composer_placeholder="Message Example Persona...",
+        initial_presence_label="Fixture online",
+        settings_themes=public_theme_options("studio"),
+        connector_groups=fixture_connector_groups(),
+        legal_notices=(LegalNotice("privacy", "Privacy", href="/privacy"),),
+        static_base_url=static_base_url,
+    )
+
+
+def build_public_settings_surface_config() -> PublicSettingsSurfaceConfig:
+    return PublicSettingsSurfaceConfig(
+        enabled=True,
+        brand=fixture_public_brand(),
+        splash_media=PublicMediaConfig(kind="slideshow", src=_SPLASH_IMAGE, muted=True),
+        login_media=PublicMediaConfig(kind="image", src=_LOGIN_IMAGE, muted=True),
+        chat_media=PublicMediaConfig(kind="image", src=_CHAT_IMAGE, muted=True),
+        connector_groups=fixture_connector_groups(),
+        social_links=(
+            PublicLink("Updates", "/public/updates", external=False),
+            PublicLink("Community", "/public/community", external=False),
+        ),
+        theme_options=public_theme_options("studio"),
+        settings_action="/settings/public-presence",
+    )
 
 
 def build_fixture_config(*, static_base_url: str = "/persona-console/static") -> PersonaCoreConfig:
@@ -105,6 +300,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             OPERATIONS_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
+            PUBLIC_PRESENCE_FEATURE: True,
         },
         nav_groups=[
             NavGroup(
@@ -138,6 +334,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                 "System",
                 [
                     NavItem("Agent Ops", "/agent-ops", active="agent-ops", badge="agent_ops", feature=AGENT_OPS_FEATURE),
+                    NavItem("Public Pages", "/settings/public-presence", active="public-presence", feature=PUBLIC_PRESENCE_FEATURE),
                     NavItem("Settings", "/settings", active="settings", feature=OPERATIONS_FEATURE),
                     NavItem("Health", "/health", active="health"),
                 ],
@@ -166,7 +363,8 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.18-fixture",
+        app_version="v1.0.19-fixture",
+        brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
             accent="rgb(239 71 111)",
@@ -919,14 +1117,64 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
-    return render_dashboard_sections(dashboard) + people_surface + review_surface + journal_surface + workflow_surfaces + surfaces + hold_form
+    public_settings_surface = render_public_settings_surface(
+        build_public_settings_surface_config(),
+        features={PUBLIC_PRESENCE_FEATURE: True},
+    )
+    return (
+        render_dashboard_sections(dashboard)
+        + people_surface
+        + review_surface
+        + journal_surface
+        + workflow_surfaces
+        + public_settings_surface
+        + surfaces
+        + hold_form
+    )
 
 
 def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    base = static_base_url.rstrip("/")
     return render_shell_html(
         build_fixture_config(static_base_url=static_base_url),
         render_dashboard_fragment(),
         current_path="/",
+        extra_head=f'<link rel="stylesheet" href="{escape(base)}/persona-public.css">',
+        extra_body_end=f'<script src="{escape(base)}/persona-public.js"></script>',
+    )
+
+
+def render_public_splash_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    return render_public_splash_page(build_public_splash_config(static_base_url=static_base_url))
+
+
+def render_login_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    return render_login_page(build_login_page_config(static_base_url=static_base_url))
+
+
+def render_chat_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    return render_chat_page(build_chat_page_config(static_base_url=static_base_url))
+
+
+def render_public_settings_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    base = static_base_url.rstrip("/")
+    config = replace(
+        build_fixture_config(static_base_url=static_base_url),
+        active="public-presence",
+        page_title="Public Presence",
+        page_subtitle="Reusable splash, login, chat, media, and connector settings.",
+        live_url="",
+        live_interval=None,
+    )
+    return render_shell_html(
+        config,
+        render_public_settings_surface(
+            build_public_settings_surface_config(),
+            features={PUBLIC_PRESENCE_FEATURE: True},
+        ),
+        current_path="/settings/public-presence",
+        extra_head=f'<link rel="stylesheet" href="{escape(base)}/persona-public.css">',
+        extra_body_end=f'<script src="{escape(base)}/persona-public.js"></script>',
     )
 
 
@@ -944,6 +1192,22 @@ def create_app():
     def dashboard() -> str:
         return render_fixture_page()
 
+    @app.get("/public/splash", response_class=HTMLResponse)
+    def public_splash() -> str:
+        return render_public_splash_fixture_page()
+
+    @app.get("/public/login", response_class=HTMLResponse)
+    def login_page() -> str:
+        return render_login_fixture_page()
+
+    @app.get("/public/chat", response_class=HTMLResponse)
+    def chat_page() -> str:
+        return render_chat_fixture_page()
+
+    @app.get("/settings/public-presence", response_class=HTMLResponse)
+    def public_settings() -> str:
+        return render_public_settings_fixture_page()
+
     @app.get("/fragments/dashboard", response_class=HTMLResponse)
     def dashboard_fragment() -> str:
         return render_dashboard_fragment()
@@ -952,8 +1216,14 @@ def create_app():
 
 
 def _default_static_base_for_output(output: Path) -> str:
+    root = Path(__file__).resolve().parents[1]
     static_dir = Path(__file__).resolve().parents[1] / "src" / "persona_console" / "static"
-    return os.path.relpath(static_dir, output.resolve().parent)
+    output_parent = output.resolve().parent
+    try:
+        output_parent.relative_to(root)
+    except ValueError:
+        return "/persona-console/static"
+    return os.path.relpath(static_dir, output_parent)
 
 
 def main() -> None:

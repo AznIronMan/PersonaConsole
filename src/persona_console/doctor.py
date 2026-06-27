@@ -74,6 +74,31 @@ _JOURNAL_EXPORTS = (
     "journal_theme_options",
     "render_journal_surface",
 )
+_PUBLIC_PRESENCE_EXPORTS = (
+    "PUBLIC_PRESENCE_FEATURE",
+    "PUBLIC_THEME_KEYS",
+    "BrandAssets",
+    "ChatPageConfig",
+    "ConnectorGroup",
+    "ConnectorOption",
+    "LegalNotice",
+    "LoginPageConfig",
+    "PublicLink",
+    "PublicMediaConfig",
+    "PublicMediaSource",
+    "PublicSettingsSurfaceConfig",
+    "PublicSplashPageConfig",
+    "PublicThemeOption",
+    "public_presence_feature_enabled",
+    "public_theme_options",
+    "render_brand_logo",
+    "render_chat_page",
+    "render_connector_groups",
+    "render_login_page",
+    "render_public_media",
+    "render_public_settings_surface",
+    "render_public_splash_page",
+)
 _OPERATIONS_EXPORTS = (
     "AGENT_OPS_FEATURE",
     "OPERATIONS_FEATURE",
@@ -209,6 +234,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
         checks.extend(_export_checks(module, "review_exports", _REVIEW_EXPORTS))
         checks.extend(_export_checks(module, "journal_exports", _JOURNAL_EXPORTS))
+        checks.extend(_export_checks(module, "public_presence_exports", _PUBLIC_PRESENCE_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
@@ -220,6 +246,7 @@ def run_consumer_integration_doctor(
         checks.append(_people_render_check(module))
         checks.append(_review_render_check(module))
         checks.append(_journal_render_check(module))
+        checks.append(_public_presence_render_check(module))
         checks.append(_operations_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
@@ -646,6 +673,119 @@ def _journal_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "journal_render", "journal surface renders themed pages with owner-private redaction")
+
+
+def _public_presence_render_check(module: Any) -> DoctorCheck:
+    raw_value = "<script>raw-doctor-public-presence</script>"
+    private_host = "private-login.example"
+    try:
+        brand = module.BrandAssets(
+            name="Example Persona",
+            small_logo_url="/assets/example-small.svg",
+            large_logo_url="/assets/example-large.svg",
+            wordmark_url="/assets/example-wordmark.svg",
+            signature_text="public fixture",
+        )
+        connectors = [
+            module.ConnectorGroup(
+                "Connect",
+                description="Provider-neutral connector choices",
+                connectors=[
+                    module.ConnectorOption(
+                        "web_chat",
+                        "Web chat",
+                        href="/login/web-chat",
+                        icon="chat",
+                        status="Ready",
+                        tone="good",
+                        description=raw_value,
+                        configured=True,
+                    ),
+                    module.ConnectorOption(
+                        "social",
+                        "Social",
+                        action="connect",
+                        icon="share",
+                        status="Needs setup",
+                        tone="warn",
+                        configured=False,
+                    ),
+                ],
+            )
+        ]
+        video = module.PublicMediaConfig(
+            kind="video",
+            sources=[module.PublicMediaSource("/media/example-hero.mp4", "video/mp4")],
+            audio_src="/media/example-hero.mp3",
+            poster_url="/media/example-poster.jpg",
+        )
+        splash = module.render_public_splash_page(
+            module.PublicSplashPageConfig(
+                brand=brand,
+                title=raw_value,
+                subtitle="Public fixture",
+                description="Generic public homepage",
+                media=video,
+                chat_href="/chat",
+                social_links=[module.PublicLink("Example social", "/social", external=False)],
+                legal_notices=[module.LegalNotice("terms", "Terms", body="Generic legal copy.")],
+            )
+        )
+        login = module.render_login_page(
+            module.LoginPageConfig(
+                brand=brand,
+                title="Sign in",
+                subtitle="Generic login pattern",
+                connector_groups=connectors,
+                email_action="/login/email",
+                status_message=raw_value,
+            )
+        )
+        chat = module.render_chat_page(
+            module.ChatPageConfig(
+                brand=brand,
+                title="Chat",
+                subtitle="Generic chat surface",
+                connector_groups=connectors,
+                settings_themes=module.public_theme_options("studio"),
+            )
+        )
+        settings = module.render_public_settings_surface(
+            module.PublicSettingsSurfaceConfig(
+                enabled=True,
+                brand=brand,
+                splash_media=video,
+                connector_groups=connectors,
+                social_links=[module.PublicLink("Example social", "/social", external=False)],
+                theme_options=module.public_theme_options("studio"),
+            ),
+            features={module.PUBLIC_PRESENCE_FEATURE: True},
+        )
+    except Exception as exc:
+        return _check(
+            False,
+            "public_presence_render",
+            "public presence surfaces render failed",
+            f"{exc.__class__.__name__}: {exc}",
+        )
+    html = splash + login + chat + settings
+    ok = (
+        "pc-public-splash" in splash
+        and "pc-public-login-page" in login
+        and "pc-public-chat-shell" in chat
+        and "pc-public-settings-surface" in settings
+        and "persona-public.css" in splash
+        and "persona-public.js" in chat
+        and "pc-connector-option" in login
+        and 'data-connector-configured="false"' in login
+        and "pc-public-sound-toggle" in splash
+        and "muted" in splash
+        and "&lt;script&gt;raw-doctor-public-presence&lt;/script&gt;" in html
+        and raw_value not in html
+        and private_host not in html
+        and len(module.PUBLIC_THEME_KEYS) >= 12
+    )
+    return _check(ok, "public_presence_render", "public splash, login, chat, and settings surfaces render safely")
 
 
 def _operations_render_check(module: Any) -> DoctorCheck:
