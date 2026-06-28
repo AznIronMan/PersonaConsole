@@ -14,6 +14,7 @@ from personaconsole import (
     MESSAGES_FEATURE,
     OPERATIONS_FEATURE,
     PEOPLE_FEATURE,
+    BRIDGE_OPS_FEATURE,
     PERSONA_EDITOR_FEATURE,
     PERSONA_RUNTIME_FEATURE,
     PUBLIC_PRESENCE_FEATURE,
@@ -27,7 +28,13 @@ from personaconsole import (
     AgentSessionRow,
     AdminPrivacyContext,
     BrandAssets,
+    BridgeDeliveryRow,
+    BridgeHeartbeatRow,
+    BridgeOpsSurfaceConfig,
+    BridgeProviderCapabilityRow,
+    BridgeQueueRow,
     BridgeStatusCard,
+    BridgeWebhookRow,
     ChatPageConfig,
     ConnectorGroup,
     ConnectorOption,
@@ -119,6 +126,7 @@ from personaconsole import (
     journal_theme_options,
     public_theme_options,
     register_static_assets,
+    render_bridge_ops_surface,
     render_chat_page,
     render_dashboard_sections,
     render_journal_surface,
@@ -327,6 +335,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             REVIEW_FEATURE: True,
             JOURNAL_FEATURE: True,
             OPERATIONS_FEATURE: True,
+            BRIDGE_OPS_FEATURE: True,
             PERSONA_EDITOR_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
@@ -368,6 +377,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                 "System",
                 [
                     NavItem("Agent Ops", "/agent-ops", active="agent-ops", badge="agent_ops", feature=AGENT_OPS_FEATURE),
+                    NavItem("Bridge Ops", "/bridge-ops", active="bridge-ops", feature=BRIDGE_OPS_FEATURE),
                     NavItem("Public Pages", "/settings/public-presence", active="public-presence", feature=PUBLIC_PRESENCE_FEATURE),
                     NavItem("Settings", "/settings", active="settings", feature=OPERATIONS_FEATURE),
                     NavItem("Health", "/health", active="health", feature=SYSTEM_HEALTH_FEATURE),
@@ -398,7 +408,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.25-fixture",
+        app_version="v1.0.26-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -1054,6 +1064,74 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
+    bridge_ops_surface = render_bridge_ops_surface(
+        BridgeOpsSurfaceConfig(
+            enabled=True,
+            title="Bridge Operations",
+            subtitle="Provider-neutral webhook, queue, heartbeat, capability, and delivery posture.",
+            tabs=[
+                StatusTab("All", "/bridge-ops", 10, active=True),
+                StatusTab("Healthy", "/bridge-ops?status=healthy", 5, tone="good"),
+                StatusTab("Degraded", "/bridge-ops?status=degraded", 3, tone="warn"),
+                StatusTab("Failed", "/bridge-ops?status=failed", 2, tone="bad"),
+            ],
+            metrics=[
+                DashboardMetric("Adapters", 5, "/bridge-ops/adapters", "provider-neutral bridges", tone="info"),
+                DashboardMetric("Queued", 4, "/bridge-ops/queues", "waiting for runtime workers", tone="warn"),
+                DashboardMetric("Failed", 1, "/bridge-ops/deliveries?status=failed", "needs review", tone="bad"),
+                DashboardMetric("Docs", 3, "/bridge-ops/providers", "configured capability links", tone="good"),
+            ],
+            bridges=[
+                BridgeStatusCard("Webhook", "healthy", "/bridge-ops/webhook", "verify/reply", "Webhook bridge is reachable.", "2m ago", "good", counts=[{"label": "0 failed", "tone": "good"}]),
+                BridgeStatusCard("Chat bridge", "healthy", "/bridge-ops/chat", "browser chat", "Chat ingress and reply paths are enabled.", "1m ago", "good", counts=["7 inbound"]),
+                BridgeStatusCard("SMS bridge", "paused", route="phone/sms", detail="Inbound path is configured but paused.", last_seen="14m ago", tone="warn", actions=[SurfaceAction("Inspect", "/bridge-ops/sms", "warn")]),
+            ],
+            webhooks=[
+                BridgeWebhookRow("verify", "Verify endpoint", "healthy", "good", "POST", "/webhooks/example/verify", "ok", "2m ago", "Signature and challenge checks passed."),
+                BridgeWebhookRow("reply", "Reply callback", "degraded", "warn", "POST", "/webhooks/example/reply", "slow", "6m ago", "Callback responds but is above target latency."),
+                BridgeWebhookRow("optional", "Optional callback", "missing", "warn", "POST", "/webhooks/example/optional", "not configured", actions=[SurfaceAction("Configure", "/bridge-ops/webhooks/optional", "warn")]),
+            ],
+            queues=[
+                BridgeQueueRow("inbound", "Inbound queue", "degraded", "warn", queued=4, failed=1, claimed=2, last_in="1m ago", last_out="5m ago", policy="retry on failure"),
+                BridgeQueueRow("outbound", "Outbound queue", "healthy", "good", queued=0, failed=0, claimed=1, last_in="3m ago", last_out="2m ago", policy="operator-reviewed sends"),
+                BridgeQueueRow("disabled", "Disabled provider queue", "disabled", "neutral", queued=0, failed=0, actions=[SurfaceAction("Resume", "", disabled=True)]),
+            ],
+            heartbeats=[
+                BridgeHeartbeatRow("worker", "Worker heartbeat", "stale", "warn", "worker-loop", "420ms", "14m ago", "Heartbeat is older than the target window."),
+                BridgeHeartbeatRow("browser", "Browser bridge heartbeat", "healthy", "good", "browser-session", "80ms", "1m ago", "Bridge session is reporting normally."),
+            ],
+            providers=[
+                BridgeProviderCapabilityRow("chat", "Chat provider", "example-chat", "messages", "ready", "good", configured=True, enabled=True, docs_href="/docs/providers/chat"),
+                BridgeProviderCapabilityRow("email", "Email provider", "example-email", "email", "missing", "warn", configured=False, enabled=False, docs_href="/docs/providers/email"),
+                BridgeProviderCapabilityRow("internal", "Internal peer", "example-peer", "handoff", "ready", "good", configured=True, enabled=True, docs_href="/docs/providers/internal"),
+            ],
+            deliveries=[
+                BridgeDeliveryRow("sent", "Public delivery", "sent", "good", "outbound", "example-chat", "thread-1", 1, "09:00", "Delivered successfully."),
+                BridgeDeliveryRow(
+                    "private-failed",
+                    "Owner-private delivery",
+                    "failed",
+                    "bad",
+                    "outbound",
+                    "example-chat",
+                    "private-target",
+                    3,
+                    "09:05",
+                    "raw fixture private bridge delivery failure",
+                    href="/bridge-ops/deliveries/raw-private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private delivery failure summarized for operators.",
+                ),
+            ],
+            actions=[
+                SurfaceAction("Refresh bridges", "/bridge-ops/refresh", "info", method="post"),
+                SurfaceAction("Open provider docs", "/bridge-ops/providers", "good"),
+            ],
+        ),
+        features={BRIDGE_OPS_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     persona_editor = render_persona_editor(
         PersonaEditorConfig(
             enabled=True,
@@ -1476,6 +1554,7 @@ def render_dashboard_fragment() -> str:
         + review_surface
         + journal_surface
         + workflow_surfaces
+        + bridge_ops_surface
         + persona_editor
         + settings_editor
         + system_health_surface

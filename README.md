@@ -105,6 +105,12 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   persona-state, continuity, bridge, and agent-session panels. Consumers still
   own task execution, settings mutations, provider calls, and private route
   authorization.
+- `personaconsole.BridgeOpsSurfaceConfig` and
+  `personaconsole.render_bridge_ops_surface(...)` provide provider-neutral
+  bridge operation panels for webhook posture, queues, heartbeats, provider
+  capabilities, and delivery claims. Consumers own webhook verification,
+  delivery queues, adapter execution, provider API calls, credentials, browser
+  profiles, OAuth, and deployment wiring.
 - `personaconsole.PersonaEditorConfig` and
   `personaconsole.render_persona_editor(...)` provide a generic editor surface
   for profile sections, traits, rules, mutable state, proposals, and change
@@ -134,8 +140,8 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   or source mounts by checking version alignment, required shared exports,
   owner-private helpers, token-health helpers, adapter-health helpers,
   message/media/activity helpers, people helpers, review helpers, journal
-  helpers, operations/persona-editor helpers, settings/system-health helpers,
-  shared controls, and generic render smokes.
+  helpers, operations/bridge/persona-editor helpers, settings/system-health
+  helpers, shared controls, and generic render smokes.
 - `personaconsole.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
 - `personaconsole.configure_jinja_loader(templates)` adds PersonaConsole
@@ -182,7 +188,8 @@ consumer-supplied action slots. `v1.0.24` adds a system health surface for
 runtime checks, database posture, table summaries, audit events, secret
 coverage, and readiness probes. `v1.0.25` adds generic persona editor
 primitives for profile sections, traits, rules, mutable state, proposals, and
-change history.
+change history. `v1.0.26` adds bridge operation panels for provider-neutral
+webhooks, queues, heartbeats, capabilities, and delivery claims.
 
 ## Public Safety
 
@@ -215,7 +222,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.25
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.26
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -271,6 +278,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.23](docs/RELEASE_1.0.23.md)
 - [Release 1.0.24](docs/RELEASE_1.0.24.md)
 - [Release 1.0.25](docs/RELEASE_1.0.25.md)
+- [Release 1.0.26](docs/RELEASE_1.0.26.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

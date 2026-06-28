@@ -19,6 +19,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.nav_badges["people"] == 3
     assert config.features["people"] is True
     assert config.features["operations"] is True
+    assert config.features["bridge_ops"] is True
     assert config.features["persona"] is True
     assert config.features["persona_editor"] is True
     assert config.features["agent_ops"] is True
@@ -83,6 +84,15 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Read-Only Terminal" in html
     assert "Owner-private terminal event summarized for operators." in html
     assert "raw fixture private terminal event" not in html
+    assert "pc-bridge-ops-surface" in html
+    assert "Bridge Operations" in html
+    assert "Verify endpoint" in html
+    assert "Inbound queue" in html
+    assert "Worker heartbeat" in html
+    assert "Email provider" in html
+    assert "Owner-private delivery failure summarized for operators." in html
+    assert "raw fixture private bridge delivery failure" not in html
+    assert "/bridge-ops/deliveries/raw-private" not in html
     assert "pc-settings-editor" in html
     assert "Runtime Settings" in html
     assert "Provider API key" in html

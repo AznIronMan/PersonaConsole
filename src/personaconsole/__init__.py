@@ -31,6 +31,12 @@ from .models import (
     AgentSessionRow,
     BrandAssets,
     BridgeStatusCard,
+    BridgeDeliveryRow,
+    BridgeHeartbeatRow,
+    BridgeOpsSurfaceConfig,
+    BridgeProviderCapabilityRow,
+    BridgeQueueRow,
+    BridgeWebhookRow,
     ChatPageConfig,
     ConnectorGroup,
     ConnectorOption,
@@ -204,6 +210,11 @@ from .operations import (
     render_persona_runtime_surface,
     render_workflow_sections,
 )
+from .bridge_ops import (
+    BRIDGE_OPS_FEATURE,
+    bridge_ops_feature_enabled,
+    render_bridge_ops_surface,
+)
 from .terminal import (
     TERMINAL_STREAM_FEATURE,
     render_terminal_stream,
@@ -256,6 +267,13 @@ __all__ = [
     "AgentSessionRow",
     "BrandAssets",
     "BridgeStatusCard",
+    "BRIDGE_OPS_FEATURE",
+    "BridgeDeliveryRow",
+    "BridgeHeartbeatRow",
+    "BridgeOpsSurfaceConfig",
+    "BridgeProviderCapabilityRow",
+    "BridgeQueueRow",
+    "BridgeWebhookRow",
     "ChatPageConfig",
     "ConnectorGroup",
     "ConnectorOption",
@@ -380,6 +398,7 @@ __all__ = [
     "build_journal_calendar",
     "can_view_raw_private",
     "canonical_privacy_scope",
+    "bridge_ops_feature_enabled",
     "configure_jinja_loader",
     "dashboard_metrics_from_counts",
     "doctor_report_to_text",
@@ -417,6 +436,7 @@ __all__ = [
     "render_dashboard_summary_grid",
     "render_adapter_health_panel",
     "render_brand_logo",
+    "render_bridge_ops_surface",
     "render_chat_page",
     "render_connector_groups",
     "render_flash_banners",
@@ -456,7 +476,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.25"
+__version__ = "1.0.26"
 
 
 def configure_jinja_loader(*args, **kwargs):

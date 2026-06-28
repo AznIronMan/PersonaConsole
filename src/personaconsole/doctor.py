@@ -139,6 +139,18 @@ _OPERATIONS_EXPORTS = (
     "render_workflow_sections",
     "terminal_stream_feature_enabled",
 )
+_BRIDGE_OPS_EXPORTS = (
+    "BRIDGE_OPS_FEATURE",
+    "BridgeDeliveryRow",
+    "BridgeHeartbeatRow",
+    "BridgeOpsSurfaceConfig",
+    "BridgeProviderCapabilityRow",
+    "BridgeQueueRow",
+    "BridgeStatusCard",
+    "BridgeWebhookRow",
+    "bridge_ops_feature_enabled",
+    "render_bridge_ops_surface",
+)
 _SETTINGS_EDITOR_EXPORTS = (
     "SETTINGS_EDITOR_FEATURE",
     "SettingsChange",
@@ -297,6 +309,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "journal_exports", _JOURNAL_EXPORTS))
         checks.extend(_export_checks(module, "public_presence_exports", _PUBLIC_PRESENCE_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
+        checks.extend(_export_checks(module, "bridge_ops_exports", _BRIDGE_OPS_EXPORTS))
         checks.extend(_export_checks(module, "settings_editor_exports", _SETTINGS_EDITOR_EXPORTS))
         checks.extend(_export_checks(module, "system_health_exports", _SYSTEM_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
@@ -312,6 +325,7 @@ def run_consumer_integration_doctor(
         checks.append(_public_presence_render_check(module))
         checks.append(_operations_render_check(module))
         checks.append(_persona_editor_render_check(module))
+        checks.append(_bridge_ops_render_check(module))
         checks.append(_settings_editor_render_check(module))
         checks.append(_system_health_render_check(module))
         checks.append(_owner_private_render_check(module))
@@ -1133,6 +1147,78 @@ def _persona_editor_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "persona_editor_render", "persona editor renders profile, rules, state, proposals, and redaction")
+
+
+def _bridge_ops_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-bridge-delivery"
+    raw_url = "/doctor/private-bridge-delivery"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_bridge_ops_surface(
+            module.BridgeOpsSurfaceConfig(
+                enabled=True,
+                tabs=[module.StatusTab("All", "/bridge", 6, active=True)],
+                metrics=[module.DashboardMetric("Failed", 1, "/bridge/failed", "needs review", tone="bad")],
+                bridges=[
+                    module.BridgeStatusCard(
+                        "Webhook",
+                        "healthy",
+                        route="verify/reply",
+                        counts=[{"label": "0 failed", "tone": "good"}],
+                    )
+                ],
+                webhooks=[
+                    module.BridgeWebhookRow("verify", "Verify endpoint", "healthy", "good", "POST", "/webhooks/example", "ok", "2m ago"),
+                ],
+                queues=[
+                    module.BridgeQueueRow("inbound", "Inbound queue", "degraded", "warn", queued=4, failed=1, claimed=2, last_in="1m ago"),
+                ],
+                heartbeats=[
+                    module.BridgeHeartbeatRow("worker", "Worker heartbeat", "stale", "warn", "worker-loop", "420ms", "14m ago"),
+                ],
+                providers=[
+                    module.BridgeProviderCapabilityRow("chat", "Chat provider", "example-chat", "messages", "ready", "good", True, True, "/docs/chat"),
+                ],
+                deliveries=[
+                    module.BridgeDeliveryRow(
+                        "private",
+                        "Private delivery",
+                        "failed",
+                        "bad",
+                        "outbound",
+                        "example-chat",
+                        "private-target",
+                        3,
+                        "09:05",
+                        raw_value,
+                        raw_url,
+                        "owner_private",
+                        "safe bridge delivery",
+                    )
+                ],
+                actions=[module.SurfaceAction("Refresh", "/bridge/refresh", "info", method="post")],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "bridge_ops_render", "bridge ops render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-bridge-ops-surface" in html
+        and "Verify endpoint" in html
+        and "Inbound queue" in html
+        and "Worker heartbeat" in html
+        and "Chat provider" in html
+        and "safe bridge delivery" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "bridge_ops_render", "bridge ops renders provider-neutral posture with owner-private redaction")
 
 
 def _system_health_render_check(module: Any) -> DoctorCheck:

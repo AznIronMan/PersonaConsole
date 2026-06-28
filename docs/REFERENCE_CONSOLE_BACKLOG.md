@@ -26,7 +26,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   `1.0.22`; the grouped settings editor surface shipped in PersonaConsole
   `1.0.23`; the system health/database/audit posture surface shipped in
   PersonaConsole `1.0.24`; the persona editor primitives shipped in
-  PersonaConsole `1.0.25`.
+  PersonaConsole `1.0.25`; bridge operation panels shipped in PersonaConsole
+  `1.0.26`.
 
 ## First Dashboard Modules
 
@@ -111,6 +112,9 @@ screenshots, data, and runtime policy stay outside the public repo.
   Initial typed renderers and static assets shipped in PersonaConsole `1.0.19`;
   provider truth, auth, callbacks, chat processing, settings persistence, and
   deployment wiring remain outside PersonaConsole.
+- Bridge/provider operation panels for webhook posture, queues, heartbeats,
+  provider capability rows, delivery claims, documentation links, and action
+  slots. Initial typed renderer shipped in PersonaConsole `1.0.26`.
 
 ## Implementation Rules
 

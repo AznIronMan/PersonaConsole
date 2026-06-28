@@ -1294,6 +1294,126 @@ pre {
 .pc-persona-editor-change.is-private {
   background: color-mix(in srgb, var(--pc-warning) 6%, var(--pc-surface));
 }
+
+.pc-bridge-ops-surface,
+.pc-bridge-ops-section,
+.pc-bridge-ops-list {
+  display: grid;
+  gap: 12px;
+}
+.pc-bridge-ops-metrics,
+.pc-bridge-ops-card-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pc-bridge-ops-card,
+.pc-bridge-ops-row,
+.pc-bridge-ops-metric {
+  background: color-mix(in srgb, var(--pc-surface) 74%, black);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: inherit;
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px;
+  text-decoration: none;
+}
+.pc-bridge-ops-metric {
+  gap: 4px;
+}
+.pc-bridge-ops-metric span {
+  color: var(--pc-muted);
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+.pc-bridge-ops-metric strong {
+  color: var(--pc-text);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.pc-bridge-ops-metric small,
+.pc-bridge-ops-card p,
+.pc-bridge-ops-row p {
+  color: color-mix(in srgb, var(--pc-text) 76%, var(--pc-muted));
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.pc-bridge-ops-row {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.pc-bridge-ops-row-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.pc-bridge-ops-card-head,
+.pc-bridge-ops-row-title,
+.pc-bridge-ops-actions,
+.pc-bridge-ops-badges,
+.pc-bridge-ops-facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pc-bridge-ops-card-head,
+.pc-bridge-ops-row-title {
+  justify-content: space-between;
+}
+.pc-bridge-ops-card-head strong,
+.pc-bridge-ops-row-title strong {
+  color: var(--pc-text);
+  overflow-wrap: anywhere;
+}
+.pc-bridge-ops-facts span,
+.pc-bridge-ops-badge,
+.pc-bridge-ops-doc {
+  border: 1px solid color-mix(in srgb, var(--pc-border) 76%, transparent);
+  border-radius: 999px;
+  color: var(--pc-muted);
+  display: inline-flex;
+  gap: 5px;
+  min-height: 22px;
+  padding: 2px 7px;
+  font-size: 11px;
+  text-decoration: none;
+}
+.pc-bridge-ops-facts b {
+  color: color-mix(in srgb, var(--pc-muted) 80%, var(--pc-text));
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.pc-bridge-ops-doc {
+  color: color-mix(in srgb, var(--pc-info) 82%, var(--pc-text));
+}
+.pc-bridge-ops-action {
+  align-items: center;
+  background: color-mix(in srgb, var(--pc-surface-muted) 78%, transparent);
+  border: 1px solid currentColor;
+  border-radius: 7px;
+  color: inherit;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 740;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 9px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.pc-bridge-ops-action.is-disabled {
+  cursor: default;
+  opacity: .58;
+}
+.pc-bridge-ops-row.is-private {
+  background: color-mix(in srgb, var(--pc-warning) 6%, var(--pc-surface));
+}
 .pc-terminal-stream {
   display: grid;
   gap: 10px;
@@ -3204,6 +3324,10 @@ pre {
   .admin-nav-groups { display: none; }
   .admin-mobile-nav { display: block; flex: 1 0 100%; order: 3; }
   .admin-status { margin-left: auto; }
+  .pc-bridge-ops-metrics,
+  .pc-bridge-ops-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .pc-system-metrics,
   .pc-system-card-grid-wrap {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3281,6 +3405,14 @@ pre {
   }
   .pc-persona-editor-actions,
   .pc-persona-editor-section-meta {
+    justify-content: flex-start;
+  }
+  .pc-bridge-ops-metrics,
+  .pc-bridge-ops-card-grid,
+  .pc-bridge-ops-row {
+    grid-template-columns: 1fr;
+  }
+  .pc-bridge-ops-actions {
     justify-content: flex-start;
   }
   .pc-system-metrics,

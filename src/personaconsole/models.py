@@ -1086,6 +1086,108 @@ class BridgeStatusCard:
 
 
 @dataclass(frozen=True)
+class BridgeWebhookRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    method: str = ""
+    path: str = ""
+    verification: str = ""
+    last_seen: str = ""
+    detail: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class BridgeQueueRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    queued: str | int = ""
+    failed: str | int = ""
+    claimed: str | int = ""
+    last_in: str = ""
+    last_out: str = ""
+    policy: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class BridgeHeartbeatRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    checkpoint: str = ""
+    latency: str = ""
+    last_seen: str = ""
+    detail: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class BridgeProviderCapabilityRow:
+    key: str
+    label: str
+    provider: str = ""
+    capability: str = ""
+    status: str = "unknown"
+    tone: str = "neutral"
+    configured: bool = False
+    enabled: bool = False
+    docs_href: str = ""
+    detail: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class BridgeDeliveryRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    direction: str = ""
+    provider: str = ""
+    target: str = ""
+    attempts: str | int = ""
+    timestamp: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class BridgeOpsSurfaceConfig:
+    enabled: bool = False
+    feature: str = "bridge_ops"
+    key: str = "bridge-ops"
+    title: str = "Bridge Operations"
+    subtitle: str = "Provider-neutral webhook, queue, heartbeat, capability, and delivery posture"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    bridges: Sequence[BridgeStatusCard | Mapping[str, object]] = field(default_factory=tuple)
+    webhooks: Sequence[BridgeWebhookRow | Mapping[str, object]] = field(default_factory=tuple)
+    queues: Sequence[BridgeQueueRow | Mapping[str, object]] = field(default_factory=tuple)
+    heartbeats: Sequence[BridgeHeartbeatRow | Mapping[str, object]] = field(default_factory=tuple)
+    providers: Sequence[BridgeProviderCapabilityRow | Mapping[str, object]] = field(default_factory=tuple)
+    deliveries: Sequence[BridgeDeliveryRow | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No bridge operation items configured."
+
+
+@dataclass(frozen=True)
 class AgentSessionRow:
     key: str
     title: str

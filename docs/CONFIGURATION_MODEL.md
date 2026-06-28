@@ -752,6 +752,64 @@ prompt assembly, approval policy, persistence, audit logging, and authorization.
 Use `privacy_scope` plus `safe_alternate` for private trait/rule/proposal text
 that should render safely for non-owner operators.
 
+## Shared Bridge Operations
+
+`render_bridge_ops_surface(...)` renders provider-neutral bridge and webhook
+posture. PersonaConsole does not verify webhooks, send messages, claim queue
+work, call provider APIs, manage browser/container state, or perform OAuth.
+
+```python
+from personaconsole import (
+    BridgeDeliveryRow,
+    BridgeHeartbeatRow,
+    BridgeOpsSurfaceConfig,
+    BridgeProviderCapabilityRow,
+    BridgeQueueRow,
+    BridgeStatusCard,
+    BridgeWebhookRow,
+    DashboardMetric,
+    render_bridge_ops_surface,
+)
+
+html = render_bridge_ops_surface(
+    BridgeOpsSurfaceConfig(
+        enabled=True,
+        metrics=[DashboardMetric("Failed", 1, "/bridge/failed", tone="bad")],
+        bridges=[BridgeStatusCard("Webhook", "healthy", route="verify/reply")],
+        webhooks=[BridgeWebhookRow("verify", "Verify endpoint", "healthy", method="POST")],
+        queues=[BridgeQueueRow("inbound", "Inbound queue", "degraded", queued=4, failed=1)],
+        heartbeats=[BridgeHeartbeatRow("worker", "Worker heartbeat", "stale", checkpoint="worker-loop")],
+        providers=[
+            BridgeProviderCapabilityRow(
+                "chat",
+                "Chat provider",
+                provider="example-chat",
+                capability="messages",
+                configured=True,
+                enabled=True,
+                docs_href="/docs/providers/chat",
+            )
+        ],
+        deliveries=[
+            BridgeDeliveryRow(
+                "private-failure",
+                "Private delivery",
+                "failed",
+                detail="raw private failure",
+                privacy_scope="owner_private",
+                safe_alternate="safe delivery summary",
+            )
+        ],
+    ),
+    privacy_policy=owner_private_policy,
+    privacy_context=current_admin_context,
+)
+```
+
+Consumers own adapter execution, delivery queues, credentials, callback routes,
+provider-specific policy, provider documentation URLs, browser/container state,
+OAuth, and deployment wiring.
+
 ## Shared Settings Editor
 
 `render_settings_editor(...)` renders grouped runtime-owned settings without
@@ -905,15 +963,15 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.25
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.26
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims
 import, report the same version, expose adapter-health, token-health,
-owner-private, message/activity/media/people/review/journal/operations/terminal
-and persona-editor/settings-editor/system-health helpers plus shared controls,
-and can render a generic shell plus redacted feature panels. It does not read
-runtime secrets, databases, private routes, or consumer settings.
+owner-private, message/activity/media/people/review/journal/operations/bridge/
+terminal and persona-editor/settings-editor/system-health helpers plus shared
+controls, and can render a generic shell plus redacted feature panels. It does
+not read runtime secrets, databases, private routes, or consumer settings.
 Filesystem paths are omitted from output unless `--show-paths` is explicitly
 passed for local diagnostics.
 
