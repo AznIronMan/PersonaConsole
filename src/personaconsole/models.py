@@ -553,6 +553,136 @@ class SettingsEditorConfig:
 
 
 @dataclass(frozen=True)
+class SystemHealthCheck:
+    key: str
+    label: str = ""
+    status: str = "unknown"
+    tone: str = "neutral"
+    value: str | int | float | bool = ""
+    summary: str = ""
+    detail: str = ""
+    href: str = ""
+    updated: str = ""
+    required: bool = False
+    blocked: bool = False
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemHealthGroup:
+    key: str
+    title: str
+    description: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    checks: Sequence[SystemHealthCheck | Mapping[str, object]] = field(default_factory=tuple)
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemDatabaseCard:
+    key: str
+    label: str = "Database"
+    status: str = "unknown"
+    tone: str = "neutral"
+    database: str = ""
+    user: str = ""
+    host: str = ""
+    schema_version: str | int = ""
+    tables: str | int = ""
+    records: str | int = ""
+    latency: str = ""
+    summary: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemTableSummary:
+    name: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    schema: str = ""
+    rows: str | int = ""
+    owner: str = ""
+    updated: str = ""
+    detail: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemAuditRow:
+    key: str
+    label: str
+    action: str = ""
+    actor: str = ""
+    status: str = ""
+    timestamp: str = ""
+    summary: str = ""
+    detail: str = ""
+    tone: str = "neutral"
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemSecretCoverageRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    present: str | int = ""
+    missing: str | int = ""
+    required: str | int = ""
+    optional: str | int = ""
+    summary: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemReadinessProbe:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    summary: str = ""
+    detail: str = ""
+    checked_at: str = ""
+    required: bool = True
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SystemHealthSurfaceConfig:
+    enabled: bool = False
+    feature: str = "system_health"
+    key: str = "system-health"
+    title: str = "System Health"
+    subtitle: str = "Runtime, database, audit, and readiness posture"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    health_groups: Sequence[SystemHealthGroup | Mapping[str, object]] = field(default_factory=tuple)
+    databases: Sequence[SystemDatabaseCard | Mapping[str, object]] = field(default_factory=tuple)
+    tables: Sequence[SystemTableSummary | Mapping[str, object]] = field(default_factory=tuple)
+    audit_rows: Sequence[SystemAuditRow | Mapping[str, object]] = field(default_factory=tuple)
+    secret_coverage: Sequence[SystemSecretCoverageRow | Mapping[str, object]] = field(default_factory=tuple)
+    readiness: Sequence[SystemReadinessProbe | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No system posture data configured."
+
+
+@dataclass(frozen=True)
 class StatusTab:
     label: str
     href: str = ""

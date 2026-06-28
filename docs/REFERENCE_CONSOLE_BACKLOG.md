@@ -24,7 +24,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   splash/login/chat and connector settings surfaces shipped in PersonaConsole
   `1.0.19`; the read-only terminal stream window shipped in PersonaConsole
   `1.0.22`; the grouped settings editor surface shipped in PersonaConsole
-  `1.0.23`.
+  `1.0.23`; the system health/database/audit posture surface shipped in
+  PersonaConsole `1.0.24`.
 
 ## First Dashboard Modules
 
@@ -87,6 +88,9 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Grouped settings editor with redacted values, validation summaries,
   pending-change preview, restart markers, and runtime-owned action slots.
   Initial typed renderer shipped in PersonaConsole `1.0.23`.
+- System health/database/audit surface with runtime check groups, database
+  cards, table summaries, secret coverage, readiness probes, and owner-private
+  audit rows. Initial typed renderer shipped in PersonaConsole `1.0.24`.
 - Persona runtime, continuity, bridge, and agent-session posture panels.
   Initial typed public-safe renderers shipped in PersonaConsole `1.0.17`.
 - Read-only terminal/event stream window for agent sessions with a bounded

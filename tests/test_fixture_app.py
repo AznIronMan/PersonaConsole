@@ -23,6 +23,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["agent_ops"] is True
     assert config.features["terminal_stream"] is True
     assert config.features["settings_editor"] is True
+    assert config.features["system_health"] is True
     assert config.features["journal"] is True
     assert config.features["public_presence"] is True
     assert config.brand_assets is not None
@@ -72,6 +73,14 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "configured" in html
     assert "restart required" in html
     assert "raw fixture private settings secret" not in html
+    assert "pc-system-health-surface" in html
+    assert "System Health" in html
+    assert "Runtime database" in html
+    assert "Secret Coverage" in html
+    assert "Readiness" in html
+    assert "Owner-private system audit summarized for operators." in html
+    assert "raw fixture private system audit" not in html
+    assert "/audit/raw-private-fixture" not in html
     assert "pc-public-settings-surface" in html
     assert "Public Presence" in html
     assert "Small logo URL" in html

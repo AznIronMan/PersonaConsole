@@ -2673,6 +2673,176 @@ pre {
   background: var(--pc-info);
 }
 
+.pc-system-health-surface {
+  display: grid;
+  gap: 14px;
+}
+.pc-system-metrics,
+.pc-system-card-grid-wrap {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pc-system-metric,
+.pc-system-card,
+.pc-system-row {
+  background: color-mix(in srgb, var(--pc-surface-muted) 82%, transparent);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: inherit;
+  min-width: 0;
+  padding: 10px;
+  text-decoration: none;
+}
+.pc-system-metric {
+  display: grid;
+  gap: 4px;
+}
+.pc-system-metric-label,
+.pc-system-row p,
+.pc-system-card p {
+  color: var(--pc-muted);
+  font-size: 12px;
+  margin: 0;
+}
+.pc-system-metric strong {
+  color: var(--pc-text);
+  font-size: 18px;
+}
+.pc-system-group,
+.pc-system-section,
+.pc-system-list {
+  display: grid;
+  gap: 10px;
+}
+.pc-system-group-meta,
+.pc-system-badges,
+.pc-system-actions,
+.pc-system-row-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pc-system-row {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+.pc-system-row-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.pc-system-row-title,
+.pc-system-card-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+.pc-system-row-title strong,
+.pc-system-card-head strong {
+  color: var(--pc-text);
+}
+.pc-system-row-value {
+  color: var(--pc-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  justify-self: end;
+}
+.pc-system-card {
+  display: grid;
+  gap: 9px;
+}
+.pc-system-card-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pc-system-card-grid span {
+  background: color-mix(in srgb, var(--pc-surface) 66%, transparent);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 8px;
+}
+.pc-system-card-grid b {
+  color: var(--pc-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.pc-system-required,
+.pc-system-blocked,
+.pc-system-badge,
+.pc-surface-status {
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  color: var(--pc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+.pc-system-required {
+  border-color: color-mix(in srgb, var(--pc-info) 45%, var(--pc-border));
+}
+.pc-system-blocked {
+  border-color: color-mix(in srgb, var(--pc-danger) 54%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-danger) 84%, var(--pc-text));
+}
+.pc-system-action {
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  text-decoration: none;
+}
+.pc-system-action.is-disabled {
+  opacity: .55;
+}
+.pc-system-table-wrap {
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.pc-system-table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+.pc-system-table th,
+.pc-system-table td {
+  border-bottom: 1px solid var(--pc-border);
+  font-size: 12px;
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.pc-system-table th {
+  color: var(--pc-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.pc-system-table td:first-child,
+.pc-system-table a {
+  color: var(--pc-text);
+  font-weight: 700;
+}
+.pc-system-table tr:last-child td {
+  border-bottom: 0;
+}
+.pc-system-table tr.is-private td {
+  background: color-mix(in srgb, var(--pc-warning) 6%, transparent);
+}
+
 .pc-settings-editor {
   display: grid;
   gap: 14px;
@@ -2888,6 +3058,10 @@ pre {
   .admin-nav-groups { display: none; }
   .admin-mobile-nav { display: block; flex: 1 0 100%; order: 3; }
   .admin-status { margin-left: auto; }
+  .pc-system-metrics,
+  .pc-system-card-grid-wrap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -2951,6 +3125,20 @@ pre {
     text-align: left;
   }
   .pc-workflow-actions {
+    justify-content: flex-start;
+  }
+  .pc-system-metrics,
+  .pc-system-card-grid-wrap {
+    grid-template-columns: 1fr;
+  }
+  .pc-system-row {
+    grid-template-columns: 1fr;
+  }
+  .pc-system-row-value {
+    justify-self: start;
+  }
+  .pc-system-actions,
+  .pc-system-group-meta {
     justify-content: flex-start;
   }
   .pc-settings-grid {

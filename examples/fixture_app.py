@@ -18,6 +18,7 @@ from personaconsole import (
     PUBLIC_PRESENCE_FEATURE,
     REVIEW_FEATURE,
     SETTINGS_EDITOR_FEATURE,
+    SYSTEM_HEALTH_FEATURE,
     TERMINAL_STREAM_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
@@ -91,6 +92,14 @@ from personaconsole import (
     StatusPill,
     SurfaceAction,
     SurfaceBadge,
+    SystemAuditRow,
+    SystemDatabaseCard,
+    SystemHealthCheck,
+    SystemHealthGroup,
+    SystemHealthSurfaceConfig,
+    SystemReadinessProbe,
+    SystemSecretCoverageRow,
+    SystemTableSummary,
     TerminalStreamConfig,
     TerminalStreamEvent,
     ThemeTokens,
@@ -113,6 +122,7 @@ from personaconsole import (
     render_shell_html,
     render_status_tabs,
     render_surface_sections,
+    render_system_health_surface,
     render_workflow_sections,
 )
 
@@ -311,6 +321,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             AGENT_OPS_FEATURE: True,
             TERMINAL_STREAM_FEATURE: True,
             SETTINGS_EDITOR_FEATURE: True,
+            SYSTEM_HEALTH_FEATURE: True,
             PUBLIC_PRESENCE_FEATURE: True,
         },
         nav_groups=[
@@ -347,7 +358,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                     NavItem("Agent Ops", "/agent-ops", active="agent-ops", badge="agent_ops", feature=AGENT_OPS_FEATURE),
                     NavItem("Public Pages", "/settings/public-presence", active="public-presence", feature=PUBLIC_PRESENCE_FEATURE),
                     NavItem("Settings", "/settings", active="settings", feature=OPERATIONS_FEATURE),
-                    NavItem("Health", "/health", active="health"),
+                    NavItem("Health", "/health", active="health", feature=SYSTEM_HEALTH_FEATURE),
                 ],
                 key="system",
             ),
@@ -361,6 +372,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             "tasks": 6,
             "persona": 2,
             "agent_ops": 3,
+            "health": 2,
         },
         status_pills=[
             StatusPill("Runtime active", "good"),
@@ -374,7 +386,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.23-fixture",
+        app_version="v1.0.24-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -1078,6 +1090,107 @@ def render_dashboard_fragment() -> str:
         ),
         features={SETTINGS_EDITOR_FEATURE: True},
     )
+    system_health_surface = render_system_health_surface(
+        SystemHealthSurfaceConfig(
+            enabled=True,
+            title="System Health",
+            subtitle="Generic runtime, database, audit, secret, and readiness posture.",
+            tabs=[
+                StatusTab("All", "/health", 12, active=True),
+                StatusTab("Healthy", "/health?status=healthy", 6, tone="good"),
+                StatusTab("Needs care", "/health?status=warn", 4, tone="warn"),
+                StatusTab("Blocked", "/health?status=blocked", 2, tone="bad"),
+            ],
+            metrics=[
+                DashboardMetric("Runtime", "ok", "/health/runtime", "admin and API reachable", tone="good"),
+                DashboardMetric("Database", "degraded", "/health/database", "one table stale", tone="warn"),
+                DashboardMetric("Audit events", 41, "/health/audit", "last 24 hours", tone="info"),
+                DashboardMetric("Secret coverage", "6/7", "/health/secrets", "one optional missing", tone="warn"),
+            ],
+            health_groups=[
+                SystemHealthGroup(
+                    "runtime",
+                    "Runtime Checks",
+                    "Request path, worker, storage, and bridge health.",
+                    status="degraded",
+                    tone="warn",
+                    checks=[
+                        SystemHealthCheck("admin", "Admin server", "healthy", "good", "200", "Shell and shared assets are reachable.", updated="just now", required=True),
+                        SystemHealthCheck("api", "Runtime API", "healthy", "good", "42ms", "Primary API route responds inside target.", updated="1m ago", required=True),
+                        SystemHealthCheck("worker", "Background worker", "lagging", "warn", "42s", "One queue is above target latency.", updated="4m ago", required=True),
+                        SystemHealthCheck("storage", "Artifact storage", "unknown", "neutral", "n/a", "Consumer runtime has not reported this probe yet.", updated="not sampled"),
+                    ],
+                ),
+                SystemHealthGroup(
+                    "webhooks",
+                    "Webhook And Bridge Checks",
+                    "Provider-neutral bridge posture.",
+                    status="blocked",
+                    tone="bad",
+                    checks=[
+                        SystemHealthCheck("verify", "Webhook verification", "healthy", "good", "ok", "Verification endpoint responded.", required=True),
+                        SystemHealthCheck("reply", "Reply route", "blocked", "bad", "held", "Manual operator pass is required before replies resume.", required=True, blocked=True),
+                    ],
+                ),
+            ],
+            databases=[
+                SystemDatabaseCard(
+                    "runtime-db",
+                    "Runtime database",
+                    "degraded",
+                    "warn",
+                    database="runtime_db",
+                    user="runtime_user",
+                    host="internal",
+                    schema_version="2026.06",
+                    tables=12,
+                    records="4.2k",
+                    latency="42ms",
+                    summary="Connection works; audit table freshness needs review.",
+                    badges=[SurfaceBadge("consumer-owned", "info")],
+                    actions=[SurfaceAction("Open DB checks", "/health/database", "warn")],
+                ),
+            ],
+            tables=[
+                SystemTableSummary("messages", "healthy", "good", "current", 128, "runtime", "2m ago", "conversation rows are available"),
+                SystemTableSummary("people", "healthy", "good", "current", 37, "runtime", "8m ago", "profile rollups are current"),
+                SystemTableSummary("audit_events", "stale", "warn", "current", 41, "admin", "1h ago", "freshness threshold exceeded"),
+                SystemTableSummary("runtime_settings", "blocked", "bad", "pending", 19, "operator", "manual", "migration needs operator pass"),
+            ],
+            secret_coverage=[
+                SystemSecretCoverageRow("providers", "Provider credentials", "configured", "good", present=3, missing=0, required=3, optional=1, summary="Required provider secrets are present."),
+                SystemSecretCoverageRow("webhooks", "Webhook secrets", "missing optional", "warn", present=2, missing=1, required=2, optional=2, summary="One optional webhook secret is not configured."),
+            ],
+            readiness=[
+                SystemReadinessProbe("launch", "Launch preflight", "ready", "good", "Required runtime checks passed.", checked_at="09:00", required=True),
+                SystemReadinessProbe("schema", "Schema migration", "needs review", "warn", "One migration is staged for operator approval.", checked_at="09:03", required=True),
+                SystemReadinessProbe("token-scan", "Token scan", "blocked", "bad", "Manual token scan is required before promotion.", checked_at="09:05", required=True),
+            ],
+            audit_rows=[
+                SystemAuditRow("settings", "Settings update", "changed", "operator", "applied", "09:10", "Runtime interval changed from 15 to 30.", tone="info"),
+                SystemAuditRow(
+                    "owner-private-audit",
+                    "Owner-private audit event",
+                    "held",
+                    "runtime",
+                    "private",
+                    "09:12",
+                    "raw fixture private system audit",
+                    tone="warn",
+                    href="/audit/raw-private-fixture",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private system audit summarized for operators.",
+                ),
+            ],
+            actions=[
+                SurfaceAction("Refresh health", "/health/refresh", "info", method="post"),
+                SurfaceAction("Open audit", "/health/audit", "warn"),
+            ],
+        ),
+        features={SYSTEM_HEALTH_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     hold_form = """
 <section class="panel">
   <div class="panel-head">
@@ -1223,6 +1336,7 @@ def render_dashboard_fragment() -> str:
         + journal_surface
         + workflow_surfaces
         + settings_editor
+        + system_health_surface
         + public_settings_surface
         + surfaces
         + hold_form

@@ -139,6 +139,19 @@ _SETTINGS_EDITOR_EXPORTS = (
     "render_settings_editor",
     "settings_editor_feature_enabled",
 )
+_SYSTEM_HEALTH_EXPORTS = (
+    "SYSTEM_HEALTH_FEATURE",
+    "SystemAuditRow",
+    "SystemDatabaseCard",
+    "SystemHealthCheck",
+    "SystemHealthGroup",
+    "SystemHealthSurfaceConfig",
+    "SystemReadinessProbe",
+    "SystemSecretCoverageRow",
+    "SystemTableSummary",
+    "render_system_health_surface",
+    "system_health_surface_feature_enabled",
+)
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -274,6 +287,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "public_presence_exports", _PUBLIC_PRESENCE_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
         checks.extend(_export_checks(module, "settings_editor_exports", _SETTINGS_EDITOR_EXPORTS))
+        checks.extend(_export_checks(module, "system_health_exports", _SYSTEM_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.extend(_export_checks(module, "control_exports", _CONTROL_EXPORTS))
@@ -287,6 +301,7 @@ def run_consumer_integration_doctor(
         checks.append(_public_presence_render_check(module))
         checks.append(_operations_render_check(module))
         checks.append(_settings_editor_render_check(module))
+        checks.append(_system_health_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -991,6 +1006,97 @@ def _settings_editor_render_check(module: Any) -> DoctorCheck:
         and "/settings/reveal/api-key" in html
     )
     return _check(ok, "settings_editor_render", "settings editor renders redacted changed settings")
+
+
+def _system_health_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-system-audit"
+    raw_url = "/doctor/private-system-audit"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_system_health_surface(
+            module.SystemHealthSurfaceConfig(
+                enabled=True,
+                tabs=[
+                    module.StatusTab("All", "/system", 8, active=True),
+                    module.StatusTab("Needs care", "/system?status=warn", 2, tone="warn"),
+                ],
+                metrics=[
+                    module.DashboardMetric("Runtime", "ok", "/system/runtime", "shared render smoke", tone="good"),
+                    module.DashboardMetric("Database", "degraded", "/system/database", "one table stale", tone="warn"),
+                ],
+                health_groups=[
+                    module.SystemHealthGroup(
+                        "runtime",
+                        "Runtime",
+                        status="degraded",
+                        checks=[
+                            module.SystemHealthCheck("admin", "Admin server", "healthy", summary="admin responds", required=True),
+                            module.SystemHealthCheck("worker", "Worker queue", "lagging", tone="warn", summary="queue above target", blocked=True),
+                        ],
+                    )
+                ],
+                databases=[
+                    module.SystemDatabaseCard(
+                        "runtime-db",
+                        "Runtime database",
+                        "degraded",
+                        database="runtime_db",
+                        user="runtime_user",
+                        host="internal",
+                        schema_version="2026.06",
+                        tables=12,
+                        records="4.2k",
+                        latency="42ms",
+                        summary="Connection works; one table needs review.",
+                    )
+                ],
+                tables=[
+                    module.SystemTableSummary("messages", "healthy", schema="current", rows=128, owner="runtime", updated="2m ago"),
+                    module.SystemTableSummary("audit_events", "stale", tone="warn", schema="current", rows=41, owner="admin", updated="1h ago"),
+                ],
+                secret_coverage=[
+                    module.SystemSecretCoverageRow("providers", "Provider secrets", "missing", tone="warn", present=3, missing=1, required=4),
+                ],
+                readiness=[
+                    module.SystemReadinessProbe("schema", "Schema migration", "ready", checked_at="09:00"),
+                    module.SystemReadinessProbe("token-scan", "Token scan", "blocked", tone="bad", summary="manual pass required", checked_at="09:01"),
+                ],
+                audit_rows=[
+                    module.SystemAuditRow(
+                        "private-audit",
+                        "Private audit event",
+                        "update",
+                        "operator",
+                        "held",
+                        "09:02",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe system audit summary",
+                    )
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "system_health_render", "system health surface render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-system-health-surface" in html
+        and "Runtime database" in html
+        and "Secret Coverage" in html
+        and "Schema And Tables" in html
+        and "Readiness" in html
+        and "safe system audit summary" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "system_health_render", "system health surface renders posture data with owner-private redaction")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

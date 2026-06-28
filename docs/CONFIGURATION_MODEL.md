@@ -731,6 +731,63 @@ inputs by default. Raw current or pending secret values are not echoed into the
 HTML. Consumers provide action hrefs for reveal, save, reset, restart, and audit
 flows and enforce authorization on those routes.
 
+## Shared System Health
+
+`render_system_health_surface(...)` renders sanitized runtime posture without
+connecting to databases, probing services, reading secrets, or deciding
+remediation policy.
+
+```python
+from personaconsole import (
+    DashboardMetric,
+    StatusTab,
+    SystemAuditRow,
+    SystemDatabaseCard,
+    SystemHealthCheck,
+    SystemHealthGroup,
+    SystemHealthSurfaceConfig,
+    SystemReadinessProbe,
+    SystemSecretCoverageRow,
+    SystemTableSummary,
+    render_system_health_surface,
+)
+
+html = render_system_health_surface(
+    SystemHealthSurfaceConfig(
+        enabled=True,
+        tabs=[StatusTab("All", "/health", 12, active=True)],
+        metrics=[DashboardMetric("Database", "degraded", "/health/database", tone="warn")],
+        health_groups=[
+            SystemHealthGroup(
+                "runtime",
+                "Runtime Checks",
+                checks=[SystemHealthCheck("worker", "Worker queue", "lagging", tone="warn")],
+            )
+        ],
+        databases=[SystemDatabaseCard("runtime-db", "Runtime database", "degraded", database="runtime_db")],
+        tables=[SystemTableSummary("audit_events", "stale", tone="warn", rows=41)],
+        secret_coverage=[SystemSecretCoverageRow("webhooks", "Webhook secrets", "missing", tone="warn", missing=1)],
+        readiness=[SystemReadinessProbe("launch", "Launch preflight", "ready", checked_at="09:00")],
+        audit_rows=[
+            SystemAuditRow(
+                "private-audit",
+                "Owner-private audit event",
+                summary="raw private audit text",
+                privacy_scope="owner_private",
+                safe_alternate="safe audit summary",
+            )
+        ],
+    ),
+    privacy_policy=owner_private_policy,
+    privacy_context=current_admin_context,
+)
+```
+
+Consumers own the database inspection queries, migration checks, service probes,
+secret inventory, audit retention, remediation actions, and authorization. Pass
+only display-safe summaries unless owner-private redaction policy and safe
+alternates are supplied.
+
 ## Shared Controls
 
 Shared controls are small UI primitives that keep list and queue pages visually
@@ -784,15 +841,15 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.23
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.24
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims
 import, report the same version, expose adapter-health, token-health,
 owner-private, message/activity/media/people/review/journal/operations/terminal
-and settings-editor helpers plus shared controls, and can render a generic
-shell plus redacted feature panels. It does not read runtime secrets, databases,
-private routes, or consumer settings.
+and settings-editor/system-health helpers plus shared controls, and can render
+a generic shell plus redacted feature panels. It does not read runtime secrets,
+databases, private routes, or consumer settings.
 Filesystem paths are omitted from output unless `--show-paths` is explicitly
 passed for local diagnostics.
 

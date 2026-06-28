@@ -99,6 +99,14 @@ from .models import (
     SettingsGroup,
     SettingsOption,
     SettingsValidationMessage,
+    SystemAuditRow,
+    SystemDatabaseCard,
+    SystemHealthCheck,
+    SystemHealthGroup,
+    SystemHealthSurfaceConfig,
+    SystemReadinessProbe,
+    SystemSecretCoverageRow,
+    SystemTableSummary,
     StatusTab,
     StatusPill,
     SurfaceAction,
@@ -192,6 +200,11 @@ from .settings_editor import (
     SETTINGS_EDITOR_FEATURE,
     render_settings_editor,
     settings_editor_feature_enabled,
+)
+from .system_health import (
+    SYSTEM_HEALTH_FEATURE,
+    render_system_health_surface,
+    system_health_surface_feature_enabled,
 )
 from .journal import (
     JOURNAL_FEATURE,
@@ -315,6 +328,15 @@ __all__ = [
     "SettingsGroup",
     "SettingsOption",
     "SettingsValidationMessage",
+    "SYSTEM_HEALTH_FEATURE",
+    "SystemAuditRow",
+    "SystemDatabaseCard",
+    "SystemHealthCheck",
+    "SystemHealthGroup",
+    "SystemHealthSurfaceConfig",
+    "SystemReadinessProbe",
+    "SystemSecretCoverageRow",
+    "SystemTableSummary",
     "StatusTab",
     "StatusPill",
     "SurfaceAction",
@@ -388,6 +410,7 @@ __all__ = [
     "render_review_surface",
     "render_settings_editor",
     "render_shell_html",
+    "render_system_health_surface",
     "render_public_media",
     "render_public_settings_surface",
     "render_public_splash_page",
@@ -403,12 +426,13 @@ __all__ = [
     "token_health_feature_enabled",
     "terminal_stream_feature_enabled",
     "settings_editor_feature_enabled",
+    "system_health_surface_feature_enabled",
     "render_user_pill",
     "token_health_lookup",
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.23"
+__version__ = "1.0.24"
 
 
 def configure_jinja_loader(*args, **kwargs):
