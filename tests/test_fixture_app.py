@@ -20,6 +20,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["people"] is True
     assert config.features["operations"] is True
     assert config.features["persona"] is True
+    assert config.features["persona_editor"] is True
     assert config.features["agent_ops"] is True
     assert config.features["terminal_stream"] is True
     assert config.features["settings_editor"] is True
@@ -60,6 +61,21 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private persona state summarized for operators." in html
     assert "Owner-private continuity item summarized for operators." in html
     assert "raw fixture private persona" not in html
+    assert "pc-persona-editor-surface" in html
+    assert "Persona Editor" in html
+    assert "Voice rule proposal" in html
+    assert "Owner-private profile field summarized for operators." in html
+    assert "Owner-private trait summarized for operators." in html
+    assert "Owner-private rule summarized for operators." in html
+    assert "Owner-private proposal change summarized for operators." in html
+    assert "new secret staged" in html
+    assert "raw fixture private persona editor profile" not in html
+    assert "raw fixture private persona editor trait" not in html
+    assert "raw fixture private persona editor rule" not in html
+    assert "raw fixture private persona editor secret" not in html
+    assert "new raw fixture persona editor secret" not in html
+    assert "raw fixture private persona editor before" not in html
+    assert "raw fixture private persona editor after" not in html
     assert "pc-agent-ops-surface" in html
     assert "Owner-private agent session summarized for operators." in html
     assert "raw fixture private agent" not in html

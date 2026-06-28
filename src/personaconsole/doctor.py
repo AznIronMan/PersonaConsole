@@ -102,6 +102,7 @@ _PUBLIC_PRESENCE_EXPORTS = (
 _OPERATIONS_EXPORTS = (
     "AGENT_OPS_FEATURE",
     "OPERATIONS_FEATURE",
+    "PERSONA_EDITOR_FEATURE",
     "PERSONA_RUNTIME_FEATURE",
     "TERMINAL_STREAM_FEATURE",
     "AgentOpsSurfaceConfig",
@@ -113,16 +114,26 @@ _OPERATIONS_EXPORTS = (
     "OpsSettingItem",
     "OpsStatusCard",
     "OpsTableRow",
+    "PersonaChangeRow",
+    "PersonaEditorConfig",
     "PersonaPanel",
+    "PersonaProfileField",
+    "PersonaProfileSection",
+    "PersonaProposalCard",
+    "PersonaRuleRow",
     "PersonaRuntimeSurfaceConfig",
+    "PersonaStateField",
+    "PersonaTraitRow",
     "SurfaceAction",
     "TerminalStreamConfig",
     "TerminalStreamEvent",
     "agent_ops_surface_feature_enabled",
     "operations_surface_feature_enabled",
+    "persona_editor_feature_enabled",
     "persona_runtime_surface_feature_enabled",
     "render_agent_ops_surface",
     "render_operations_surface",
+    "render_persona_editor",
     "render_persona_runtime_surface",
     "render_terminal_stream",
     "render_workflow_sections",
@@ -300,6 +311,7 @@ def run_consumer_integration_doctor(
         checks.append(_journal_render_check(module))
         checks.append(_public_presence_render_check(module))
         checks.append(_operations_render_check(module))
+        checks.append(_persona_editor_render_check(module))
         checks.append(_settings_editor_render_check(module))
         checks.append(_system_health_render_check(module))
         checks.append(_owner_private_render_check(module))
@@ -1006,6 +1018,121 @@ def _settings_editor_render_check(module: Any) -> DoctorCheck:
         and "/settings/reveal/api-key" in html
     )
     return _check(ok, "settings_editor_render", "settings editor renders redacted changed settings")
+
+
+def _persona_editor_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-persona-editor"
+    raw_secret = "raw-doctor-persona-state-secret"
+    raw_url = "/doctor/private-persona-editor"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_persona_editor(
+            module.PersonaEditorConfig(
+                enabled=True,
+                tabs=[
+                    module.StatusTab("All", "/persona/editor", 7, active=True),
+                    module.StatusTab("Pending", "/persona/editor?status=pending", 2, tone="warn"),
+                ],
+                profile_sections=[
+                    module.PersonaProfileSection(
+                        "profile",
+                        "Profile",
+                        fields=[
+                            module.PersonaProfileField("display", "Display", "Example Persona", status="approved", tone="good"),
+                            module.PersonaProfileField(
+                                "private-profile",
+                                "Private profile",
+                                raw_value,
+                                href=raw_url,
+                                privacy_scope="owner_private",
+                                safe_alternate="safe persona profile",
+                            ),
+                        ],
+                    )
+                ],
+                traits=[
+                    module.PersonaTraitRow("tone", "Tone", "+4", "high", "approved", "good", "Public trait"),
+                ],
+                rules=[
+                    module.PersonaRuleRow(
+                        "private-rule",
+                        "Private rule",
+                        raw_value,
+                        "owner",
+                        1,
+                        "pending-review",
+                        "warn",
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe persona rule",
+                    )
+                ],
+                state_fields=[
+                    module.PersonaStateField(
+                        "secret",
+                        "State secret",
+                        raw_secret,
+                        pending_value="new-raw-doctor-persona-state-secret",
+                        pending_display_value="new secret staged",
+                        field_type="secret",
+                        secret=True,
+                        changed=True,
+                    )
+                ],
+                proposals=[
+                    module.PersonaProposalCard(
+                        "proposal",
+                        "Review proposal",
+                        "pending-review",
+                        "warn",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe persona proposal",
+                        changes=[
+                            module.PersonaChangeRow(
+                                "private-change",
+                                "Private change",
+                                raw_value,
+                                raw_value,
+                                "held",
+                                "bad",
+                                privacy_scope="owner_private",
+                                safe_alternate="safe persona change",
+                            )
+                        ],
+                        actions=[module.SurfaceAction("Approve", "/persona/proposals/approve", "good", method="post")],
+                    )
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "persona_editor_render", "persona editor render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-persona-editor-surface" in html
+        and "Profile" in html
+        and "Traits" in html
+        and "Rules" in html
+        and "Mutable State" in html
+        and "Proposals" in html
+        and "safe persona profile" in html
+        and "safe persona rule" in html
+        and "safe persona proposal" in html
+        and "safe persona change" in html
+        and "new secret staged" in html
+        and raw_value not in html
+        and raw_secret not in html
+        and "new-raw-doctor-persona-state-secret" not in html
+        and raw_url not in html
+    )
+    return _check(ok, "persona_editor_render", "persona editor renders profile, rules, state, proposals, and redaction")
 
 
 def _system_health_render_check(module: Any) -> DoctorCheck:

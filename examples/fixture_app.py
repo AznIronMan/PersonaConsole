@@ -14,6 +14,7 @@ from personaconsole import (
     MESSAGES_FEATURE,
     OPERATIONS_FEATURE,
     PEOPLE_FEATURE,
+    PERSONA_EDITOR_FEATURE,
     PERSONA_RUNTIME_FEATURE,
     PUBLIC_PRESENCE_FEATURE,
     REVIEW_FEATURE,
@@ -71,9 +72,17 @@ from personaconsole import (
     PersonListRow,
     PersonRelationshipSummary,
     PersonTag,
+    PersonaChangeRow,
     PersonaConsoleConfig,
+    PersonaEditorConfig,
     PersonaPanel,
+    PersonaProfileField,
+    PersonaProfileSection,
+    PersonaProposalCard,
+    PersonaRuleRow,
     PersonaRuntimeSurfaceConfig,
+    PersonaStateField,
+    PersonaTraitRow,
     PublicLink,
     PublicMediaConfig,
     PublicMediaSource,
@@ -115,6 +124,7 @@ from personaconsole import (
     render_journal_surface,
     render_login_page,
     render_people_surface,
+    render_persona_editor,
     render_public_settings_surface,
     render_public_splash_page,
     render_review_surface,
@@ -317,6 +327,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             REVIEW_FEATURE: True,
             JOURNAL_FEATURE: True,
             OPERATIONS_FEATURE: True,
+            PERSONA_EDITOR_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
             TERMINAL_STREAM_FEATURE: True,
@@ -349,6 +360,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                     NavItem("Journal", "/journal", active="journal", badge="journal", feature=JOURNAL_FEATURE),
                     NavItem("Operations", "/operations", active="operations", badge="tasks", feature=OPERATIONS_FEATURE),
                     NavItem("Persona", "/persona", active="persona", badge="persona", feature=PERSONA_RUNTIME_FEATURE),
+                    NavItem("Persona Editor", "/persona/editor", active="persona-editor", feature=PERSONA_EDITOR_FEATURE),
                 ],
                 key="operations",
             ),
@@ -386,7 +398,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.24-fixture",
+        app_version="v1.0.25-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -1042,6 +1054,135 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
+    persona_editor = render_persona_editor(
+        PersonaEditorConfig(
+            enabled=True,
+            title="Persona Editor",
+            subtitle="Profile, traits, rules, mutable state, proposals, and change history.",
+            tabs=[
+                StatusTab("All", "/persona/editor", 9, active=True),
+                StatusTab("Draft", "/persona/editor?status=draft", 2, tone="info"),
+                StatusTab("Pending", "/persona/editor?status=pending-review", 3, tone="warn"),
+                StatusTab("Approved", "/persona/editor?status=approved", 4, tone="good"),
+            ],
+            profile_sections=[
+                PersonaProfileSection(
+                    "identity",
+                    "Profile",
+                    "Public-safe profile fields supplied by the consumer runtime.",
+                    status="approved",
+                    tone="good",
+                    fields=[
+                        PersonaProfileField("display-name", "Display name", "Example Persona", status="approved", tone="good"),
+                        PersonaProfileField("voice-summary", "Voice summary", "Concise, warm, and operationally clear.", status="approved", tone="good"),
+                        PersonaProfileField(
+                            "owner-private-profile",
+                            "Owner-private profile note",
+                            "raw fixture private persona editor profile",
+                            href="/persona/editor/raw-private-profile",
+                            status="held",
+                            tone="warn",
+                            privacy_scope="owner_private",
+                            safe_alternate="Owner-private profile field summarized for operators.",
+                        ),
+                    ],
+                )
+            ],
+            traits=[
+                PersonaTraitRow("warmth", "Warmth", "+4", "high", "approved", "good", "Keeps operator-facing messages calm."),
+                PersonaTraitRow("directness", "Directness", "+3", "medium", "draft", "info", "Draft adjustment is visible for review."),
+                PersonaTraitRow(
+                    "owner-private-trait",
+                    "Owner-private trait",
+                    status="pending-review",
+                    tone="warn",
+                    summary="raw fixture private persona editor trait",
+                    href="/persona/editor/raw-private-trait",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private trait summarized for operators.",
+                ),
+            ],
+            rules=[
+                PersonaRuleRow("reply-length", "Reply Length", "Prefer short replies unless a workflow needs detail.", "voice", 2, "approved", "good"),
+                PersonaRuleRow("review-hold", "Review Hold", "Hold uncertain actions for operator review.", "safety", 1, "approved", "good"),
+                PersonaRuleRow(
+                    "owner-private-rule",
+                    "Owner-private rule",
+                    "raw fixture private persona editor rule",
+                    "owner",
+                    1,
+                    "draft",
+                    "warn",
+                    href="/persona/editor/raw-private-rule",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private rule summarized for operators.",
+                ),
+            ],
+            state_fields=[
+                PersonaStateField("mode", "Runtime mode", "review", pending_value="active", field_type="select", status="draft", tone="info", changed=True),
+                PersonaStateField("review-threshold", "Review threshold", 0.72, pending_value=0.8, field_type="number", status="pending-review", tone="warn", changed=True),
+                PersonaStateField(
+                    "private-state-secret",
+                    "Private state secret",
+                    "raw fixture private persona editor secret",
+                    pending_value="new raw fixture persona editor secret",
+                    pending_display_value="new secret staged",
+                    field_type="secret",
+                    status="pending-review",
+                    tone="warn",
+                    changed=True,
+                    secret=True,
+                    actions=[SurfaceAction("Reveal", "/persona/editor/reveal/private-state-secret", "info")],
+                ),
+            ],
+            proposals=[
+                PersonaProposalCard(
+                    "voice-proposal",
+                    "Voice rule proposal",
+                    "pending-review",
+                    "warn",
+                    "Review a proposed voice rule before it becomes active.",
+                    "operator",
+                    "rule:reply-length",
+                    "runtime",
+                    "09:16",
+                    "/persona/editor/proposals/voice-proposal",
+                    changes=[
+                        PersonaChangeRow("reply-length", "Reply Length", "Prefer short replies.", "Prefer short replies unless a workflow needs detail.", "pending", "warn", "runtime", "09:16"),
+                        PersonaChangeRow(
+                            "owner-private-change",
+                            "Owner-private change",
+                            "raw fixture private persona editor before",
+                            "raw fixture private persona editor after",
+                            "held",
+                            "bad",
+                            "runtime",
+                            "09:17",
+                            privacy_scope="owner_private",
+                            safe_alternate="Owner-private proposal change summarized for operators.",
+                        ),
+                    ],
+                    badges=[SurfaceBadge("review", "warn")],
+                    actions=[
+                        SurfaceAction("Approve", "/persona/editor/proposals/voice-proposal/approve", "good", method="post"),
+                        SurfaceAction("Reject", "/persona/editor/proposals/voice-proposal/reject", "bad", method="post"),
+                        SurfaceAction("Archive", "", "neutral", disabled=True),
+                    ],
+                )
+            ],
+            history=[
+                PersonaChangeRow("history-mode", "Runtime mode", "idle", "review", "applied", "good", "operator", "08:30"),
+                PersonaChangeRow("history-rule", "Review Hold", "draft", "approved", "approved", "good", "operator", "08:45"),
+            ],
+            actions=[
+                SurfaceAction("New proposal", "/persona/editor/proposals/new", "info"),
+                SurfaceAction("Open audit", "/persona/editor/audit", "warn"),
+            ],
+        ),
+        features={PERSONA_EDITOR_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     settings_editor = render_settings_editor(
         SettingsEditorConfig(
             enabled=True,
@@ -1335,6 +1476,7 @@ def render_dashboard_fragment() -> str:
         + review_surface
         + journal_surface
         + workflow_surfaces
+        + persona_editor
         + settings_editor
         + system_health_surface
         + public_settings_surface

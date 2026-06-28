@@ -939,6 +939,139 @@ class PersonaRuntimeSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class PersonaProfileField:
+    key: str
+    label: str
+    value: str | int | float | bool = ""
+    detail: str = ""
+    href: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaProfileSection:
+    key: str
+    title: str
+    description: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    fields: Sequence[PersonaProfileField | Mapping[str, object]] = field(default_factory=tuple)
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaTraitRow:
+    key: str
+    label: str
+    value: str | int | float = ""
+    intensity: str | int | float = ""
+    status: str = ""
+    tone: str = "neutral"
+    summary: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaRuleRow:
+    key: str
+    label: str
+    rule: str = ""
+    category: str = ""
+    priority: str | int = ""
+    status: str = ""
+    tone: str = "neutral"
+    summary: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaStateField:
+    key: str
+    label: str
+    value: str | int | float | bool = ""
+    display_value: str = ""
+    pending_value: str | int | float | bool = ""
+    pending_display_value: str = ""
+    field_type: str = "text"
+    status: str = ""
+    tone: str = "neutral"
+    detail: str = ""
+    changed: bool = False
+    secret: bool = False
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaChangeRow:
+    key: str
+    label: str
+    before: str | int | float | bool = ""
+    after: str | int | float | bool = ""
+    status: str = ""
+    tone: str = "neutral"
+    actor: str = ""
+    timestamp: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaProposalCard:
+    key: str
+    title: str
+    status: str = "pending"
+    tone: str = "warn"
+    summary: str = ""
+    source: str = ""
+    target: str = ""
+    proposed_by: str = ""
+    updated: str = ""
+    href: str = ""
+    changes: Sequence[PersonaChangeRow | Mapping[str, object]] = field(default_factory=tuple)
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PersonaEditorConfig:
+    enabled: bool = False
+    feature: str = "persona_editor"
+    key: str = "persona-editor"
+    title: str = "Persona Editor"
+    subtitle: str = "Profile, traits, rules, mutable state, proposals, and change history"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    profile_sections: Sequence[PersonaProfileSection | Mapping[str, object]] = field(default_factory=tuple)
+    traits: Sequence[PersonaTraitRow | Mapping[str, object]] = field(default_factory=tuple)
+    rules: Sequence[PersonaRuleRow | Mapping[str, object]] = field(default_factory=tuple)
+    state_fields: Sequence[PersonaStateField | Mapping[str, object]] = field(default_factory=tuple)
+    proposals: Sequence[PersonaProposalCard | Mapping[str, object]] = field(default_factory=tuple)
+    history: Sequence[PersonaChangeRow | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No persona editor items configured."
+
+
+@dataclass(frozen=True)
 class BridgeStatusCard:
     label: str
     status: str

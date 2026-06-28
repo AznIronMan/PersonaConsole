@@ -22,6 +22,7 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.JOURNAL_FEATURE == "journal"
     assert personaconsole.PUBLIC_PRESENCE_FEATURE == "public_presence"
     assert personaconsole.OPERATIONS_FEATURE == "operations"
+    assert personaconsole.PERSONA_EDITOR_FEATURE == "persona_editor"
     assert personaconsole.PERSONA_RUNTIME_FEATURE == "persona"
     assert personaconsole.AGENT_OPS_FEATURE == "agent_ops"
     assert personaconsole.TERMINAL_STREAM_FEATURE == "terminal_stream"
@@ -33,6 +34,7 @@ def test_personaconsole_is_canonical_api():
     assert "render_terminal_stream" in personaconsole.__all__
     assert "render_settings_editor" in personaconsole.__all__
     assert "render_system_health_surface" in personaconsole.__all__
+    assert "render_persona_editor" in personaconsole.__all__
     assert "run_consumer_integration_doctor" in personaconsole.__all__
 
 
@@ -51,6 +53,7 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.render_journal_surface is personaconsole.render_journal_surface
         assert legacy.render_public_splash_page is personaconsole.render_public_splash_page
         assert legacy.render_operations_surface is personaconsole.render_operations_surface
+        assert legacy.render_persona_editor is personaconsole.render_persona_editor
         assert legacy.render_terminal_stream is personaconsole.render_terminal_stream
         assert legacy.render_settings_editor is personaconsole.render_settings_editor
         assert legacy.render_system_health_surface is personaconsole.render_system_health_surface
@@ -68,6 +71,7 @@ def test_legacy_submodules_reexport_canonical_implementation():
         "models": "PersonaConsoleConfig",
         "operations": "render_operations_surface",
         "people": "render_people_surface",
+        "persona_editor": "render_persona_editor",
         "privacy": "render_private_text",
         "public_presence": "render_public_splash_page",
         "render": "render_nav_groups",
@@ -101,4 +105,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.24"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.25"

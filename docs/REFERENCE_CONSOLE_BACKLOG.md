@@ -25,7 +25,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   `1.0.19`; the read-only terminal stream window shipped in PersonaConsole
   `1.0.22`; the grouped settings editor surface shipped in PersonaConsole
   `1.0.23`; the system health/database/audit posture surface shipped in
-  PersonaConsole `1.0.24`.
+  PersonaConsole `1.0.24`; the persona editor primitives shipped in
+  PersonaConsole `1.0.25`.
 
 ## First Dashboard Modules
 
@@ -93,6 +94,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   audit rows. Initial typed renderer shipped in PersonaConsole `1.0.24`.
 - Persona runtime, continuity, bridge, and agent-session posture panels.
   Initial typed public-safe renderers shipped in PersonaConsole `1.0.17`.
+- Persona profile, trait, rule, mutable-state, proposal, and change-history
+  editor primitives. Initial typed renderer shipped in PersonaConsole `1.0.25`.
 - Read-only terminal/event stream window for agent sessions with a bounded
   current slice, chunked earlier-history hooks, live polling hooks, and no
   command execution. Initial typed renderer shipped in PersonaConsole `1.0.22`.

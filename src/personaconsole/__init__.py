@@ -80,8 +80,16 @@ from .models import (
     PersonTag,
     PersonaCoreConfig,
     PersonaConsoleConfig,
+    PersonaChangeRow,
+    PersonaEditorConfig,
+    PersonaProfileField,
+    PersonaProfileSection,
+    PersonaProposalCard,
+    PersonaRuleRow,
     PersonaPanel,
     PersonaRuntimeSurfaceConfig,
+    PersonaStateField,
+    PersonaTraitRow,
     PublicLink,
     PublicMediaConfig,
     PublicMediaSource,
@@ -173,6 +181,11 @@ from .people import (
     PEOPLE_FEATURE,
     people_surface_feature_enabled,
     render_people_surface,
+)
+from .persona_editor import (
+    PERSONA_EDITOR_FEATURE,
+    persona_editor_feature_enabled,
+    render_persona_editor,
 )
 from .review import (
     REVIEW_FEATURE,
@@ -295,6 +308,7 @@ __all__ = [
     "OpsStatusCard",
     "OpsTableRow",
     "PEOPLE_FEATURE",
+    "PERSONA_EDITOR_FEATURE",
     "PERSONA_RUNTIME_FEATURE",
     "AdminPrivacyContext",
     "OwnerPrivateScopePolicy",
@@ -303,9 +317,17 @@ __all__ = [
     "PersonRelationshipSummary",
     "PersonTag",
     "PersonaCoreConfig",
+    "PersonaChangeRow",
     "PersonaConsoleConfig",
+    "PersonaEditorConfig",
     "PersonaPanel",
+    "PersonaProfileField",
+    "PersonaProfileSection",
+    "PersonaProposalCard",
+    "PersonaRuleRow",
     "PersonaRuntimeSurfaceConfig",
+    "PersonaStateField",
+    "PersonaTraitRow",
     "PUBLIC_PRESENCE_FEATURE",
     "PUBLIC_THEME_KEYS",
     "PublicLink",
@@ -372,6 +394,7 @@ __all__ = [
     "journal_theme_options",
     "operations_surface_feature_enabled",
     "people_surface_feature_enabled",
+    "persona_editor_feature_enabled",
     "persona_runtime_surface_feature_enabled",
     "public_presence_feature_enabled",
     "public_theme_options",
@@ -405,6 +428,7 @@ __all__ = [
     "render_nav_groups",
     "render_operations_surface",
     "render_people_surface",
+    "render_persona_editor",
     "render_persona_runtime_surface",
     "render_private_text",
     "render_review_surface",
@@ -432,7 +456,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.24"
+__version__ = "1.0.25"
 
 
 def configure_jinja_loader(*args, **kwargs):

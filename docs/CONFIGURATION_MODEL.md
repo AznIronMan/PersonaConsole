@@ -688,6 +688,70 @@ execution. Initial pages should pass only a bounded recent slice; older history
 should be returned in chunks by the consumer endpoint so long terminal histories
 do not lock the server or browser.
 
+## Shared Persona Editor
+
+`render_persona_editor(...)` renders profile, trait, rule, mutable-state,
+proposal, and history sections for persona admin pages. PersonaConsole does not
+validate traits, assemble prompts, save state, approve proposals, or decide
+review policy.
+
+```python
+from personaconsole import (
+    PersonaChangeRow,
+    PersonaEditorConfig,
+    PersonaProfileField,
+    PersonaProfileSection,
+    PersonaProposalCard,
+    PersonaRuleRow,
+    PersonaStateField,
+    PersonaTraitRow,
+    SurfaceAction,
+    render_persona_editor,
+)
+
+html = render_persona_editor(
+    PersonaEditorConfig(
+        enabled=True,
+        profile_sections=[
+            PersonaProfileSection(
+                "identity",
+                "Profile",
+                fields=[PersonaProfileField("display", "Display", "Example Persona")],
+            )
+        ],
+        traits=[PersonaTraitRow("warmth", "Warmth", "+4", "high", "approved", "good")],
+        rules=[PersonaRuleRow("reply-length", "Reply Length", "Prefer short replies.", "voice")],
+        state_fields=[
+            PersonaStateField("mode", "Runtime mode", "review", pending_value="active", changed=True)
+        ],
+        proposals=[
+            PersonaProposalCard(
+                "proposal-one",
+                "Trait proposal",
+                changes=[
+                    PersonaChangeRow(
+                        "private-change",
+                        "Owner-private change",
+                        "raw private before",
+                        "raw private after",
+                        privacy_scope="owner_private",
+                        safe_alternate="safe change summary",
+                    )
+                ],
+                actions=[SurfaceAction("Approve", "/persona/proposals/one/approve", "good", method="post")],
+            )
+        ],
+    ),
+    privacy_policy=owner_private_policy,
+    privacy_context=current_admin_context,
+)
+```
+
+Consumers own source-of-truth storage, validation, proposal state machines,
+prompt assembly, approval policy, persistence, audit logging, and authorization.
+Use `privacy_scope` plus `safe_alternate` for private trait/rule/proposal text
+that should render safely for non-owner operators.
+
 ## Shared Settings Editor
 
 `render_settings_editor(...)` renders grouped runtime-owned settings without
@@ -841,15 +905,15 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.24
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.25
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims
 import, report the same version, expose adapter-health, token-health,
 owner-private, message/activity/media/people/review/journal/operations/terminal
-and settings-editor/system-health helpers plus shared controls, and can render
-a generic shell plus redacted feature panels. It does not read runtime secrets,
-databases, private routes, or consumer settings.
+and persona-editor/settings-editor/system-health helpers plus shared controls,
+and can render a generic shell plus redacted feature panels. It does not read
+runtime secrets, databases, private routes, or consumer settings.
 Filesystem paths are omitted from output unless `--show-paths` is explicitly
 passed for local diagnostics.
 
