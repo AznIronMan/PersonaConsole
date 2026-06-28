@@ -3441,6 +3441,92 @@ pre {
 .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+.pc-availability-monitor-surface {
+  display: grid;
+  gap: 14px;
+}
+.pc-availability-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pc-availability-metric,
+.pc-availability-row {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  text-decoration: none;
+}
+.pc-availability-metric span,
+.pc-availability-metric small,
+.pc-availability-row p,
+.pc-availability-row small {
+  color: var(--pc-muted);
+}
+.pc-availability-metric strong {
+  font-size: 24px;
+  line-height: 1;
+}
+.pc-availability-section {
+  display: grid;
+  gap: 10px;
+}
+.pc-availability-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pc-availability-row-title,
+.pc-availability-actions,
+.pc-availability-badges,
+.pc-availability-facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pc-availability-row-title {
+  justify-content: space-between;
+}
+.pc-availability-row-title strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pc-availability-action {
+  align-items: center;
+  background: color-mix(in srgb, var(--pc-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pc-accent) 34%, var(--pc-border));
+  border-radius: 8px;
+  color: var(--pc-text);
+  display: inline-flex;
+  font: 700 12px/1 var(--pc-font);
+  justify-content: center;
+  min-height: 32px;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+.pc-availability-action.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.pc-availability-badge,
+.pc-availability-facts span {
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 999px;
+  color: var(--pc-muted);
+  font-size: 11px;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.pc-availability-facts b {
+  color: var(--pc-text);
+  margin-right: 4px;
+}
 
 @media (max-width: 1040px) {
   body.admin-shell { padding-top: 116px; }
@@ -3457,7 +3543,8 @@ pre {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .pc-command-intake-metrics,
-  .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field) {
+  .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field),
+  .pc-availability-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3571,12 +3658,16 @@ pre {
     grid-template-columns: 1fr;
   }
   .pc-command-intake-metrics,
-  .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field) {
+  .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field),
+  .pc-availability-metrics,
+  .pc-availability-list {
     grid-template-columns: 1fr;
   }
   .pc-command-intake-form-actions,
   .pc-command-intake-actions,
-  .pc-command-intake-row-title {
+  .pc-command-intake-row-title,
+  .pc-availability-actions,
+  .pc-availability-row-title {
     align-items: stretch;
     flex-direction: column;
   }

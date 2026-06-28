@@ -27,6 +27,17 @@ _ADAPTER_HEALTH_EXPORTS = (
     "adapter_health_feature_enabled",
     "render_adapter_health_panel",
 )
+_AVAILABILITY_MONITOR_EXPORTS = (
+    "AVAILABILITY_MONITOR_FEATURE",
+    "AvailabilityEventRow",
+    "AvailabilityMonitorRow",
+    "AvailabilityMonitorSurfaceConfig",
+    "AvailabilityPolicyRow",
+    "AvailabilityScenarioRow",
+    "AvailabilityWindowRow",
+    "availability_monitor_feature_enabled",
+    "render_availability_monitor_surface",
+)
 _SURFACE_EXPORTS = (
     "ACTIVITY_FEATURE",
     "MEDIA_FEATURE",
@@ -314,6 +325,7 @@ def run_consumer_integration_doctor(
     if personaconsole.imported:
         module = importlib.import_module("personaconsole")
         checks.extend(_export_checks(module, "adapter_health_exports", _ADAPTER_HEALTH_EXPORTS))
+        checks.extend(_export_checks(module, "availability_monitor_exports", _AVAILABILITY_MONITOR_EXPORTS))
         checks.extend(_export_checks(module, "token_health_exports", _TOKEN_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "surface_exports", _SURFACE_EXPORTS))
         checks.extend(_export_checks(module, "people_exports", _PEOPLE_EXPORTS))
@@ -329,6 +341,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.extend(_export_checks(module, "control_exports", _CONTROL_EXPORTS))
         checks.append(_adapter_health_render_check(module))
+        checks.append(_availability_monitor_render_check(module))
         checks.append(_token_health_render_check(module))
         checks.append(_controls_render_check(module))
         checks.append(_surface_render_check(module))
@@ -476,6 +489,97 @@ def _adapter_health_render_check(module: Any) -> DoctorCheck:
         and "runtime-owned policy" in html
     )
     return _check(ok, "adapter_health_render", "adapter health panel renders generic runtime cards")
+
+
+def _availability_monitor_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-availability"
+    raw_url = "/doctor/private-availability"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_availability_monitor_surface(
+            module.AvailabilityMonitorSurfaceConfig(
+                enabled=True,
+                tabs=[module.StatusTab("Live", "/availability", 2, active=True, tone="good")],
+                metrics=[module.DashboardMetric("Open windows", 1, "/availability/windows", "active", tone="good")],
+                windows=[
+                    module.AvailabilityWindowRow(
+                        "private-window",
+                        "Private window",
+                        "open",
+                        "good",
+                        "09:00",
+                        "17:00",
+                        "UTC",
+                        "weekday",
+                        "chat",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe availability window",
+                    )
+                ],
+                monitors=[
+                    module.AvailabilityMonitorRow("queue", "Queue latency", "healthy", "good", "12s", "30s", "1m ago", "2m"),
+                ],
+                policies=[
+                    module.AvailabilityPolicyRow("review", "Review gate", "active", "good", "operator confirmation", "Required for risky sends."),
+                ],
+                scenarios=[
+                    module.AvailabilityScenarioRow(
+                        "private-scenario",
+                        "Private scenario",
+                        "review",
+                        "warn",
+                        "preflight",
+                        "hold",
+                        "08:30",
+                        "10:00",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe availability scenario",
+                    )
+                ],
+                events=[
+                    module.AvailabilityEventRow(
+                        "private-event",
+                        "Private event",
+                        "held",
+                        "warn",
+                        "09:10",
+                        "monitor",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe availability event",
+                    )
+                ],
+                actions=[module.SurfaceAction("Refresh", "/availability/refresh", "info", method="post")],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "availability_monitor_render", "availability monitor render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-availability-monitor-surface" in html
+        and "Schedule Windows" in html
+        and "Live Monitors" in html
+        and "Policy Posture" in html
+        and "Scenario QA" in html
+        and "Monitor Events" in html
+        and "safe availability window" in html
+        and "safe availability scenario" in html
+        and "safe availability event" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "availability_monitor_render", "availability monitor renders schedule, policy, scenario, and redaction")
 
 
 def _controls_render_check(module: Any) -> DoctorCheck:

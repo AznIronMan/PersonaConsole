@@ -21,6 +21,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["operations"] is True
     assert config.features["bridge_ops"] is True
     assert config.features["command_intake"] is True
+    assert config.features["availability_monitor"] is True
     assert config.features["persona"] is True
     assert config.features["persona_editor"] is True
     assert config.features["agent_ops"] is True
@@ -114,6 +115,23 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "raw fixture private command history detail" not in html
     assert "/commands/queue/raw-private" not in html
     assert "/commands/history/raw-private" not in html
+    assert "pc-availability-monitor-surface" in html
+    assert "Availability Monitor" in html
+    assert "Schedule Windows" in html
+    assert "Daytime window" in html
+    assert "Queue latency" in html
+    assert "Review gate" in html
+    assert "Reply preflight" in html
+    assert "Owner-private availability window summarized for operators." in html
+    assert "Owner-private availability scenario summarized for operators." in html
+    assert "Owner-private availability event summarized for operators." in html
+    assert "raw fixture private availability window" not in html
+    assert "raw fixture private availability detail" not in html
+    assert "raw fixture private availability scenario" not in html
+    assert "raw fixture private availability event" not in html
+    assert "/availability/windows/raw-private" not in html
+    assert "/availability/scenarios/raw-private" not in html
+    assert "/availability/events/raw-private" not in html
     assert "pc-settings-editor" in html
     assert "Runtime Settings" in html
     assert "Provider API key" in html

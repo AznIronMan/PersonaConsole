@@ -9,6 +9,7 @@ from pathlib import Path
 from personaconsole import (
     ACTIVITY_FEATURE,
     AGENT_OPS_FEATURE,
+    AVAILABILITY_MONITOR_FEATURE,
     JOURNAL_FEATURE,
     MEDIA_FEATURE,
     MESSAGES_FEATURE,
@@ -28,6 +29,12 @@ from personaconsole import (
     AgentOpsSurfaceConfig,
     AgentSessionRow,
     AdminPrivacyContext,
+    AvailabilityEventRow,
+    AvailabilityMonitorRow,
+    AvailabilityMonitorSurfaceConfig,
+    AvailabilityPolicyRow,
+    AvailabilityScenarioRow,
+    AvailabilityWindowRow,
     BrandAssets,
     BridgeDeliveryRow,
     BridgeHeartbeatRow,
@@ -137,6 +144,7 @@ from personaconsole import (
     render_bridge_ops_surface,
     render_chat_page,
     render_command_intake_surface,
+    render_availability_monitor_surface,
     render_dashboard_sections,
     render_journal_surface,
     render_login_page,
@@ -349,6 +357,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             PERSONA_EDITOR_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
+            AVAILABILITY_MONITOR_FEATURE: True,
             TERMINAL_STREAM_FEATURE: True,
             SETTINGS_EDITOR_FEATURE: True,
             SYSTEM_HEALTH_FEATURE: True,
@@ -377,6 +386,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                 [
                     NavItem("Review Queue", "/review", active="review", badge="review"),
                     NavItem("Journal", "/journal", active="journal", badge="journal", feature=JOURNAL_FEATURE),
+                    NavItem("Availability", "/availability", active="availability", badge="availability", feature=AVAILABILITY_MONITOR_FEATURE),
                     NavItem("Operations", "/operations", active="operations", badge="tasks", feature=OPERATIONS_FEATURE),
                     NavItem("Commands", "/commands", active="commands", badge="commands", feature=COMMAND_INTAKE_FEATURE),
                     NavItem("Persona", "/persona", active="persona", badge="persona", feature=PERSONA_RUNTIME_FEATURE),
@@ -402,6 +412,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             "media": 9,
             "review": 4,
             "journal": 5,
+            "availability": 2,
             "tasks": 6,
             "commands": 3,
             "persona": 2,
@@ -420,7 +431,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.27-fixture",
+        app_version="v1.0.28-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -1257,6 +1268,91 @@ def render_dashboard_fragment() -> str:
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
+    availability_monitor_surface = render_availability_monitor_surface(
+        AvailabilityMonitorSurfaceConfig(
+            enabled=True,
+            title="Availability Monitor",
+            subtitle="Schedule windows, live monitor checks, policy posture, scenario QA, and events.",
+            tabs=[
+                StatusTab("Live", "/availability", 3, active=True, tone="good"),
+                StatusTab("Review", "/availability?status=review", 1, tone="warn"),
+                StatusTab("Paused", "/availability?status=paused", 1, tone="neutral"),
+            ],
+            metrics=[
+                DashboardMetric("Open windows", 1, "/availability/windows", "current schedule", tone="good"),
+                DashboardMetric("Warnings", 1, "/availability/warnings", "needs review", tone="warn"),
+                DashboardMetric("Scenarios", 2, "/availability/scenarios", "QA checks", tone="info"),
+                DashboardMetric("Events", 5, "/availability/events", "last hour", tone="good"),
+            ],
+            windows=[
+                AvailabilityWindowRow("day", "Daytime window", "open", "good", "09:00", "17:00", "UTC", "weekday", "chat", "General replies are available."),
+                AvailabilityWindowRow("quiet", "Quiet hours", "scheduled", "info", "22:00", "07:00", "UTC", "daily", "all", "Replies are held for review."),
+                AvailabilityWindowRow(
+                    "private-window",
+                    "Owner-private window",
+                    "held",
+                    "warn",
+                    "19:00",
+                    "21:00",
+                    "UTC",
+                    "manual",
+                    "private",
+                    "raw fixture private availability window",
+                    detail="raw fixture private availability detail",
+                    href="/availability/windows/raw-private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private availability window summarized for operators.",
+                ),
+            ],
+            monitors=[
+                AvailabilityMonitorRow("queue", "Queue latency", "healthy", "good", "12s", "30s", "1m ago", "2m", "Worker queue is inside target."),
+                AvailabilityMonitorRow("heartbeat", "Worker heartbeat", "stale", "warn", "14m", "5m", "14m ago", "1m", "Heartbeat is older than target.", actions=[SurfaceAction("Restart", "", disabled=True)]),
+            ],
+            policies=[
+                AvailabilityPolicyRow("review", "Review gate", "active", "good", "operator confirmation", "Risky sends require operator confirmation."),
+                AvailabilityPolicyRow("quiet", "Quiet-hours hold", "active", "info", "hold outside window", "Messages outside the active window remain queued."),
+            ],
+            scenarios=[
+                AvailabilityScenarioRow("preflight", "Reply preflight", "ready", "good", "policy check", "queue or send", "08:30", "10:00", "Dry-run scenario is green."),
+                AvailabilityScenarioRow(
+                    "private-scenario",
+                    "Owner-private scenario",
+                    "review",
+                    "warn",
+                    "private preflight",
+                    "hold",
+                    "08:35",
+                    "10:05",
+                    "raw fixture private availability scenario",
+                    href="/availability/scenarios/raw-private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private availability scenario summarized for operators.",
+                ),
+            ],
+            events=[
+                AvailabilityEventRow("queue-ok", "Queue check passed", "ok", "good", "09:05", "monitor", "Queue latency stayed inside target."),
+                AvailabilityEventRow(
+                    "private-event",
+                    "Owner-private availability event",
+                    "held",
+                    "warn",
+                    "09:10",
+                    "monitor",
+                    "raw fixture private availability event",
+                    href="/availability/events/raw-private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private availability event summarized for operators.",
+                ),
+            ],
+            actions=[
+                SurfaceAction("Refresh monitor", "/availability/refresh", "info", method="post"),
+                SurfaceAction("Open schedule", "/availability/windows", "good"),
+            ],
+        ),
+        features={AVAILABILITY_MONITOR_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
     persona_editor = render_persona_editor(
         PersonaEditorConfig(
             enabled=True,
@@ -1681,6 +1777,7 @@ def render_dashboard_fragment() -> str:
         + workflow_surfaces
         + bridge_ops_surface
         + command_intake_surface
+        + availability_monitor_surface
         + persona_editor
         + settings_editor
         + system_health_surface

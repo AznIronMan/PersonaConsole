@@ -114,6 +114,10 @@ PersonaConsole should supply reusable primitives for common module surfaces:
   confirmation gates, queue posture, and sanitized history. PersonaConsole
   `1.0.27` supplies the typed command intake renderer while consumers own
   parsing, permissions, queue storage, and execution.
+- `availability`: schedule windows, live monitor checks, safety policy posture,
+  scenario QA, and sanitized events. PersonaConsole `1.0.28` supplies the typed
+  availability monitor renderer while consumers own scheduling, probes,
+  permissions, alerts, and worker control.
 - `workers`: queue latency, retry state, and adapter/runtime cards.
 - `logs`: sanitized runtime events and warning summaries.
 - `settings`: feature flags, integration posture, and safe configuration

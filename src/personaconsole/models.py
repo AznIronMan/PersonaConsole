@@ -958,6 +958,108 @@ class CommandIntakeSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class AvailabilityWindowRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    starts_at: str = ""
+    ends_at: str = ""
+    timezone: str = ""
+    recurrence: str = ""
+    channel: str = ""
+    summary: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AvailabilityMonitorRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    value: str | int | float | bool = ""
+    target: str | int | float | bool = ""
+    last_seen: str = ""
+    next_check: str = ""
+    detail: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AvailabilityPolicyRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    requirement: str = ""
+    summary: str = ""
+    detail: str = ""
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AvailabilityScenarioRow:
+    key: str
+    label: str
+    status: str = "unknown"
+    tone: str = "neutral"
+    current_step: str = ""
+    expected_result: str = ""
+    last_run: str = ""
+    next_run: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AvailabilityEventRow:
+    key: str
+    label: str
+    status: str = ""
+    tone: str = "neutral"
+    timestamp: str = ""
+    source: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AvailabilityMonitorSurfaceConfig:
+    enabled: bool = False
+    feature: str = "availability_monitor"
+    key: str = "availability-monitor"
+    title: str = "Availability Monitor"
+    subtitle: str = "Schedule windows, live checks, policy posture, scenarios, and events"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    windows: Sequence[AvailabilityWindowRow | Mapping[str, object]] = field(default_factory=tuple)
+    monitors: Sequence[AvailabilityMonitorRow | Mapping[str, object]] = field(default_factory=tuple)
+    policies: Sequence[AvailabilityPolicyRow | Mapping[str, object]] = field(default_factory=tuple)
+    scenarios: Sequence[AvailabilityScenarioRow | Mapping[str, object]] = field(default_factory=tuple)
+    events: Sequence[AvailabilityEventRow | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No availability monitor items configured."
+
+
+@dataclass(frozen=True)
 class OpsStatusCard:
     label: str
     status: str

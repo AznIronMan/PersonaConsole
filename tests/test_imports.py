@@ -16,6 +16,7 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.run_consumer_integration_doctor
     assert personaconsole.MESSAGES_FEATURE == "messages"
     assert personaconsole.ADAPTER_HEALTH_FEATURE == "adapter_health"
+    assert personaconsole.AVAILABILITY_MONITOR_FEATURE == "availability_monitor"
     assert personaconsole.TOKEN_HEALTH_FEATURE == "token_health"
     assert personaconsole.PEOPLE_FEATURE == "people"
     assert personaconsole.REVIEW_FEATURE == "review"
@@ -33,6 +34,7 @@ def test_personaconsole_is_canonical_api():
     assert "PersonaConsoleConfig" in personaconsole.__all__
     assert "PersonaCoreConfig" in personaconsole.__all__
     assert "render_public_splash_page" in personaconsole.__all__
+    assert "render_availability_monitor_surface" in personaconsole.__all__
     assert "render_bridge_ops_surface" in personaconsole.__all__
     assert "render_command_intake_surface" in personaconsole.__all__
     assert "render_terminal_stream" in personaconsole.__all__
@@ -50,6 +52,7 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.DashboardData is personaconsole.DashboardData
         assert legacy.render_dashboard_sections is personaconsole.render_dashboard_sections
         assert legacy.render_adapter_health_panel is personaconsole.render_adapter_health_panel
+        assert legacy.render_availability_monitor_surface is personaconsole.render_availability_monitor_surface
         assert legacy.render_token_health_panel is personaconsole.render_token_health_panel
         assert legacy.render_message_surface is personaconsole.render_message_surface
         assert legacy.render_people_surface is personaconsole.render_people_surface
@@ -69,6 +72,7 @@ def test_legacy_import_shims_reexport_canonical_api():
 def test_legacy_submodules_reexport_canonical_implementation():
     legacy_modules = {
         "adapter_health": "render_adapter_health_panel",
+        "availability_monitor": "render_availability_monitor_surface",
         "bridge_ops": "render_bridge_ops_surface",
         "command_intake": "render_command_intake_surface",
         "controls": "render_flash_banners",
@@ -113,4 +117,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.27"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.28"

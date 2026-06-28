@@ -28,7 +28,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   PersonaConsole `1.0.24`; the persona editor primitives shipped in
   PersonaConsole `1.0.25`; bridge operation panels shipped in PersonaConsole
   `1.0.26`; the command intake preview surface shipped in PersonaConsole
-  `1.0.27`.
+  `1.0.27`; the availability/live monitor surface shipped in PersonaConsole
+  `1.0.28`.
 
 ## First Dashboard Modules
 
@@ -83,7 +84,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   typed renderer shipped in PersonaConsole `1.0.27`.
 - Health detail grid for host, network, provider, and model checks.
 - Availability/live monitor panels for schedules, workers, queue state, safety
-  policy, and scenario/status QA.
+  policy, and scenario/status QA. Initial typed renderer shipped in
+  PersonaConsole `1.0.28`.
 - Media/artifact cards for generated or uploaded assets with preview,
   classification, sendable status, and action slots.
 - Generic task, log, and settings posture panels for reference-console parity.

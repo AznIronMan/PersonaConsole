@@ -857,6 +857,50 @@ semantics, queue storage, execution, audit logging, permissions, and side
 effects. Use `privacy_scope` plus `safe_alternate` for private prompt text,
 candidate details, queued commands, and history.
 
+## Shared Availability Monitor
+
+`render_availability_monitor_surface(...)` renders schedule windows, live
+monitor checks, policy posture, scenario QA, and recent events. PersonaConsole
+does not run schedulers, probe providers, restart workers, store events, or
+decide availability policy.
+
+```python
+from personaconsole import (
+    AvailabilityMonitorRow,
+    AvailabilityMonitorSurfaceConfig,
+    AvailabilityPolicyRow,
+    AvailabilityScenarioRow,
+    AvailabilityWindowRow,
+    render_availability_monitor_surface,
+)
+
+html = render_availability_monitor_surface(
+    AvailabilityMonitorSurfaceConfig(
+        enabled=True,
+        windows=[
+            AvailabilityWindowRow(
+                "day",
+                "Daytime window",
+                "open",
+                starts_at="09:00",
+                ends_at="17:00",
+                timezone="UTC",
+            )
+        ],
+        monitors=[AvailabilityMonitorRow("queue", "Queue latency", "healthy", value="12s", target="30s")],
+        policies=[AvailabilityPolicyRow("review", "Review gate", "active", requirement="operator confirmation")],
+        scenarios=[AvailabilityScenarioRow("preflight", "Reply preflight", "ready", current_step="policy check")],
+    ),
+    privacy_policy=owner_private_policy,
+    privacy_context=current_admin_context,
+)
+```
+
+Consumers own schedule evaluation, worker control, route probing, provider
+calls, scenario execution, event retention, alerts, permissions, and runtime
+policy. Use `privacy_scope` plus `safe_alternate` for private schedule details,
+scenario notes, and monitor events.
+
 ## Shared Settings Editor
 
 `render_settings_editor(...)` renders grouped runtime-owned settings without
@@ -1010,11 +1054,11 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.27
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.28
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims
-import, report the same version, expose adapter-health, token-health,
+import, report the same version, expose adapter-health, availability-monitor, token-health,
 owner-private, message/activity/media/people/review/journal/operations/bridge/
 terminal/persona-editor/command-intake/settings-editor/system-health helpers
 plus shared controls, and can render a generic shell plus redacted feature
