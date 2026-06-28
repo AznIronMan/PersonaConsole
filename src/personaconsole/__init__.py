@@ -38,6 +38,13 @@ from .models import (
     BridgeQueueRow,
     BridgeWebhookRow,
     ChatPageConfig,
+    CommandCandidateRow,
+    CommandConfirmationStep,
+    CommandHistoryRow,
+    CommandIntakeSurfaceConfig,
+    CommandParsedField,
+    CommandQueueRow,
+    CommandRiskRow,
     ConnectorGroup,
     ConnectorOption,
     ContinuityItem,
@@ -215,6 +222,11 @@ from .bridge_ops import (
     bridge_ops_feature_enabled,
     render_bridge_ops_surface,
 )
+from .command_intake import (
+    COMMAND_INTAKE_FEATURE,
+    command_intake_feature_enabled,
+    render_command_intake_surface,
+)
 from .terminal import (
     TERMINAL_STREAM_FEATURE,
     render_terminal_stream,
@@ -275,6 +287,14 @@ __all__ = [
     "BridgeQueueRow",
     "BridgeWebhookRow",
     "ChatPageConfig",
+    "COMMAND_INTAKE_FEATURE",
+    "CommandCandidateRow",
+    "CommandConfirmationStep",
+    "CommandHistoryRow",
+    "CommandIntakeSurfaceConfig",
+    "CommandParsedField",
+    "CommandQueueRow",
+    "CommandRiskRow",
     "ConnectorGroup",
     "ConnectorOption",
     "ContinuityItem",
@@ -399,6 +419,7 @@ __all__ = [
     "can_view_raw_private",
     "canonical_privacy_scope",
     "bridge_ops_feature_enabled",
+    "command_intake_feature_enabled",
     "configure_jinja_loader",
     "dashboard_metrics_from_counts",
     "doctor_report_to_text",
@@ -438,6 +459,7 @@ __all__ = [
     "render_brand_logo",
     "render_bridge_ops_surface",
     "render_chat_page",
+    "render_command_intake_surface",
     "render_connector_groups",
     "render_flash_banners",
     "render_journal_surface",
@@ -476,7 +498,7 @@ __all__ = [
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.26"
+__version__ = "1.0.27"
 
 
 def configure_jinja_loader(*args, **kwargs):

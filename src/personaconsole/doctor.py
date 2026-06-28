@@ -151,6 +151,18 @@ _BRIDGE_OPS_EXPORTS = (
     "bridge_ops_feature_enabled",
     "render_bridge_ops_surface",
 )
+_COMMAND_INTAKE_EXPORTS = (
+    "COMMAND_INTAKE_FEATURE",
+    "CommandCandidateRow",
+    "CommandConfirmationStep",
+    "CommandHistoryRow",
+    "CommandIntakeSurfaceConfig",
+    "CommandParsedField",
+    "CommandQueueRow",
+    "CommandRiskRow",
+    "command_intake_feature_enabled",
+    "render_command_intake_surface",
+)
 _SETTINGS_EDITOR_EXPORTS = (
     "SETTINGS_EDITOR_FEATURE",
     "SettingsChange",
@@ -310,6 +322,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "public_presence_exports", _PUBLIC_PRESENCE_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
         checks.extend(_export_checks(module, "bridge_ops_exports", _BRIDGE_OPS_EXPORTS))
+        checks.extend(_export_checks(module, "command_intake_exports", _COMMAND_INTAKE_EXPORTS))
         checks.extend(_export_checks(module, "settings_editor_exports", _SETTINGS_EDITOR_EXPORTS))
         checks.extend(_export_checks(module, "system_health_exports", _SYSTEM_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
@@ -326,6 +339,7 @@ def run_consumer_integration_doctor(
         checks.append(_operations_render_check(module))
         checks.append(_persona_editor_render_check(module))
         checks.append(_bridge_ops_render_check(module))
+        checks.append(_command_intake_render_check(module))
         checks.append(_settings_editor_render_check(module))
         checks.append(_system_health_render_check(module))
         checks.append(_owner_private_render_check(module))
@@ -1219,6 +1233,130 @@ def _bridge_ops_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "bridge_ops_render", "bridge ops renders provider-neutral posture with owner-private redaction")
+
+
+def _command_intake_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-command"
+    raw_url = "/doctor/private-command"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_command_intake_surface(
+            module.CommandIntakeSurfaceConfig(
+                enabled=True,
+                tabs=[module.StatusTab("Preview", "/commands", 1, active=True, tone="info")],
+                metrics=[module.DashboardMetric("Queued", 2, "/commands/queue", "runtime owned", tone="warn")],
+                form_action="/commands/preview",
+                input_value=raw_value,
+                input_privacy_scope="owner_private",
+                input_safe_alternate="safe command prompt",
+                parsed_fields=[
+                    module.CommandParsedField("intent", "Intent", "adjust schedule", status="parsed", tone="good"),
+                    module.CommandParsedField(
+                        "private",
+                        "Private parameter",
+                        raw_value,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe parsed value",
+                    ),
+                ],
+                candidates=[
+                    module.CommandCandidateRow(
+                        "target",
+                        "Example target",
+                        "person",
+                        "0.82",
+                        "matched",
+                        "info",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe candidate",
+                    )
+                ],
+                risks=[
+                    module.CommandRiskRow(
+                        "policy",
+                        "Policy check",
+                        "medium",
+                        "review",
+                        "warn",
+                        raw_value,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe risk",
+                    )
+                ],
+                confirmations=[
+                    module.CommandConfirmationStep(
+                        "operator",
+                        "Operator confirmation",
+                        "pending",
+                        "warn",
+                        "Required before queueing.",
+                        actions=[module.SurfaceAction("Confirm", "/commands/confirm", "good", method="post")],
+                    )
+                ],
+                queue=[
+                    module.CommandQueueRow(
+                        "queued",
+                        "Queued command",
+                        "queued",
+                        "info",
+                        raw_value,
+                        "operator",
+                        "example target",
+                        "09:10",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe queued command",
+                    )
+                ],
+                history=[
+                    module.CommandHistoryRow(
+                        "history",
+                        "Previous command",
+                        "completed",
+                        "good",
+                        raw_value,
+                        "operator",
+                        "example target",
+                        "08:40",
+                        "2s",
+                        raw_value,
+                        href=raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe command history",
+                    )
+                ],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "command_intake_render", "command intake render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-command-intake-surface" in html
+        and "Parsed Preview" in html
+        and "Candidates" in html
+        and "Risks" in html
+        and "Confirmations" in html
+        and "Queue" in html
+        and "History" in html
+        and "safe command prompt" in html
+        and "safe parsed value" in html
+        and "safe candidate" in html
+        and "safe risk" in html
+        and "safe queued command" in html
+        and "safe command history" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "command_intake_render", "command intake renders preview, queue, history, and redaction")
 
 
 def _system_health_render_check(module: Any) -> DoctorCheck:

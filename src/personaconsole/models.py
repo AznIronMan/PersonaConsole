@@ -832,6 +832,132 @@ class ReviewSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class CommandParsedField:
+    key: str
+    label: str
+    value: str | int | float | bool = ""
+    status: str = ""
+    tone: str = "neutral"
+    detail: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandCandidateRow:
+    key: str
+    label: str
+    kind: str = ""
+    score: str | int | float = ""
+    status: str = ""
+    tone: str = "neutral"
+    summary: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandRiskRow:
+    key: str
+    label: str
+    severity: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    summary: str = ""
+    detail: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandConfirmationStep:
+    key: str
+    label: str
+    status: str = "pending"
+    tone: str = "neutral"
+    detail: str = ""
+    required: bool = True
+    completed: bool = False
+    href: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandQueueRow:
+    key: str
+    label: str
+    status: str = "queued"
+    tone: str = "neutral"
+    command: str = ""
+    actor: str = ""
+    target: str = ""
+    timestamp: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandHistoryRow:
+    key: str
+    label: str
+    result: str = ""
+    tone: str = "neutral"
+    command: str = ""
+    actor: str = ""
+    target: str = ""
+    timestamp: str = ""
+    duration: str = ""
+    detail: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class CommandIntakeSurfaceConfig:
+    enabled: bool = False
+    feature: str = "command_intake"
+    key: str = "command-intake"
+    title: str = "Command Intake"
+    subtitle: str = "Parsed command preview, risk posture, confirmation state, queue, and history"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    form_action: str = ""
+    form_method: str = "post"
+    input_name: str = "command"
+    input_label: str = "Command"
+    input_placeholder: str = "Describe the operator intent..."
+    input_value: str = ""
+    input_privacy_scope: str = ""
+    input_safe_alternate: str = ""
+    submit_label: str = "Preview"
+    queue_label: str = "Queue command"
+    queue_href: str = ""
+    queue_method: str = "post"
+    parsed_fields: Sequence[CommandParsedField | Mapping[str, object]] = field(default_factory=tuple)
+    candidates: Sequence[CommandCandidateRow | Mapping[str, object]] = field(default_factory=tuple)
+    risks: Sequence[CommandRiskRow | Mapping[str, object]] = field(default_factory=tuple)
+    confirmations: Sequence[CommandConfirmationStep | Mapping[str, object]] = field(default_factory=tuple)
+    queue: Sequence[CommandQueueRow | Mapping[str, object]] = field(default_factory=tuple)
+    history: Sequence[CommandHistoryRow | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    empty_label: str = "No command preview data configured."
+
+
+@dataclass(frozen=True)
 class OpsStatusCard:
     label: str
     status: str

@@ -810,6 +810,53 @@ Consumers own adapter execution, delivery queues, credentials, callback routes,
 provider-specific policy, provider documentation URLs, browser/container state,
 OAuth, and deployment wiring.
 
+## Shared Command Intake
+
+`render_command_intake_surface(...)` renders a parsed command preview with
+candidate targets, risk checks, confirmation steps, queued commands, and recent
+history. PersonaConsole does not parse commands, execute work, authorize
+operators, persist queues, call providers, or touch local files.
+
+```python
+from personaconsole import (
+    CommandCandidateRow,
+    CommandConfirmationStep,
+    CommandIntakeSurfaceConfig,
+    CommandParsedField,
+    CommandQueueRow,
+    CommandRiskRow,
+    SurfaceAction,
+    render_command_intake_surface,
+)
+
+html = render_command_intake_surface(
+    CommandIntakeSurfaceConfig(
+        enabled=True,
+        form_action="/commands/preview",
+        input_value="Change the runtime schedule",
+        parsed_fields=[CommandParsedField("intent", "Intent", "Adjust schedule")],
+        candidates=[CommandCandidateRow("schedule", "Schedule rule", "setting", "0.93")],
+        risks=[CommandRiskRow("side-effect", "Runtime side effect", "medium")],
+        confirmations=[
+            CommandConfirmationStep(
+                "operator",
+                "Operator confirmation",
+                "pending",
+                actions=[SurfaceAction("Confirm", "/commands/confirm", "good", method="post")],
+            )
+        ],
+        queue=[CommandQueueRow("queued", "Queued command", command="Adjust schedule")],
+    ),
+    privacy_policy=owner_private_policy,
+    privacy_context=current_admin_context,
+)
+```
+
+Consumers own parsing, target lookup, policy evaluation, confirmation
+semantics, queue storage, execution, audit logging, permissions, and side
+effects. Use `privacy_scope` plus `safe_alternate` for private prompt text,
+candidate details, queued commands, and history.
+
 ## Shared Settings Editor
 
 `render_settings_editor(...)` renders grouped runtime-owned settings without
@@ -963,15 +1010,16 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.26
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.27
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims
 import, report the same version, expose adapter-health, token-health,
 owner-private, message/activity/media/people/review/journal/operations/bridge/
-terminal and persona-editor/settings-editor/system-health helpers plus shared
-controls, and can render a generic shell plus redacted feature panels. It does
-not read runtime secrets, databases, private routes, or consumer settings.
+terminal/persona-editor/command-intake/settings-editor/system-health helpers
+plus shared controls, and can render a generic shell plus redacted feature
+panels. It does not read runtime secrets, databases, private routes, or
+consumer settings.
 Filesystem paths are omitted from output unless `--show-paths` is explicitly
 passed for local diagnostics.
 

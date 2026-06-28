@@ -20,6 +20,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["people"] is True
     assert config.features["operations"] is True
     assert config.features["bridge_ops"] is True
+    assert config.features["command_intake"] is True
     assert config.features["persona"] is True
     assert config.features["persona_editor"] is True
     assert config.features["agent_ops"] is True
@@ -93,6 +94,26 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private delivery failure summarized for operators." in html
     assert "raw fixture private bridge delivery failure" not in html
     assert "/bridge-ops/deliveries/raw-private" not in html
+    assert "pc-command-intake-surface" in html
+    assert "Command Intake" in html
+    assert "Preview command" in html
+    assert "Owner-private command prompt summarized for operators." in html
+    assert "Owner-private parsed parameter summarized for operators." in html
+    assert "Owner-private command candidate summarized for operators." in html
+    assert "Owner-private command risk summarized for operators." in html
+    assert "Owner-private queued command summarized for operators." in html
+    assert "Owner-private command history summarized for operators." in html
+    assert "raw fixture private command prompt" not in html
+    assert "raw fixture private command parsed parameter" not in html
+    assert "raw fixture private command candidate summary" not in html
+    assert "raw fixture private command candidate detail" not in html
+    assert "raw fixture private command risk summary" not in html
+    assert "raw fixture private command queued command" not in html
+    assert "raw fixture private command queue detail" not in html
+    assert "raw fixture private command history" not in html
+    assert "raw fixture private command history detail" not in html
+    assert "/commands/queue/raw-private" not in html
+    assert "/commands/history/raw-private" not in html
     assert "pc-settings-editor" in html
     assert "Runtime Settings" in html
     assert "Provider API key" in html

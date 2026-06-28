@@ -110,6 +110,10 @@ PersonaConsole should supply reusable primitives for common module surfaces:
   query helpers; consumers still own POST handlers, permissions, and target
   routes.
 - `tasks`: task status tables and operator next actions.
+- `commands`: parsed operator intent, candidate targets, risk checks,
+  confirmation gates, queue posture, and sanitized history. PersonaConsole
+  `1.0.27` supplies the typed command intake renderer while consumers own
+  parsing, permissions, queue storage, and execution.
 - `workers`: queue latency, retry state, and adapter/runtime cards.
 - `logs`: sanitized runtime events and warning summaries.
 - `settings`: feature flags, integration posture, and safe configuration

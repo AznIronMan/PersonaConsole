@@ -140,8 +140,8 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   or source mounts by checking version alignment, required shared exports,
   owner-private helpers, token-health helpers, adapter-health helpers,
   message/media/activity helpers, people helpers, review helpers, journal
-  helpers, operations/bridge/persona-editor helpers, settings/system-health
-  helpers, shared controls, and generic render smokes.
+  helpers, operations/bridge/persona-editor/command-intake helpers,
+  settings/system-health helpers, shared controls, and generic render smokes.
 - `personaconsole.register_static_assets(app, ...)` mounts shared CSS and JS
   assets in FastAPI apps.
 - `personaconsole.configure_jinja_loader(templates)` adds PersonaConsole
@@ -189,7 +189,9 @@ runtime checks, database posture, table summaries, audit events, secret
 coverage, and readiness probes. `v1.0.25` adds generic persona editor
 primitives for profile sections, traits, rules, mutable state, proposals, and
 change history. `v1.0.26` adds bridge operation panels for provider-neutral
-webhooks, queues, heartbeats, capabilities, and delivery claims.
+webhooks, queues, heartbeats, capabilities, and delivery claims. `v1.0.27`
+adds a command intake preview surface for parsed commands, target candidates,
+risk checks, confirmation gates, queue posture, and sanitized history.
 
 ## Public Safety
 
@@ -222,7 +224,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.26
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.27
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -279,6 +281,7 @@ script prints the tag matching the exported package version.
 - [Release 1.0.24](docs/RELEASE_1.0.24.md)
 - [Release 1.0.25](docs/RELEASE_1.0.25.md)
 - [Release 1.0.26](docs/RELEASE_1.0.26.md)
+- [Release 1.0.27](docs/RELEASE_1.0.27.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

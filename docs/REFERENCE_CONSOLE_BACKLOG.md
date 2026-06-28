@@ -27,7 +27,8 @@ screenshots, data, and runtime policy stay outside the public repo.
   `1.0.23`; the system health/database/audit posture surface shipped in
   PersonaConsole `1.0.24`; the persona editor primitives shipped in
   PersonaConsole `1.0.25`; bridge operation panels shipped in PersonaConsole
-  `1.0.26`.
+  `1.0.26`; the command intake preview surface shipped in PersonaConsole
+  `1.0.27`.
 
 ## First Dashboard Modules
 
@@ -78,7 +79,8 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Review queue cards and tables with summary metrics, tags, decision actions,
   and pending-change integration hooks.
 - Plain-language command preview panel with parsed result, risk tags,
-  candidates, confirmation states, queue button, and history list.
+  candidates, confirmation states, queue button, and history list. Initial
+  typed renderer shipped in PersonaConsole `1.0.27`.
 - Health detail grid for host, network, provider, and model checks.
 - Availability/live monitor panels for schedules, workers, queue state, safety
   policy, and scenario/status QA.
@@ -115,6 +117,9 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Bridge/provider operation panels for webhook posture, queues, heartbeats,
   provider capability rows, delivery claims, documentation links, and action
   slots. Initial typed renderer shipped in PersonaConsole `1.0.26`.
+- Command intake preview panel with parsed fields, candidate targets, risk
+  checks, confirmation steps, queue posture, and sanitized history. Initial
+  typed renderer shipped in PersonaConsole `1.0.27`.
 
 ## Implementation Rules
 
