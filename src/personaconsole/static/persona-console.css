@@ -1148,6 +1148,127 @@ pre {
 .pc-setting-row .pc-workflow-row-meta-inline {
   align-items: center;
 }
+.pc-terminal-stream {
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 86%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, black 62%, var(--pc-surface));
+}
+.pc-terminal-head,
+.pc-terminal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px 0;
+}
+.pc-terminal-toolbar {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding-top: 0;
+  color: var(--pc-muted);
+  font-size: 11px;
+}
+.pc-terminal-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pc-terminal-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--pc-success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc-success) 16%, transparent);
+}
+.pc-terminal-window-note {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--pc-border) 72%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.pc-terminal-history {
+  min-height: 28px;
+  border: 1px solid var(--pc-border);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pc-surface-muted) 76%, black);
+  color: var(--pc-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  padding: 5px 9px;
+}
+.pc-terminal-history:disabled {
+  cursor: default;
+  opacity: 0.52;
+}
+.pc-terminal-viewport {
+  max-height: 460px;
+  overflow: auto;
+  border-top: 1px solid color-mix(in srgb, var(--pc-border) 72%, transparent);
+  background:
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    color-mix(in srgb, black 74%, var(--pc-surface));
+  background-size: 100% 28px;
+}
+.pc-terminal-events {
+  display: grid;
+}
+.pc-terminal-event {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.045);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.pc-terminal-event-gutter {
+  min-width: 0;
+  color: var(--pc-muted);
+  text-align: right;
+}
+.pc-terminal-role-label {
+  display: inline-flex;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.pc-terminal-event-main {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.pc-terminal-event-meta,
+.pc-terminal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pc-terminal-event-meta span,
+.pc-terminal-event-meta time,
+.pc-terminal-badge,
+.pc-terminal-truncated {
+  color: color-mix(in srgb, var(--pc-muted) 86%, var(--pc-text));
+  font-size: 10px;
+}
+.pc-terminal-text {
+  min-width: 0;
+  color: color-mix(in srgb, var(--pc-text) 88%, var(--pc-muted));
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pc-terminal-role-input .pc-terminal-text { color: var(--pc-accent-soft); }
+.pc-terminal-role-system .pc-terminal-text { color: color-mix(in srgb, var(--pc-info) 76%, var(--pc-text)); }
+.pc-terminal-role-tool .pc-terminal-text { color: color-mix(in srgb, var(--pc-warning) 72%, var(--pc-text)); }
+.pc-terminal-role-error .pc-terminal-text { color: color-mix(in srgb, var(--pc-danger) 82%, var(--pc-text)); }
 .pc-journal-surface {
   --pc-journal-paper-bg: rgb(240 230 216);
   --pc-journal-paper-text: rgb(36 30 26);
@@ -2552,6 +2673,215 @@ pre {
   background: var(--pc-info);
 }
 
+.pc-settings-editor {
+  display: grid;
+  gap: 14px;
+}
+.pc-settings-overview-meta,
+.pc-settings-group-meta,
+.pc-settings-field-flags,
+.pc-settings-actions,
+.pc-settings-footer,
+.pc-settings-banners,
+.pc-settings-badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pc-settings-banners {
+  align-items: stretch;
+  flex-direction: column;
+}
+.pc-settings-banner,
+.pc-settings-message,
+.pc-settings-change {
+  align-items: center;
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 9px 10px;
+}
+.pc-settings-banner span,
+.pc-settings-message span {
+  min-width: 0;
+}
+.pc-settings-banner strong,
+.pc-settings-message strong {
+  color: var(--pc-text);
+  margin-right: 6px;
+}
+.pc-settings-banner-action,
+.pc-settings-banner-dismiss,
+.pc-settings-action {
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  text-decoration: none;
+}
+.pc-settings-banner-dismiss {
+  color: var(--pc-muted);
+}
+.pc-settings-action.is-disabled {
+  cursor: default;
+  opacity: .55;
+}
+.pc-settings-save {
+  background: color-mix(in srgb, var(--pc-success) 16%, transparent);
+}
+.pc-settings-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pc-settings-group {
+  border: 1px solid var(--pc-border);
+  margin: 0;
+  min-width: 0;
+}
+.pc-settings-group legend {
+  padding: 0;
+}
+.pc-settings-field {
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+}
+.pc-settings-field.is-changed {
+  background: color-mix(in srgb, var(--pc-warning) 8%, transparent);
+}
+.pc-settings-field.is-secret {
+  background: color-mix(in srgb, var(--pc-info) 5%, transparent);
+}
+.pc-settings-field-head {
+  align-items: baseline;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.pc-settings-field label,
+.pc-settings-field-head label {
+  color: var(--pc-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.pc-settings-field-flags span,
+.pc-settings-restart,
+.pc-settings-changed,
+.pc-settings-required,
+.pc-settings-field-status,
+.pc-settings-badge {
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  color: var(--pc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+.pc-settings-restart {
+  border-color: color-mix(in srgb, var(--pc-warning) 45%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-warning) 88%, var(--pc-text));
+}
+.pc-settings-changed {
+  border-color: color-mix(in srgb, var(--pc-info) 45%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-info) 82%, var(--pc-text));
+}
+.pc-settings-control input,
+.pc-settings-control select,
+.pc-settings-control textarea {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  font: inherit;
+  min-height: 38px;
+  padding: 8px 10px;
+  width: 100%;
+}
+.pc-settings-control textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+.pc-settings-toggle {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+.pc-settings-toggle input {
+  min-height: 0;
+  width: auto;
+}
+.pc-settings-readonly {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+.pc-settings-value-preview,
+.pc-settings-help {
+  color: var(--pc-muted);
+  font-size: 12px;
+}
+.pc-settings-value-preview {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.pc-settings-messages {
+  display: grid;
+  gap: 6px;
+}
+.pc-settings-change-list {
+  display: grid;
+  gap: 8px;
+}
+.pc-settings-diff {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-width: min(520px, 100%);
+}
+.pc-settings-diff del,
+.pc-settings-diff ins {
+  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 9px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-settings-diff del {
+  background: color-mix(in srgb, var(--pc-danger) 10%, transparent);
+  color: var(--pc-muted);
+}
+.pc-settings-diff ins {
+  background: color-mix(in srgb, var(--pc-success) 10%, transparent);
+  color: var(--pc-text);
+}
+.pc-settings-field.is-client-changed {
+  outline: 2px solid color-mix(in srgb, var(--pc-info) 48%, transparent);
+  outline-offset: 2px;
+}
+
 @media (max-width: 1040px) {
   body.admin-shell { padding-top: 116px; }
   .admin-header-inner { min-height: 0; flex-wrap: wrap; gap: 10px; padding-top: 11px; padding-bottom: 11px; }
@@ -2614,8 +2944,27 @@ pre {
   .pc-workflow-row {
     grid-template-columns: 1fr;
   }
+  .pc-terminal-event {
+    grid-template-columns: 1fr;
+  }
+  .pc-terminal-event-gutter {
+    text-align: left;
+  }
   .pc-workflow-actions {
     justify-content: flex-start;
+  }
+  .pc-settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .pc-settings-banner,
+  .pc-settings-message,
+  .pc-settings-change,
+  .pc-settings-field-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pc-settings-diff {
+    grid-template-columns: 1fr;
   }
   .pc-message-controls {
     align-items: stretch;

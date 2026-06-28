@@ -24,9 +24,13 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.OPERATIONS_FEATURE == "operations"
     assert personaconsole.PERSONA_RUNTIME_FEATURE == "persona"
     assert personaconsole.AGENT_OPS_FEATURE == "agent_ops"
+    assert personaconsole.TERMINAL_STREAM_FEATURE == "terminal_stream"
+    assert personaconsole.SETTINGS_EDITOR_FEATURE == "settings_editor"
     assert "PersonaConsoleConfig" in personaconsole.__all__
     assert "PersonaCoreConfig" in personaconsole.__all__
     assert "render_public_splash_page" in personaconsole.__all__
+    assert "render_terminal_stream" in personaconsole.__all__
+    assert "render_settings_editor" in personaconsole.__all__
     assert "run_consumer_integration_doctor" in personaconsole.__all__
 
 
@@ -45,6 +49,8 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.render_journal_surface is personaconsole.render_journal_surface
         assert legacy.render_public_splash_page is personaconsole.render_public_splash_page
         assert legacy.render_operations_surface is personaconsole.render_operations_surface
+        assert legacy.render_terminal_stream is personaconsole.render_terminal_stream
+        assert legacy.render_settings_editor is personaconsole.render_settings_editor
         assert legacy.render_private_text is personaconsole.render_private_text
 
 
@@ -63,7 +69,9 @@ def test_legacy_submodules_reexport_canonical_implementation():
         "public_presence": "render_public_splash_page",
         "render": "render_nav_groups",
         "review": "render_review_surface",
+        "settings_editor": "render_settings_editor",
         "surfaces": "render_message_surface",
+        "terminal": "render_terminal_stream",
         "token_health": "build_token_health_report",
     }
     for module_name, symbol in legacy_modules.items():
@@ -89,4 +97,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.21"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.23"

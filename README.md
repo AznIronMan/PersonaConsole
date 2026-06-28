@@ -105,6 +105,13 @@ secrets, provider credentials, deployment files, and runtime-specific behavior.
   persona-state, continuity, bridge, and agent-session panels. Consumers still
   own task execution, settings mutations, provider calls, and private route
   authorization.
+- `personaconsole.TerminalStreamConfig`,
+  `personaconsole.TerminalStreamEvent`, and
+  `personaconsole.render_terminal_stream(...)` provide a read-only terminal-style
+  current event window with bounded initial history, chunked earlier-history
+  hooks, live polling hooks, and owner-private redaction. Consumers own terminal
+  capture, retention, stream/history endpoints, auth, and any real command
+  execution.
 - `personaconsole.StatusTab` and `personaconsole.render_status_tabs(...)` provide a
   shared dense tab control for queue/list status filters while leaving URL
   construction, counts, and filtering semantics in the consuming runtime.
@@ -154,6 +161,11 @@ form. `v1.0.20` polishes public presence visual defaults for connector
 buttons, fallback logos, and split static/app-server deployments. `v1.0.21`
 renames the distribution and canonical import to `personaconsole` while keeping
 deprecated `personacore` and `persona_console` shims for rollout safety.
+`v1.0.22` adds a read-only terminal stream renderer for bounded current agent
+activity windows with chunked history/live-update hooks. `v1.0.23` adds a
+shared settings editor surface for grouped runtime-owned fields, redacted
+values, validation summaries, pending-change previews, restart markers, and
+consumer-supplied action slots.
 
 ## Public Safety
 
@@ -186,7 +198,7 @@ verification, and deployment rules.
 Consumer integration doctor:
 
 ```bash
-PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.21
+PYTHONPATH=src python3 scripts/consumer_integration_doctor.py --expected-version 1.0.23
 ```
 
 Use `--json` for automation. Imported module filesystem paths are hidden unless
@@ -238,6 +250,8 @@ script prints the tag matching the exported package version.
 - [Release 1.0.19](docs/RELEASE_1.0.19.md)
 - [Release 1.0.20](docs/RELEASE_1.0.20.md)
 - [Release 1.0.21](docs/RELEASE_1.0.21.md)
+- [Release 1.0.22](docs/RELEASE_1.0.22.md)
+- [Release 1.0.23](docs/RELEASE_1.0.23.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)

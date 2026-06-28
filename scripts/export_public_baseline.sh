@@ -58,6 +58,9 @@ for path in "${allowed_paths[@]}"; do
     rsync -a \
       --exclude '__pycache__/' \
       --exclude '.pytest_cache/' \
+      --exclude '*.egg-info/' \
+      --exclude 'build/' \
+      --exclude 'dist/' \
       --exclude '*.pyc' \
       --exclude '*.pyo' \
       --exclude '.DS_Store' \

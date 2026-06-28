@@ -629,6 +629,8 @@ from personaconsole import (
     PersonaPanel,
     PersonaRuntimeSurfaceConfig,
     SurfaceAction,
+    TerminalStreamConfig,
+    TerminalStreamEvent,
     render_workflow_sections,
 )
 
@@ -649,6 +651,21 @@ html = render_workflow_sections(
         enabled=True,
         bridges=[BridgeStatusCard("Webhook", "healthy", counts=[{"label": "0 failed", "tone": "good"}])],
         sessions=[AgentSessionRow("session", "Fixture session", "review", objective="Inspect workflow gaps")],
+        terminal_stream=TerminalStreamConfig(
+            enabled=True,
+            title="Read-Only Terminal",
+            window_label="Latest buffered events",
+            history_url="/agent/sessions/session/events/history",
+            stream_url="/agent/sessions/session/events/live",
+            before_cursor="older-cursor",
+            after_cursor="current-cursor",
+            max_rendered_events=120,
+            has_more_before=True,
+            events=[
+                TerminalStreamEvent("evt-1", "Run shared admin smoke", role="input"),
+                TerminalStreamEvent("evt-2", "Fixture check completed.", role="output"),
+            ],
+        ),
     ),
     features={
         OPERATIONS_FEATURE: True,
@@ -662,6 +679,57 @@ Secret settings render only configured/not-configured posture, never raw
 values. Rows that declare a privacy scope use the same safe-alternate contract
 as messages, people, and review rows; raw hrefs are stripped for non-owner
 contexts.
+
+Terminal streams are read-only render surfaces. PersonaConsole renders the
+current bounded event window, exposes cursor/data attributes, and provides
+JavaScript hooks for `history_url` and `stream_url`. Consumers own event capture,
+storage, endpoint authorization, retention windows, and any real command
+execution. Initial pages should pass only a bounded recent slice; older history
+should be returned in chunks by the consumer endpoint so long terminal histories
+do not lock the server or browser.
+
+## Shared Settings Editor
+
+`render_settings_editor(...)` renders grouped runtime-owned settings without
+moving persistence, reveal permission, validation policy, restarts, audit
+logging, or secret lookup into PersonaConsole.
+
+```python
+from personaconsole import (
+    SettingsEditorConfig,
+    SettingsField,
+    SettingsGroup,
+    SettingsValidationMessage,
+    SurfaceAction,
+    render_settings_editor,
+)
+
+html = render_settings_editor(
+    SettingsEditorConfig(
+        enabled=True,
+        form_action="/settings/runtime/save",
+        restart_required=True,
+        messages=[SettingsValidationMessage("Interval needs review.", "interval", "warn")],
+        actions=[SurfaceAction("Restart runtime", "/settings/runtime/restart", "warn", method="post")],
+        groups=[
+            SettingsGroup(
+                "runtime",
+                "Runtime",
+                fields=[
+                    SettingsField("provider", "Provider", "provider", "select", "example", options=["example", "backup"]),
+                    SettingsField("api-key", "API key", "api_key", "secret", True, display_value="configured"),
+                    SettingsField("interval", "Interval", "interval", "number", 15, pending_value=30, changed=True),
+                ],
+            )
+        ],
+    )
+)
+```
+
+Secret/redacted fields render posture such as `configured` and empty password
+inputs by default. Raw current or pending secret values are not echoed into the
+HTML. Consumers provide action hrefs for reveal, save, reset, restart, and audit
+flows and enforce authorization on those routes.
 
 ## Shared Controls
 
@@ -716,14 +784,15 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.18
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.23
 ```
 
-The doctor verifies that `personaconsole` and `personaconsole` import, report the
-same version, expose adapter-health, token-health, owner-private, and
-message/activity/media/people/review/journal/operations helpers plus shared
-controls, and can render a generic shell plus redacted feature panels. It does
-not read runtime secrets, databases, private routes, or consumer settings.
+The doctor verifies that `personaconsole` and its legacy compatibility shims
+import, report the same version, expose adapter-health, token-health,
+owner-private, message/activity/media/people/review/journal/operations/terminal
+and settings-editor helpers plus shared controls, and can render a generic
+shell plus redacted feature panels. It does not read runtime secrets, databases,
+private routes, or consumer settings.
 Filesystem paths are omitted from output unless `--show-paths` is explicitly
 passed for local diagnostics.
 

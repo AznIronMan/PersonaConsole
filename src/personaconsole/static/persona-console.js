@@ -174,4 +174,189 @@
       }
     });
   }
+
+  function terminalRole(value) {
+    const raw = String(value || "").toLowerCase().replace("-", "_");
+    if (["command", "cmd", "human", "input", "operator", "prompt", "user"].includes(raw)) return "input";
+    if (["err", "error", "failed", "stderr"].includes(raw)) return "error";
+    if (["note", "status", "system"].includes(raw)) return "system";
+    if (["tool", "tool_call", "tool_result"].includes(raw)) return "tool";
+    return "output";
+  }
+
+  function terminalTone(value) {
+    const raw = String(value || "").toLowerCase();
+    if (["bad", "blocked", "critical", "danger", "down", "error", "failed"].includes(raw)) return "bad";
+    if (["warn", "warning", "held", "pending", "queued", "review"].includes(raw)) return "warn";
+    if (["good", "healthy", "ok", "ready", "success"].includes(raw)) return "good";
+    if (["info"].includes(raw)) return "info";
+    return "neutral";
+  }
+
+  function terminalText(parent, tag, className, value) {
+    if (value === undefined || value === null || value === "") return null;
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    node.textContent = String(value);
+    parent.appendChild(node);
+    return node;
+  }
+
+  function terminalEventNode(event) {
+    const role = terminalRole(event.role || event.kind || event.type);
+    const tone = terminalTone(event.tone || event.status);
+    const article = document.createElement("article");
+    article.className = "pc-terminal-event pc-terminal-role-" + role + " pc-dashboard-tone-" + tone;
+    if (event.key || event.id) article.dataset.eventKey = String(event.key || event.id);
+    article.dataset.eventRole = role;
+
+    const gutter = document.createElement("div");
+    gutter.className = "pc-terminal-event-gutter";
+    terminalText(gutter, "span", "pc-terminal-role-label", event.label || role);
+
+    const main = document.createElement("div");
+    main.className = "pc-terminal-event-main";
+    const meta = document.createElement("div");
+    meta.className = "pc-terminal-event-meta";
+    terminalText(meta, "span", "pc-terminal-sequence", event.sequence);
+    terminalText(meta, "time", "", event.timestamp);
+    terminalText(meta, "span", "", event.source);
+    if (event.truncated) terminalText(meta, "span", "pc-terminal-truncated", "truncated");
+    if (meta.childNodes.length) main.appendChild(meta);
+    terminalText(main, "span", "pc-terminal-text", event.text || event.message || "");
+
+    article.append(gutter, main);
+    return article;
+  }
+
+  function terminalUrl(base, cursorName, cursorValue, limit) {
+    const url = new URL(base, window.location.href);
+    if (cursorValue) url.searchParams.set(cursorName, cursorValue);
+    if (limit) url.searchParams.set("limit", String(limit));
+    return url.toString();
+  }
+
+  async function terminalFetchJson(url) {
+    const response = await fetch(url, {
+      credentials: "same-origin",
+      headers: {"X-PersonaConsole-Terminal": "1"},
+    });
+    if (!response.ok) throw new Error(String(response.status));
+    return await response.json();
+  }
+
+  function terminalTrim(events, maxEvents, fromStart) {
+    while (events.children.length > maxEvents) {
+      if (fromStart) events.removeChild(events.firstElementChild);
+      else events.removeChild(events.lastElementChild);
+    }
+  }
+
+  function terminalAtBottom(viewport) {
+    return viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 48;
+  }
+
+  document.querySelectorAll("[data-pc-terminal-stream]").forEach(function (stream) {
+    const events = stream.querySelector("[data-pc-terminal-events]");
+    const viewport = stream.querySelector(".pc-terminal-viewport");
+    if (!events || !viewport) return;
+    const maxEvents = parseInt(stream.dataset.maxEvents || "200", 10) || 200;
+    const autoscroll = stream.dataset.autoscroll !== "false";
+    const historyButton = stream.querySelector("[data-pc-terminal-history]");
+    let beforeCursor = stream.dataset.beforeCursor || "";
+    let afterCursor = stream.dataset.afterCursor || "";
+    let liveTimer = null;
+
+    function scrollToBottom() {
+      if (autoscroll) viewport.scrollTop = viewport.scrollHeight;
+    }
+    if ((stream.dataset.initialPosition || "current") === "current") scrollToBottom();
+
+    async function loadEarlier() {
+      const url = stream.dataset.historyUrl;
+      if (!url || !historyButton || historyButton.disabled) return;
+      historyButton.disabled = true;
+      try {
+        const payload = await terminalFetchJson(terminalUrl(url, "before", beforeCursor, maxEvents));
+        const chunk = Array.isArray(payload.events) ? payload.events : [];
+        const fragment = document.createDocumentFragment();
+        chunk.forEach(function (event) { fragment.appendChild(terminalEventNode(event)); });
+        events.insertBefore(fragment, events.firstChild);
+        beforeCursor = payload.before_cursor || payload.beforeCursor || beforeCursor;
+        stream.dataset.beforeCursor = beforeCursor;
+        terminalTrim(events, maxEvents, false);
+        historyButton.disabled = payload.has_more_before === false || payload.hasMoreBefore === false;
+      } catch (error) {
+        historyButton.disabled = false;
+      }
+    }
+
+    async function loadNewer() {
+      const url = stream.dataset.streamUrl;
+      if (!url) return;
+      const shouldStick = autoscroll && terminalAtBottom(viewport);
+      try {
+        const payload = await terminalFetchJson(terminalUrl(url, "after", afterCursor, maxEvents));
+        const chunk = Array.isArray(payload.events) ? payload.events : [];
+        chunk.forEach(function (event) { events.appendChild(terminalEventNode(event)); });
+        afterCursor = payload.after_cursor || payload.afterCursor || payload.cursor || afterCursor;
+        stream.dataset.afterCursor = afterCursor;
+        terminalTrim(events, maxEvents, true);
+        if (shouldStick && chunk.length) scrollToBottom();
+      } catch (error) {}
+    }
+
+    if (historyButton) historyButton.addEventListener("click", loadEarlier);
+    if (stream.dataset.streamUrl) {
+      const interval = Math.max(parseInt(stream.dataset.pollInterval || "4000", 10) || 4000, 1000);
+      liveTimer = setInterval(loadNewer, interval);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden && liveTimer) {
+          clearInterval(liveTimer);
+          liveTimer = null;
+        } else if (!document.hidden && !liveTimer) {
+          loadNewer();
+          liveTimer = setInterval(loadNewer, interval);
+        }
+      });
+    }
+  });
+
+  document.querySelectorAll("[data-pc-settings-editor]").forEach(function (editor) {
+    const changedCount = editor.querySelector("[data-pc-settings-changed-count]");
+
+    function inputValue(input) {
+      if (input.type === "checkbox") return input.checked ? "true" : "false";
+      return input.value || "";
+    }
+
+    function updateDirtyState() {
+      let count = 0;
+      editor.querySelectorAll("[data-pc-settings-field]").forEach(function (field) {
+        let dirty = false;
+        field.querySelectorAll("input, select, textarea").forEach(function (input) {
+          if (input.dataset.secret === "true") {
+            if (input.value) dirty = true;
+            return;
+          }
+          const original = input.dataset.originalValue || "";
+          if (inputValue(input) !== original) dirty = true;
+        });
+        field.classList.toggle("is-client-changed", dirty);
+        if (dirty) count += 1;
+      });
+      if (changedCount) changedCount.textContent = String(count || changedCount.dataset.initialCount || changedCount.textContent || "0");
+    }
+
+    editor.querySelectorAll("input, select, textarea").forEach(function (input) {
+      input.addEventListener("input", updateDirtyState);
+      input.addEventListener("change", updateDirtyState);
+    });
+    editor.querySelectorAll("[data-pc-settings-dismiss]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const banner = button.closest(".pc-settings-banner");
+        if (banner) banner.remove();
+      });
+    });
+  });
 })();

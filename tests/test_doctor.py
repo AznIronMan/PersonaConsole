@@ -6,13 +6,13 @@ from personaconsole.doctor import doctor_report_to_text, run_consumer_integratio
 
 
 def test_consumer_integration_doctor_passes_current_source():
-    report = run_consumer_integration_doctor(expected_version="1.0.21")
+    report = run_consumer_integration_doctor(expected_version="1.0.23")
     data = report.as_dict()
 
     assert report.ok is True
-    assert data["personaconsole"]["version"] == "1.0.21"
-    assert data["persona_console_compat"]["version"] == "1.0.21"
-    assert data["personacore_compat"]["version"] == "1.0.21"
+    assert data["personaconsole"]["version"] == "1.0.23"
+    assert data["persona_console_compat"]["version"] == "1.0.23"
+    assert data["personacore_compat"]["version"] == "1.0.23"
     assert data["personaconsole"]["path"] == ""
     assert data["persona_console_compat"]["path"] == ""
     assert data["personacore_compat"]["path"] == ""
@@ -26,6 +26,7 @@ def test_consumer_integration_doctor_passes_current_source():
     assert any(check["key"] == "journal_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "public_presence_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "operations_render" and check["ok"] for check in data["checks"])
+    assert any(check["key"] == "settings_editor_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "owner_private_render" and check["ok"] for check in data["checks"])
     assert any(check["key"] == "shell_render" and check["ok"] for check in data["checks"])
 
@@ -38,13 +39,13 @@ def test_consumer_integration_doctor_detects_expected_version_mismatch():
 
 
 def test_consumer_integration_doctor_text_is_public_safe_by_default():
-    report = run_consumer_integration_doctor(expected_version="1.0.21")
+    report = run_consumer_integration_doctor(expected_version="1.0.23")
     text = doctor_report_to_text(report)
 
     assert "PersonaConsole consumer integration doctor: ok" in text
-    assert "- personaconsole: ok version=1.0.21" in text
-    assert "- persona_console_compat: ok version=1.0.21" in text
-    assert "- personacore_compat: ok version=1.0.21" in text
+    assert "- personaconsole: ok version=1.0.23" in text
+    assert "- persona_console_compat: ok version=1.0.23" in text
+    assert "- personacore_compat: ok version=1.0.23" in text
     assert "raw-doctor-secret" not in text
     assert "raw-doctor-private-message" not in text
     assert "raw-doctor-private-people-note" not in text
@@ -52,6 +53,7 @@ def test_consumer_integration_doctor_text_is_public_safe_by_default():
     assert "raw-doctor-private-journal" not in text
     assert "raw-doctor-public-presence" not in text
     assert "raw-doctor-private-operations" not in text
+    assert "raw-doctor-settings-secret" not in text
     assert report.personaconsole.path == ""
     assert report.persona_console_compat.path == ""
     assert report.personacore_compat.path == ""
@@ -63,7 +65,7 @@ def test_consumer_integration_doctor_script_json():
             sys.executable,
             "scripts/consumer_integration_doctor.py",
             "--expected-version",
-            "1.0.21",
+            "1.0.23",
             "--json",
         ],
         check=True,
@@ -73,9 +75,9 @@ def test_consumer_integration_doctor_script_json():
 
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["personaconsole"]["version"] == "1.0.21"
-    assert payload["persona_console_compat"]["version"] == "1.0.21"
-    assert payload["personacore_compat"]["version"] == "1.0.21"
+    assert payload["personaconsole"]["version"] == "1.0.23"
+    assert payload["persona_console_compat"]["version"] == "1.0.23"
+    assert payload["personacore_compat"]["version"] == "1.0.23"
     assert payload["personaconsole"]["path"] == ""
     assert "raw-doctor-secret" not in result.stdout
     assert "raw-doctor-private-message" not in result.stdout
@@ -84,3 +86,4 @@ def test_consumer_integration_doctor_script_json():
     assert "raw-doctor-private-journal" not in result.stdout
     assert "raw-doctor-public-presence" not in result.stdout
     assert "raw-doctor-private-operations" not in result.stdout
+    assert "raw-doctor-settings-secret" not in result.stdout

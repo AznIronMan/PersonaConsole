@@ -455,6 +455,104 @@ class SurfaceAction:
 
 
 @dataclass(frozen=True)
+class SettingsOption:
+    key: str
+    label: str = ""
+    selected: bool = False
+    disabled: bool = False
+    description: str = ""
+
+
+@dataclass(frozen=True)
+class SettingsValidationMessage:
+    message: str
+    field_key: str = ""
+    tone: str = "bad"
+    title: str = ""
+
+
+@dataclass(frozen=True)
+class SettingsChange:
+    label: str
+    before: str | int | float | bool = ""
+    after: str | int | float | bool = ""
+    field_key: str = ""
+    before_display: str = ""
+    after_display: str = ""
+    tone: str = "warn"
+    secret: bool = False
+    restart_required: bool = False
+
+
+@dataclass(frozen=True)
+class SettingsField:
+    key: str
+    label: str = ""
+    name: str = ""
+    kind: str = "text"
+    value: Any = ""
+    display_value: str = ""
+    pending_value: Any = None
+    pending_display_value: str = ""
+    placeholder: str = ""
+    help_text: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    required: bool = False
+    readonly: bool = False
+    disabled: bool = False
+    secret: bool = False
+    redacted: bool = False
+    changed: bool = False
+    restart_required: bool = False
+    rows: int = 4
+    min_value: str | int | float = ""
+    max_value: str | int | float = ""
+    step: str | int | float = ""
+    autocomplete: str = ""
+    input_mode: str = ""
+    code_language: str = ""
+    options: Sequence[SettingsOption | Mapping[str, object] | str] = field(default_factory=tuple)
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = field(default_factory=tuple)
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SettingsGroup:
+    key: str
+    title: str
+    description: str = ""
+    fields: Sequence[SettingsField | Mapping[str, object]] = field(default_factory=tuple)
+    status: str = ""
+    tone: str = "neutral"
+    restart_required: bool = False
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SettingsEditorConfig:
+    enabled: bool = False
+    feature: str = "settings_editor"
+    key: str = "settings-editor"
+    title: str = "Settings"
+    subtitle: str = "Runtime-owned configuration"
+    form_action: str = ""
+    form_method: str = "post"
+    groups: Sequence[SettingsGroup | Mapping[str, object]] = field(default_factory=tuple)
+    changes: Sequence[SettingsChange | Mapping[str, object]] = field(default_factory=tuple)
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = field(default_factory=tuple)
+    banners: Sequence[FlashBanner | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    save_label: str = "Save settings"
+    reset_label: str = "Reset"
+    reset_href: str = ""
+    restart_required: bool = False
+    empty_label: str = "No editable settings configured."
+
+
+@dataclass(frozen=True)
 class StatusTab:
     label: str
     href: str = ""
@@ -743,6 +841,48 @@ class AgentSessionRow:
 
 
 @dataclass(frozen=True)
+class TerminalStreamEvent:
+    key: str
+    text: str
+    timestamp: str = ""
+    role: str = "output"
+    label: str = ""
+    source: str = ""
+    sequence: str | int = ""
+    tone: str = "neutral"
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    truncated: bool = False
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class TerminalStreamConfig:
+    enabled: bool = False
+    feature: str = "terminal_stream"
+    key: str = "terminal-stream"
+    title: str = "Terminal Stream"
+    subtitle: str = "Read-only current event window"
+    status: str = ""
+    status_tone: str = "neutral"
+    events: Sequence[TerminalStreamEvent | Mapping[str, object]] = field(default_factory=tuple)
+    initial_position: str = "current"
+    window_label: str = "Current buffered window"
+    before_cursor: str = ""
+    after_cursor: str = ""
+    history_url: str = ""
+    stream_url: str = ""
+    poll_interval_ms: int = 4000
+    max_rendered_events: int = 200
+    has_more_before: bool = False
+    has_more_after: bool = True
+    truncated_before: bool = False
+    truncated_after: bool = False
+    autoscroll: bool = True
+    empty_label: str = "No terminal events in the current window."
+
+
+@dataclass(frozen=True)
 class AgentOpsSurfaceConfig:
     enabled: bool = False
     feature: str = "agent_ops"
@@ -751,6 +891,7 @@ class AgentOpsSurfaceConfig:
     bridges: Sequence[BridgeStatusCard | Mapping[str, object]] = field(default_factory=tuple)
     sessions: Sequence[AgentSessionRow | Mapping[str, object]] = field(default_factory=tuple)
     statuses: Sequence[OpsStatusCard | Mapping[str, object]] = field(default_factory=tuple)
+    terminal_stream: TerminalStreamConfig | Mapping[str, object] | None = None
     empty_label: str = "No bridge or agent operations found."
 
 

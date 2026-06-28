@@ -93,10 +93,18 @@ from .models import (
     ReviewQueueCard,
     ReviewQueueSection,
     ReviewSurfaceConfig,
+    SettingsChange,
+    SettingsEditorConfig,
+    SettingsField,
+    SettingsGroup,
+    SettingsOption,
+    SettingsValidationMessage,
     StatusTab,
     StatusPill,
     SurfaceAction,
     SurfaceBadge,
+    TerminalStreamConfig,
+    TerminalStreamEvent,
     ThemeTokens,
     TokenHealthCheck,
     TokenHealthConfig,
@@ -174,6 +182,16 @@ from .operations import (
     render_operations_surface,
     render_persona_runtime_surface,
     render_workflow_sections,
+)
+from .terminal import (
+    TERMINAL_STREAM_FEATURE,
+    render_terminal_stream,
+    terminal_stream_feature_enabled,
+)
+from .settings_editor import (
+    SETTINGS_EDITOR_FEATURE,
+    render_settings_editor,
+    settings_editor_feature_enabled,
 )
 from .journal import (
     JOURNAL_FEATURE,
@@ -290,10 +308,20 @@ __all__ = [
     "ReviewQueueCard",
     "ReviewQueueSection",
     "ReviewSurfaceConfig",
+    "SETTINGS_EDITOR_FEATURE",
+    "SettingsChange",
+    "SettingsEditorConfig",
+    "SettingsField",
+    "SettingsGroup",
+    "SettingsOption",
+    "SettingsValidationMessage",
     "StatusTab",
     "StatusPill",
     "SurfaceAction",
     "SurfaceBadge",
+    "TERMINAL_STREAM_FEATURE",
+    "TerminalStreamConfig",
+    "TerminalStreamEvent",
     "ThemeTokens",
     "TOKEN_HEALTH_FEATURE",
     "TokenHealthCheck",
@@ -358,6 +386,7 @@ __all__ = [
     "render_persona_runtime_surface",
     "render_private_text",
     "render_review_surface",
+    "render_settings_editor",
     "render_shell_html",
     "render_public_media",
     "render_public_settings_surface",
@@ -365,18 +394,21 @@ __all__ = [
     "render_status_tabs",
     "render_status_pill",
     "render_surface_sections",
+    "render_terminal_stream",
     "render_token_health_panel",
     "render_workflow_sections",
     "run_consumer_integration_doctor",
     "token_health_checks_for_providers",
     "token_health_config_for_providers",
     "token_health_feature_enabled",
+    "terminal_stream_feature_enabled",
+    "settings_editor_feature_enabled",
     "render_user_pill",
     "token_health_lookup",
     "token_health_provider_keys",
 ]
 
-__version__ = "1.0.21"
+__version__ = "1.0.23"
 
 
 def configure_jinja_loader(*args, **kwargs):

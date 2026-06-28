@@ -29,6 +29,7 @@ from .privacy import (
     privacy_render_mode,
     render_private_text,
 )
+from .terminal import render_terminal_stream
 
 OPERATIONS_FEATURE = "operations"
 PERSONA_RUNTIME_FEATURE = "persona"
@@ -648,6 +649,12 @@ def render_agent_ops_surface(
         return ""
     bridges = "".join(_bridge_card_html(bridge, features=features) for bridge in model.bridges)
     statuses = "".join(_ops_status_card_html(status, features=features) for status in model.statuses)
+    terminal = render_terminal_stream(
+        model.terminal_stream,
+        features=features,
+        privacy_policy=privacy_policy,
+        privacy_context=privacy_context,
+    )
     sessions = [
         _agent_session_html(
             session,
@@ -657,7 +664,7 @@ def render_agent_ops_surface(
         )
         for session in model.sessions
     ]
-    empty = f'<div class="pc-dashboard-empty">{escape(str(model.empty_label))}</div>' if not bridges + statuses + "".join(sessions) else ""
+    empty = f'<div class="pc-dashboard-empty">{escape(str(model.empty_label))}</div>' if not bridges + statuses + "".join(sessions) + terminal else ""
     return (
         '<section id="agent-ops" class="pc-agent-ops-surface pc-dashboard-panel pc-workflow-surface">'
         f"{_panel_head(model.title, model.subtitle)}"
@@ -668,6 +675,7 @@ def render_agent_ops_surface(
             if sessions
             else ""
         )
+        + terminal
         + empty
         + "</section>"
     )

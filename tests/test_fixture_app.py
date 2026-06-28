@@ -21,6 +21,8 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["operations"] is True
     assert config.features["persona"] is True
     assert config.features["agent_ops"] is True
+    assert config.features["terminal_stream"] is True
+    assert config.features["settings_editor"] is True
     assert config.features["journal"] is True
     assert config.features["public_presence"] is True
     assert config.brand_assets is not None
@@ -60,6 +62,16 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "pc-agent-ops-surface" in html
     assert "Owner-private agent session summarized for operators." in html
     assert "raw fixture private agent" not in html
+    assert "pc-terminal-stream" in html
+    assert "Read-Only Terminal" in html
+    assert "Owner-private terminal event summarized for operators." in html
+    assert "raw fixture private terminal event" not in html
+    assert "pc-settings-editor" in html
+    assert "Runtime Settings" in html
+    assert "Provider API key" in html
+    assert "configured" in html
+    assert "restart required" in html
+    assert "raw fixture private settings secret" not in html
     assert "pc-public-settings-surface" in html
     assert "Public Presence" in html
     assert "Small logo URL" in html

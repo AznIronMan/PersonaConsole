@@ -17,6 +17,8 @@ from personaconsole import (
     PERSONA_RUNTIME_FEATURE,
     PUBLIC_PRESENCE_FEATURE,
     REVIEW_FEATURE,
+    SETTINGS_EDITOR_FEATURE,
+    TERMINAL_STREAM_FEATURE,
     ActivityEvent,
     ActivitySurfaceConfig,
     AgentOpsSurfaceConfig,
@@ -81,10 +83,16 @@ from personaconsole import (
     ReviewQueueCard,
     ReviewQueueSection,
     ReviewSurfaceConfig,
+    SettingsEditorConfig,
+    SettingsField,
+    SettingsGroup,
+    SettingsValidationMessage,
     StatusTab,
     StatusPill,
     SurfaceAction,
     SurfaceBadge,
+    TerminalStreamConfig,
+    TerminalStreamEvent,
     ThemeTokens,
     TokenHealthCheck,
     TokenHealthConfig,
@@ -101,6 +109,7 @@ from personaconsole import (
     render_public_settings_surface,
     render_public_splash_page,
     render_review_surface,
+    render_settings_editor,
     render_shell_html,
     render_status_tabs,
     render_surface_sections,
@@ -300,6 +309,8 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             OPERATIONS_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
+            TERMINAL_STREAM_FEATURE: True,
+            SETTINGS_EDITOR_FEATURE: True,
             PUBLIC_PRESENCE_FEATURE: True,
         },
         nav_groups=[
@@ -363,7 +374,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.21-fixture",
+        app_version="v1.0.23-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -974,14 +985,98 @@ def render_dashboard_fragment() -> str:
                     tone="info",
                 ),
             ],
+            terminal_stream=TerminalStreamConfig(
+                enabled=True,
+                title="Read-Only Terminal",
+                subtitle="Current buffered event window with chunked history",
+                status="streaming",
+                status_tone="good",
+                window_label="Latest sanitized events",
+                before_cursor="fixture-before-0100",
+                after_cursor="fixture-after-0106",
+                history_url="/agent-ops/sessions/fixture/events/history",
+                stream_url="/agent-ops/sessions/fixture/events/live",
+                poll_interval_ms=5000,
+                max_rendered_events=6,
+                has_more_before=True,
+                has_more_after=True,
+                events=[
+                    TerminalStreamEvent("evt-0101", "Run fixture workflow check", "09:21:00", "input", "input", "operator", 101),
+                    TerminalStreamEvent("evt-0102", "Session accepted by runtime queue.", "09:21:01", "system", "system", "runtime", 102),
+                    TerminalStreamEvent("evt-0103", "Inspecting shared surface coverage.", "09:21:04", "output", "output", "agent", 103),
+                    TerminalStreamEvent(
+                        "evt-0104",
+                        "raw fixture private terminal event",
+                        "09:21:08",
+                        "tool",
+                        "tool",
+                        "agent",
+                        104,
+                        privacy_scope="owner_private",
+                        safe_alternate="Owner-private terminal event summarized for operators.",
+                    ),
+                    TerminalStreamEvent("evt-0105", "No blocking errors reported.", "09:21:11", "output", "output", "agent", 105, tone="good"),
+                    TerminalStreamEvent("evt-0106", "Waiting for the next runtime event.", "09:21:14", "system", "status", "runtime", 106),
+                ],
+            ),
         ),
         features={
             OPERATIONS_FEATURE: True,
             PERSONA_RUNTIME_FEATURE: True,
             AGENT_OPS_FEATURE: True,
+            TERMINAL_STREAM_FEATURE: True,
+            SETTINGS_EDITOR_FEATURE: True,
         },
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
+    )
+    settings_editor = render_settings_editor(
+        SettingsEditorConfig(
+            enabled=True,
+            title="Runtime Settings",
+            subtitle="Grouped editor contract with redacted values and runtime-owned actions.",
+            form_action="/settings/runtime/save",
+            restart_required=True,
+            messages=[SettingsValidationMessage("Message interval changed from the current runtime value.", "message-interval", "warn")],
+            actions=[
+                SurfaceAction("Restart runtime", "/settings/runtime/restart", "warn", method="post"),
+                SurfaceAction("Audit trail", "/settings/runtime/audit", "info"),
+            ],
+            groups=[
+                SettingsGroup(
+                    "connectors",
+                    "Connectors",
+                    "Provider posture and runtime-owned credentials.",
+                    fields=[
+                        SettingsField("llm-provider", "LLM provider", "llm_provider", "select", "example-provider", options=["example-provider", "backup-provider"]),
+                        SettingsField(
+                            "provider-secret",
+                            "Provider API key",
+                            "provider_secret",
+                            "secret",
+                            "raw fixture private settings secret",
+                            display_value="configured",
+                            changed=True,
+                            pending_display_value="new secret staged",
+                            restart_required=True,
+                            help_text="Secrets are shown as posture only. Consumers own reveal and save actions.",
+                            actions=[SurfaceAction("Reveal", "/settings/runtime/reveal/provider-secret", "info")],
+                        ),
+                    ],
+                ),
+                SettingsGroup(
+                    "behavior",
+                    "Behavior",
+                    "Safe editable runtime flags.",
+                    fields=[
+                        SettingsField("auto-reply", "Auto reply", "auto_reply", "boolean", True, placeholder="Enabled"),
+                        SettingsField("message-interval", "Message interval", "message_interval", "number", 15, pending_value=30, changed=True, min_value=1, max_value=120, step=1),
+                        SettingsField("runtime-json", "Runtime JSON preview", "runtime_json", "json", {"mode": "review", "safe": True}, readonly=True),
+                    ],
+                ),
+            ],
+        ),
+        features={SETTINGS_EDITOR_FEATURE: True},
     )
     hold_form = """
 <section class="panel">
@@ -1127,6 +1222,7 @@ def render_dashboard_fragment() -> str:
         + review_surface
         + journal_surface
         + workflow_surfaces
+        + settings_editor
         + public_settings_surface
         + surfaces
         + hold_form

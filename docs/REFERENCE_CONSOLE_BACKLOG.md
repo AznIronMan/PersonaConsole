@@ -22,7 +22,9 @@ screenshots, data, and runtime policy stay outside the public repo.
   continuity, bridge, and agent-ops surfaces shipped in PersonaConsole `1.0.17`;
   the themed journal reader shipped in PersonaConsole `1.0.18`; public presence
   splash/login/chat and connector settings surfaces shipped in PersonaConsole
-  `1.0.19`.
+  `1.0.19`; the read-only terminal stream window shipped in PersonaConsole
+  `1.0.22`; the grouped settings editor surface shipped in PersonaConsole
+  `1.0.23`.
 
 ## First Dashboard Modules
 
@@ -82,8 +84,14 @@ screenshots, data, and runtime policy stay outside the public repo.
 - Generic task, log, and settings posture panels for reference-console parity.
   Initial public-safe fixture examples shipped in PersonaConsole `1.0.10`; typed
   operations/settings/log renderers shipped in PersonaConsole `1.0.17`.
+- Grouped settings editor with redacted values, validation summaries,
+  pending-change preview, restart markers, and runtime-owned action slots.
+  Initial typed renderer shipped in PersonaConsole `1.0.23`.
 - Persona runtime, continuity, bridge, and agent-session posture panels.
   Initial typed public-safe renderers shipped in PersonaConsole `1.0.17`.
+- Read-only terminal/event stream window for agent sessions with a bounded
+  current slice, chunked earlier-history hooks, live polling hooks, and no
+  command execution. Initial typed renderer shipped in PersonaConsole `1.0.22`.
 - People list surface with filter bar, tags, relationship summary, notes
   preview, new-person slot, and owner-private note fallback. Initial typed
   renderer shipped in PersonaConsole `1.0.11`.

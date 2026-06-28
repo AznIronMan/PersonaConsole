@@ -103,6 +103,7 @@ _OPERATIONS_EXPORTS = (
     "AGENT_OPS_FEATURE",
     "OPERATIONS_FEATURE",
     "PERSONA_RUNTIME_FEATURE",
+    "TERMINAL_STREAM_FEATURE",
     "AgentOpsSurfaceConfig",
     "AgentSessionRow",
     "BridgeStatusCard",
@@ -115,13 +116,28 @@ _OPERATIONS_EXPORTS = (
     "PersonaPanel",
     "PersonaRuntimeSurfaceConfig",
     "SurfaceAction",
+    "TerminalStreamConfig",
+    "TerminalStreamEvent",
     "agent_ops_surface_feature_enabled",
     "operations_surface_feature_enabled",
     "persona_runtime_surface_feature_enabled",
     "render_agent_ops_surface",
     "render_operations_surface",
     "render_persona_runtime_surface",
+    "render_terminal_stream",
     "render_workflow_sections",
+    "terminal_stream_feature_enabled",
+)
+_SETTINGS_EDITOR_EXPORTS = (
+    "SETTINGS_EDITOR_FEATURE",
+    "SettingsChange",
+    "SettingsEditorConfig",
+    "SettingsField",
+    "SettingsGroup",
+    "SettingsOption",
+    "SettingsValidationMessage",
+    "render_settings_editor",
+    "settings_editor_feature_enabled",
 )
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
@@ -257,6 +273,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "journal_exports", _JOURNAL_EXPORTS))
         checks.extend(_export_checks(module, "public_presence_exports", _PUBLIC_PRESENCE_EXPORTS))
         checks.extend(_export_checks(module, "operations_exports", _OPERATIONS_EXPORTS))
+        checks.extend(_export_checks(module, "settings_editor_exports", _SETTINGS_EDITOR_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.extend(_export_checks(module, "control_exports", _CONTROL_EXPORTS))
@@ -269,6 +286,7 @@ def run_consumer_integration_doctor(
         checks.append(_journal_render_check(module))
         checks.append(_public_presence_render_check(module))
         checks.append(_operations_render_check(module))
+        checks.append(_settings_editor_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -879,6 +897,22 @@ def _operations_render_check(module: Any) -> DoctorCheck:
                         safe_alternate="safe agent session",
                     )
                 ],
+                terminal_stream=module.TerminalStreamConfig(
+                    enabled=True,
+                    events=[
+                        module.TerminalStreamEvent(
+                            "doctor-terminal",
+                            raw_value,
+                            "09:00",
+                            "output",
+                            privacy_scope="owner_private",
+                            safe_alternate="safe terminal event",
+                        )
+                    ],
+                    history_url="/agent-ops/sessions/doctor/history",
+                    stream_url="/agent-ops/sessions/doctor/live",
+                    has_more_before=True,
+                ),
             ),
             privacy_policy=policy,
             privacy_context=operator,
@@ -894,15 +928,69 @@ def _operations_render_check(module: Any) -> DoctorCheck:
         "pc-operations-surface" in html
         and "pc-persona-surface" in html
         and "pc-agent-ops-surface" in html
+        and "pc-terminal-stream" in html
         and "safe operations log" in html
         and "safe persona panel" in html
         and "safe continuity item" in html
         and "safe agent session" in html
+        and "safe terminal event" in html
         and "raw-doctor-secret" not in html
         and raw_value not in html
         and raw_url not in html
     )
     return _check(ok, "operations_render", "operations/persona/agent surfaces render with safe alternates")
+
+
+def _settings_editor_render_check(module: Any) -> DoctorCheck:
+    raw_secret = "raw-doctor-settings-secret"
+    try:
+        html = module.render_settings_editor(
+            module.SettingsEditorConfig(
+                enabled=True,
+                title="Runtime Settings",
+                form_action="/settings/save",
+                restart_required=True,
+                banners=[module.FlashBanner("Settings saved.", tone="good", action_label="Audit", action_href="/settings/audit")],
+                messages=[module.SettingsValidationMessage("One value needs review.", field_key="interval", tone="warn")],
+                groups=[
+                    module.SettingsGroup(
+                        "runtime",
+                        "Runtime",
+                        "Runtime-owned settings",
+                        fields=[
+                            module.SettingsField("provider", "Provider", "provider", "select", "safe-provider", options=["safe-provider", "other-provider"]),
+                            module.SettingsField(
+                                "api_key",
+                                "API key",
+                                "api_key",
+                                "secret",
+                                raw_secret,
+                                display_value="configured",
+                                changed=True,
+                                pending_display_value="new secret staged",
+                                restart_required=True,
+                                actions=[module.SurfaceAction("Reveal", "/settings/reveal/api-key")],
+                            ),
+                            module.SettingsField("interval", "Interval", "interval", "number", 15, pending_value=30, changed=True),
+                        ],
+                    )
+                ],
+            )
+        )
+    except Exception as exc:
+        return _check(False, "settings_editor_render", "settings editor render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-settings-editor" in html
+        and "Runtime Settings" in html
+        and "Pending Changes" in html
+        and "restart required" in html
+        and "configured" in html
+        and "new secret staged" not in html
+        and raw_secret not in html
+        and 'value="30"' in html
+        and "/settings/reveal/api-key" in html
+    )
+    return _check(ok, "settings_editor_render", "settings editor renders redacted changed settings")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

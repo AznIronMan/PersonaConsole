@@ -16,6 +16,8 @@ from personaconsole import (
     PersonaPanel,
     PersonaRuntimeSurfaceConfig,
     SurfaceAction,
+    TerminalStreamConfig,
+    TerminalStreamEvent,
     agent_ops_surface_feature_enabled,
     operations_surface_feature_enabled,
     persona_runtime_surface_feature_enabled,
@@ -169,6 +171,17 @@ def test_agent_ops_surface_renders_bridge_status_and_redacts_private_sessions():
                     safe_alternate="safe session summary",
                 )
             ],
+            terminal_stream=TerminalStreamConfig(
+                enabled=True,
+                events=[
+                    TerminalStreamEvent(
+                        "terminal-one",
+                        "raw private terminal line",
+                        privacy_scope="owner_private",
+                        safe_alternate="safe terminal summary",
+                    )
+                ],
+            ),
         ),
         privacy_policy=_policy(),
         privacy_context=_operator(),
@@ -179,8 +192,11 @@ def test_agent_ops_surface_renders_bridge_status_and_redacts_private_sessions():
     assert "0 failed" in html
     assert "Preflight" in html
     assert "safe session summary" in html
+    assert "pc-terminal-stream" in html
+    assert "safe terminal summary" in html
     assert "raw private session" not in html
     assert "raw private objective" not in html
+    assert "raw private terminal line" not in html
     assert "/agent/raw" not in html
 
 
