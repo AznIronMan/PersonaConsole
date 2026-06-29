@@ -35,6 +35,15 @@ from .worker_operations import (
     render_worker_operations_surface,
     worker_operations_surface_feature_enabled,
 )
+from .composition import (
+    SURFACE_COMPOSITION_FEATURE,
+    build_surface_registry_report,
+    render_surface_registry_report,
+    surface_registry_feature_enabled,
+    surface_registry_feature_flags,
+    surface_registry_report_to_dict,
+    surface_registry_to_nav_groups,
+)
 from .dashboard import (
     dashboard_metrics_from_counts,
     format_dashboard_metric_value,
@@ -183,6 +192,12 @@ from .models import (
     SettingsGroup,
     SettingsOption,
     SettingsValidationMessage,
+    SurfaceAdapterBinding,
+    SurfaceAssetRequirement,
+    SurfaceRegistration,
+    SurfaceRegistryConfig,
+    SurfaceRegistryIssue,
+    SurfaceRegistryReport,
     SystemAuditFilterState,
     SystemAuditRow,
     SystemDatabaseCard,
@@ -505,7 +520,14 @@ __all__ = [
     "SettingsGroup",
     "SettingsOption",
     "SettingsValidationMessage",
+    "SURFACE_COMPOSITION_FEATURE",
+    "SurfaceAdapterBinding",
     "SYSTEM_HEALTH_FEATURE",
+    "SurfaceAssetRequirement",
+    "SurfaceRegistration",
+    "SurfaceRegistryConfig",
+    "SurfaceRegistryIssue",
+    "SurfaceRegistryReport",
     "SystemAuditFilterState",
     "SystemAuditRow",
     "SystemDatabaseCard",
@@ -539,6 +561,7 @@ __all__ = [
     "availability_monitor_feature_enabled",
     "agent_ops_surface_feature_enabled",
     "build_token_health_report",
+    "build_surface_registry_report",
     "build_journal_calendar",
     "can_view_raw_private",
     "canonical_privacy_scope",
@@ -617,6 +640,7 @@ __all__ = [
     "render_public_splash_page",
     "render_status_tabs",
     "render_status_pill",
+    "render_surface_registry_report",
     "render_surface_sections",
     "render_terminal_stream",
     "render_token_health_panel",
@@ -628,6 +652,10 @@ __all__ = [
     "terminal_stream_feature_enabled",
     "worker_operations_surface_feature_enabled",
     "settings_editor_feature_enabled",
+    "surface_registry_feature_enabled",
+    "surface_registry_feature_flags",
+    "surface_registry_report_to_dict",
+    "surface_registry_to_nav_groups",
     "system_health_surface_feature_enabled",
     "render_user_pill",
     "token_health_lookup",
@@ -644,7 +672,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.35"
+__version__ = "1.0.36"
 
 
 def configure_jinja_loader(*args, **kwargs):

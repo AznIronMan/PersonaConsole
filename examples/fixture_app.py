@@ -153,7 +153,11 @@ from personaconsole import (
     StatusTab,
     StatusPill,
     SurfaceAction,
+    SurfaceAdapterBinding,
+    SurfaceAssetRequirement,
     SurfaceBadge,
+    SurfaceRegistration,
+    SurfaceRegistryConfig,
     SystemAuditFilterState,
     SystemAuditRow,
     SystemDatabaseCard,
@@ -205,6 +209,7 @@ from personaconsole import (
     render_settings_editor,
     render_shell_html,
     render_status_tabs,
+    render_surface_registry_report,
     render_surface_sections,
     render_system_health_surface,
     render_worker_operations_surface,
@@ -2399,6 +2404,65 @@ def render_dashboard_fragment() -> str:
         build_public_settings_surface_config(),
         features={PUBLIC_PRESENCE_FEATURE: True},
     )
+    surface_registry = render_surface_registry_report(
+        SurfaceRegistryConfig(
+            enabled=True,
+            features={
+                "messages": True,
+                "review": True,
+                "system_health": True,
+                "media_library": True,
+                "public_presence": True,
+            },
+            nav_groups=[NavGroup("Core", (), key="core"), NavGroup("System", (), key="system")],
+            surfaces=[
+                SurfaceRegistration(
+                    "messages",
+                    "Messages",
+                    feature="messages",
+                    renderer="render_message_surface",
+                    route_key="messages",
+                    href="/messages",
+                    nav_group="core",
+                    active="messages",
+                    required_assets=[SurfaceAssetRequirement("css", "Shared CSS", "/persona-console/static/persona-console.css")],
+                    adapters=[SurfaceAdapterBinding("message_rows", "Message rows", "fixture adapter")],
+                    summary="Consumer supplies transcript rows and route auth.",
+                ),
+                SurfaceRegistration(
+                    "system-health",
+                    "System Health",
+                    feature="system_health",
+                    renderer="render_system_health_surface",
+                    route_key="system-health",
+                    href="/health",
+                    nav_group="system",
+                    active="health",
+                    adapters=[SurfaceAdapterBinding("runtime_probe_rows", "Runtime probes", "fixture adapter")],
+                    summary="Consumer owns probes, database checks, and remediation.",
+                ),
+                SurfaceRegistration(
+                    "media-library",
+                    "Media Library",
+                    feature="media_library",
+                    renderer="render_media_library_surface",
+                    route_key="media-library",
+                    href="/media/library",
+                    nav_group="core",
+                    active="media-library",
+                    required_assets=[SurfaceAssetRequirement("media-css", "Media CSS", "/persona-console/static/persona-console.css")],
+                    adapters=[SurfaceAdapterBinding("media_rows", "Media rows", "fixture adapter")],
+                    summary="Consumer owns file storage and upload validation.",
+                ),
+            ],
+        ),
+        available_renderers={
+            "render_message_surface": True,
+            "render_system_health_surface": True,
+            "render_media_library_surface": True,
+        },
+        available_assets={"css": True, "media-css": True},
+    )
     return (
         render_dashboard_sections(dashboard)
         + admin_list_surface
@@ -2414,6 +2478,7 @@ def render_dashboard_fragment() -> str:
         + persona_editor
         + settings_editor
         + system_health_surface
+        + surface_registry
         + public_settings_surface
         + media_library_surface
         + surfaces

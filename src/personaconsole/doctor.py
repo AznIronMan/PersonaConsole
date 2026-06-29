@@ -262,6 +262,21 @@ _SYSTEM_HEALTH_EXPORTS = (
     "render_system_health_surface",
     "system_health_surface_feature_enabled",
 )
+_SURFACE_COMPOSITION_EXPORTS = (
+    "SURFACE_COMPOSITION_FEATURE",
+    "SurfaceAdapterBinding",
+    "SurfaceAssetRequirement",
+    "SurfaceRegistration",
+    "SurfaceRegistryConfig",
+    "SurfaceRegistryIssue",
+    "SurfaceRegistryReport",
+    "build_surface_registry_report",
+    "render_surface_registry_report",
+    "surface_registry_feature_enabled",
+    "surface_registry_feature_flags",
+    "surface_registry_report_to_dict",
+    "surface_registry_to_nav_groups",
+)
 _OWNER_PRIVATE_EXPORTS = (
     "OWNER_PRIVATE_ADMIN_FEATURE",
     "AdminPrivacyContext",
@@ -410,6 +425,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "command_intake_exports", _COMMAND_INTAKE_EXPORTS))
         checks.extend(_export_checks(module, "settings_editor_exports", _SETTINGS_EDITOR_EXPORTS))
         checks.extend(_export_checks(module, "system_health_exports", _SYSTEM_HEALTH_EXPORTS))
+        checks.extend(_export_checks(module, "surface_composition_exports", _SURFACE_COMPOSITION_EXPORTS))
         checks.extend(_export_checks(module, "owner_private_exports", _OWNER_PRIVATE_EXPORTS))
         checks.extend(_export_checks(module, "render_exports", _RENDER_EXPORTS))
         checks.extend(_export_checks(module, "control_exports", _CONTROL_EXPORTS))
@@ -433,6 +449,7 @@ def run_consumer_integration_doctor(
         checks.append(_command_intake_render_check(module))
         checks.append(_settings_editor_render_check(module))
         checks.append(_system_health_render_check(module))
+        checks.append(_surface_composition_render_check(module))
         checks.append(_owner_private_render_check(module))
         checks.append(_shell_render_check(module))
 
@@ -2111,6 +2128,65 @@ def _system_health_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "system_health_render", "system health surface renders posture data with owner-private redaction")
+
+
+def _surface_composition_render_check(module: Any) -> DoctorCheck:
+    try:
+        config = module.SurfaceRegistryConfig(
+            enabled=True,
+            features={"messages": True, "review": False},
+            nav_groups=[module.NavGroup("Core", (), key="core")],
+            surfaces=[
+                module.SurfaceRegistration(
+                    "messages",
+                    "Messages",
+                    feature="messages",
+                    renderer="render_message_surface",
+                    route_key="messages",
+                    href="/messages",
+                    nav_group="core",
+                    active="messages",
+                    required_assets=[module.SurfaceAssetRequirement("css", "Shared CSS", "/persona-console/static/persona-console.css")],
+                    adapters=[module.SurfaceAdapterBinding("message_rows", "Message rows", "runtime snapshot")],
+                ),
+                module.SurfaceRegistration(
+                    "review",
+                    "Review",
+                    feature="review",
+                    renderer="render_review_surface",
+                    route_key="review",
+                    href="/review",
+                    required=False,
+                ),
+            ],
+        )
+        report = module.build_surface_registry_report(
+            config,
+            available_renderers={"render_message_surface": True, "render_review_surface": True},
+            available_assets={"css": True},
+        )
+        html = module.render_surface_registry_report(
+            config,
+            available_renderers={"render_message_surface": True, "render_review_surface": True},
+            available_assets={"css": True},
+        )
+        nav_groups = module.surface_registry_to_nav_groups(config)
+        flags = module.surface_registry_feature_flags(config)
+    except Exception as exc:
+        return _check(False, "surface_composition_render", "surface composition render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        report.ok
+        and report.surface_count == 2
+        and report.disabled_count == 1
+        and bool(nav_groups)
+        and flags.get("messages") is True
+        and flags.get("review") is False
+        and "pc-surface-registry" in html
+        and "Messages" in html
+        and "Message rows" in html
+        and "Surface is disabled: Review" in html
+    )
+    return _check(ok, "surface_composition_render", "surface registry validates and renders configured coverage")
 
 
 def _owner_private_render_check(module: Any) -> DoctorCheck:

@@ -1345,6 +1345,68 @@ additional rows, read secret values, import credentials, or decide whether a
 secret can be revealed. Secret rows should carry key names, coverage status,
 source/import labels, and safe actions only.
 
+## Surface Composition Registry
+
+`SurfaceRegistryConfig` lets consumers describe their configured PersonaConsole
+instance without moving route handlers, auth, database queries, provider calls,
+or adapter logic into PersonaConsole.
+
+```python
+from personaconsole import (
+    SurfaceAdapterBinding,
+    SurfaceAssetRequirement,
+    SurfaceRegistration,
+    SurfaceRegistryConfig,
+    build_surface_registry_report,
+    render_surface_registry_report,
+    surface_registry_to_nav_groups,
+)
+
+registry = SurfaceRegistryConfig(
+    enabled=True,
+    features={"messages": True, "system_health": True},
+    surfaces=[
+        SurfaceRegistration(
+            "messages",
+            "Messages",
+            feature="messages",
+            renderer="render_message_surface",
+            route_key="messages",
+            href="/messages",
+            nav_group="core",
+            required_assets=[
+                SurfaceAssetRequirement(
+                    "shared-css",
+                    "Shared CSS",
+                    "/persona-console/static/persona-console.css",
+                )
+            ],
+            adapters=[
+                SurfaceAdapterBinding(
+                    "message_rows",
+                    "Message rows",
+                    kind="runtime snapshot",
+                )
+            ],
+        )
+    ],
+)
+
+report = build_surface_registry_report(
+    registry,
+    available_renderers={"render_message_surface": True},
+    available_assets={"shared-css": True},
+)
+nav_groups = surface_registry_to_nav_groups(registry)
+html = render_surface_registry_report(registry)
+```
+
+Validation reports duplicate route keys, unsafe hrefs, unknown feature flags,
+missing required renderers, missing required assets, and disabled required
+surfaces. Hrefs and asset paths should be same-origin root-relative or anchors.
+Adapters are labels for consumer-owned mappers only; PersonaConsole does not
+import or call them.
+
 ## Shared Controls
 
 Shared controls are small UI primitives that keep list and queue pages visually

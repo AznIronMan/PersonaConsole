@@ -191,6 +191,10 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private system audit summarized for operators." in html
     assert "raw fixture private system audit" not in html
     assert "/audit/raw-private-fixture" not in html
+    assert "pc-surface-registry" in html
+    assert "Surface Registry" in html
+    assert "Message rows" in html
+    assert "Runtime probes" in html
     assert "pc-public-settings-surface" in html
     assert "Public Presence" in html
     assert "Small logo URL" in html

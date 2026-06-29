@@ -146,6 +146,10 @@ screenshots, data, and runtime policy stay outside the public repo.
   renderers shipped in PersonaConsole `1.0.34`; credential verification,
   sessions, cookies, CSRF, lockout policy, and audit writes remain outside
   PersonaConsole.
+- Surface composition/config registry for consumer-declared active surfaces,
+  feature flags, route/nav bindings, renderer and static-asset coverage,
+  theme/live-refresh hints, and consumer-owned adapter labels. Initial typed
+  validator and report renderer shipped in PersonaConsole `1.0.36`.
 - Bridge/provider operation panels for webhook posture, queues, heartbeats,
   provider capability rows, delivery claims, documentation links, and action
   slots. Initial typed renderer shipped in PersonaConsole `1.0.26`.

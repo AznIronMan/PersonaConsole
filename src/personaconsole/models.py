@@ -392,6 +392,87 @@ PersonaCoreConfig = PersonaConsoleConfig
 
 
 @dataclass(frozen=True)
+class SurfaceAdapterBinding:
+    key: str
+    label: str = ""
+    kind: str = ""
+    status: str = "configured"
+    tone: str = "neutral"
+    owner: str = "consumer"
+    summary: str = ""
+
+
+@dataclass(frozen=True)
+class SurfaceAssetRequirement:
+    key: str
+    label: str = ""
+    href: str = ""
+    kind: str = "static"
+    required: bool = True
+    present: bool = True
+    summary: str = ""
+
+
+@dataclass(frozen=True)
+class SurfaceRegistration:
+    key: str
+    label: str
+    feature: str = ""
+    renderer: str = ""
+    route_key: str = ""
+    href: str = ""
+    nav_group: str = ""
+    nav_label: str = ""
+    active: str = ""
+    enabled: bool = True
+    required: bool = True
+    status: str = "configured"
+    tone: str = "neutral"
+    theme_key: str = ""
+    live_refresh: LiveRefreshConfig | Mapping[str, object] | None = None
+    required_assets: Sequence[SurfaceAssetRequirement | Mapping[str, object] | str] = field(default_factory=tuple)
+    adapters: Sequence[SurfaceAdapterBinding | Mapping[str, object] | str] = field(default_factory=tuple)
+    summary: str = ""
+
+
+@dataclass(frozen=True)
+class SurfaceRegistryConfig:
+    enabled: bool = False
+    feature: str = "surface_composition"
+    key: str = "surface-registry"
+    title: str = "Surface Registry"
+    subtitle: str = "Configured PersonaConsole surface coverage"
+    features: Mapping[str, bool] = field(default_factory=dict)
+    known_features: Sequence[str] = field(default_factory=tuple)
+    surfaces: Sequence[SurfaceRegistration | Mapping[str, object]] = field(default_factory=tuple)
+    nav_groups: Sequence[NavGroup | Mapping[str, object]] = field(default_factory=tuple)
+    theme_key: str = ""
+    live_refresh_defaults: LiveRefreshConfig | Mapping[str, object] | None = None
+    static_base_url: str = "/persona-console/static"
+    empty_label: str = "No PersonaConsole surfaces registered."
+
+
+@dataclass(frozen=True)
+class SurfaceRegistryIssue:
+    key: str
+    message: str
+    level: str = "warn"
+    surface_key: str = ""
+    field: str = ""
+    tone: str = "warn"
+
+
+@dataclass(frozen=True)
+class SurfaceRegistryReport:
+    ok: bool
+    surface_count: int = 0
+    enabled_count: int = 0
+    disabled_count: int = 0
+    issue_count: int = 0
+    issues: Sequence[SurfaceRegistryIssue | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
 class DashboardAction:
     label: str
     href: str
