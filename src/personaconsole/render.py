@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, fields, is_dataclass
 from html import escape
 from typing import Any, Mapping, Sequence
 
-from .models import BrandAssets, NavGroup, NavItem, PersonaConsoleConfig, StatusPill, UserPill
+from .models import BrandAssets, LiveRefreshConfig, NavGroup, NavItem, PersonaConsoleConfig, StatusPill, UserPill
 from .privacy import feature_enabled
 
 
@@ -85,6 +85,154 @@ def _badge_html(value: int) -> str:
         return ""
     label = "999+" if value > 999 else str(value)
     return f'<span class="admin-nav-badge">{escape(label)}</span>'
+
+
+def _bool(value: object, default: bool = False) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    raw = str(value).strip().lower()
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def _positive_int(value: object, default: int, *, minimum: int = 0, maximum: int = 3600) -> int:
+    try:
+        number = int(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        number = default
+    return max(minimum, min(maximum, number))
+
+
+def _safe_dom_id(value: object, default: str) -> str:
+    raw = str(value or "").strip()
+    safe = "".join(char if char.isalnum() or char in {"-", "_"} else "-" for char in raw)
+    safe = safe.strip("-_")
+    return safe or default
+
+
+def _interval_options(value: object, default: Sequence[int]) -> tuple[int, ...]:
+    if isinstance(value, str):
+        values: Sequence[object] = [part.strip() for part in value.split(",")]
+    elif isinstance(value, Sequence):
+        values = value
+    else:
+        values = default
+    options: list[int] = []
+    for raw in values:
+        option = _positive_int(raw, 0, minimum=1, maximum=3600)
+        if option and option not in options:
+            options.append(option)
+    return tuple(options or default or (15,))
+
+
+def _attr(name: str, value: object, *, boolean: bool = False) -> str:
+    if boolean:
+        return f" {name}" if value else ""
+    if value is None or value == "":
+        return ""
+    return f' {name}="{escape(str(value), quote=True)}"'
+
+
+def _live_refresh_from_mapping(data: Mapping[str, object], fallback: LiveRefreshConfig | None = None) -> LiveRefreshConfig:
+    base = fallback or LiveRefreshConfig()
+    normalized = dict(data)
+    aliases = {
+        "endpoint": "url",
+        "live_url": "url",
+        "interval": "interval_seconds",
+        "poll_interval": "interval_seconds",
+        "stale_after": "stale_after_seconds",
+        "fallback_url": "fallback_href",
+    }
+    for alias, canonical in aliases.items():
+        if alias in normalized and canonical not in normalized:
+            normalized[canonical] = normalized[alias]
+    field_names = {field.name for field in fields(LiveRefreshConfig)}
+    values: dict[str, object] = {name: getattr(base, name) for name in field_names}
+    for name in field_names:
+        if name in normalized:
+            values[name] = normalized[name]
+    values["enabled"] = _bool(values.get("enabled"), bool(base.enabled))
+    values["interval_seconds"] = _positive_int(values.get("interval_seconds"), base.interval_seconds, minimum=1)
+    values["stale_after_seconds"] = _positive_int(values.get("stale_after_seconds"), 0, minimum=0)
+    values["paused"] = _bool(values.get("paused"), bool(base.paused))
+    values["include_controls"] = _bool(values.get("include_controls"), bool(base.include_controls))
+    values["interval_options"] = _interval_options(values.get("interval_options"), base.interval_options)
+    return LiveRefreshConfig(**values)  # type: ignore[arg-type]
+
+
+def _live_refresh_config(value: PersonaConsoleConfig | LiveRefreshConfig | Mapping[str, object]) -> LiveRefreshConfig:
+    if isinstance(value, LiveRefreshConfig):
+        return value
+    if isinstance(value, PersonaConsoleConfig):
+        default = LiveRefreshConfig(
+            enabled=bool(value.live_interval),
+            key=value.active or "page",
+            url=value.live_url,
+            interval_seconds=_positive_int(value.live_interval, 15, minimum=1),
+            target_id="live-target",
+            controls_id="live-pill",
+            status_id="page-refresh-status",
+            hold_selector=value.live_hold_selector,
+            storage_key=f"live:{value.active or 'page'}",
+            updated_label=value.updated_label,
+        )
+        if value.live_refresh:
+            return _live_refresh_from_mapping(_mapping(value.live_refresh), default)
+        return default
+    return _live_refresh_from_mapping(dict(value))
+
+
+def live_refresh_attributes(config: PersonaConsoleConfig | LiveRefreshConfig | Mapping[str, object]) -> str:
+    model = _live_refresh_config(config)
+    if not model.enabled or not model.url:
+        return ""
+    target_id = _safe_dom_id(model.target_id, "live-target")
+    key = _safe_dom_id(model.key, target_id)
+    target_selector = model.target_selector or f"#{target_id}"
+    classes = "pc-live-region"
+    return (
+        _attr("id", target_id)
+        + _attr("class", classes)
+        + _attr("data-pc-live-target", True, boolean=True)
+        + _attr("data-pc-live-key", key)
+        + _attr("data-pc-live-url", model.url)
+        + _attr("data-live-url", model.url)
+        + _attr("data-pc-live-target-selector", target_selector)
+        + _attr("data-pc-live-interval", model.interval_seconds)
+        + _attr("data-pc-live-hold-when", model.hold_selector)
+        + _attr("data-live-hold-when", model.hold_selector)
+        + _attr("data-pc-live-stale-after", model.stale_after_seconds)
+        + _attr("data-pc-live-status", _safe_dom_id(model.status_id, "page-refresh-status"))
+        + _attr("data-pc-live-updated-label", model.updated_label)
+        + _attr("data-pc-live-stale-label", model.stale_label)
+        + _attr("data-pc-live-error-label", model.error_label)
+    ).strip()
+
+
+def render_live_region(body_html: str, config: PersonaConsoleConfig | LiveRefreshConfig | Mapping[str, object]) -> str:
+    attrs = live_refresh_attributes(config)
+    if not attrs:
+        return body_html
+    return f"<div {attrs}>{body_html}</div>"
+
+
+def render_live_status(config: PersonaConsoleConfig | LiveRefreshConfig | Mapping[str, object] | None = None) -> str:
+    model = _live_refresh_config(config) if config is not None else LiveRefreshConfig()
+    status_id = _safe_dom_id(model.status_id, "page-refresh-status")
+    label = model.updated_label or "Updated now"
+    return (
+        f'<span id="{escape(status_id, quote=True)}" '
+        'class="page-refresh-status pc-page-refresh-status" data-pc-live-status-text>'
+        f"{escape(label)}</span>"
+    )
 
 
 def _item_active(active: str, item: NavItem, current_path: str = "") -> bool:
@@ -229,29 +377,64 @@ def render_user_pill(user: UserPill | Mapping[str, object] | None) -> str:
     )
 
 
-def render_live_controls(config: PersonaConsoleConfig) -> str:
-    if not config.live_interval:
+def render_live_controls(config: PersonaConsoleConfig | LiveRefreshConfig | Mapping[str, object]) -> str:
+    model = _live_refresh_config(config)
+    if not model.enabled or not model.include_controls:
         return ""
+    target_id = _safe_dom_id(model.target_id, "live-target")
+    controls_id = _safe_dom_id(model.controls_id, "live-pill")
+    key = _safe_dom_id(model.key, target_id)
+    status_id = _safe_dom_id(model.status_id, "page-refresh-status")
+    interval = _positive_int(model.interval_seconds, 15, minimum=1)
+    options = _interval_options(model.interval_options, (5, 15, 30, 60))
+    if interval not in options:
+        options = tuple(sorted(options + (interval,)))
+    option_html = "".join(
+        f'<option value="{option}"{" selected" if option == interval else ""}>{option}s</option>' for option in options
+    )
+    storage_key = model.storage_key or f"live:{key}"
+    target_selector = model.target_selector or f"#{target_id}"
+    toggle_id = "live-toggle" if controls_id == "live-pill" else f"{controls_id}-toggle"
+    interval_id = "live-interval" if controls_id == "live-pill" else f"{controls_id}-interval"
+    pressed = "false" if model.paused else "true"
+    live_class = "" if model.paused else " live-on"
+    label = model.paused_label if model.paused else model.label
+    fallback_href = model.fallback_href or ""
+    noscript = (
+        f'<noscript><a class="pc-live-noscript" href="{escape(fallback_href, quote=True)}">'
+        f"{escape(model.manual_label)}</a></noscript>"
+        if fallback_href
+        else ""
+    )
     return f"""
-<div id="live-pill"
+<div id="{escape(controls_id, quote=True)}"
      class="live-pill pc-live-pill"
-     data-default-interval="{int(config.live_interval)}"
-     data-storage-key="live:{escape(config.active)}"
+     data-pc-live-controls
+     data-pc-live-for="{escape(target_selector, quote=True)}"
+     data-pc-live-key="{escape(key, quote=True)}"
+     data-pc-live-status="{escape(status_id, quote=True)}"
+     data-pc-live-paused-label="{escape(model.paused_label, quote=True)}"
+     data-pc-live-label="{escape(model.label, quote=True)}"
+     data-pc-live-refreshing-label="{escape(model.refreshing_label, quote=True)}"
+     data-pc-live-updated-label="{escape(model.updated_label, quote=True)}"
+     data-pc-live-stale-label="{escape(model.stale_label, quote=True)}"
+     data-pc-live-error-label="{escape(model.error_label, quote=True)}"
+     data-pc-live-paused="{"true" if model.paused else "false"}"
+     data-default-interval="{interval}"
+     data-storage-key="{escape(storage_key, quote=True)}"
      role="group"
      aria-label="Live refresh">
-  <button type="button" id="live-toggle" class="live-pill-btn pc-live-toggle" aria-pressed="false" title="Toggle live auto-refresh">
+  <button type="button" id="{escape(toggle_id, quote=True)}" class="live-pill-btn pc-live-toggle{live_class}" data-pc-live-toggle aria-pressed="{pressed}" title="Toggle live auto-refresh">
     <span class="live-pill-dot pc-live-dot" aria-hidden="true"></span>
-    <span class="live-pill-label pc-live-label">Paused</span>
+    <span class="live-pill-label pc-live-label">{escape(label)}</span>
   </button>
   <label class="live-pill-interval pc-live-interval" title="Auto-refresh interval (seconds)">
     <span class="live-pill-interval-prefix pc-live-interval-prefix" aria-hidden="true">every</span>
-    <select id="live-interval" class="live-pill-select pc-live-select" aria-label="Refresh interval (seconds)">
-      <option value="5">5s</option>
-      <option value="15">15s</option>
-      <option value="30">30s</option>
-      <option value="60">60s</option>
+    <select id="{escape(interval_id, quote=True)}" class="live-pill-select pc-live-select" data-pc-live-interval aria-label="Refresh interval (seconds)">
+      {option_html}
     </select>
   </label>
+  {noscript}
 </div>"""
 
 
@@ -264,6 +447,7 @@ def render_shell_html(
     extra_body_end: str = "",
     flash_container: bool = True,
 ) -> str:
+    live_config = _live_refresh_config(config)
     nav_html = render_nav_groups(
         config.nav_groups,
         active=config.active,
@@ -278,19 +462,11 @@ def render_shell_html(
     refresh = ""
     if config.include_refresh:
         refresh = (
-            '<span id="page-refresh-status" class="page-refresh-status pc-page-refresh-status">'
-            f"{escape(config.updated_label)}</span>"
+            render_live_status(live_config)
+            +
             '<button type="button" id="page-refresh-button" class="page-refresh-button pc-page-refresh-button" '
-            'aria-label="Refresh page"><span aria-hidden="true">&#10227;</span></button>'
+            'data-pc-live-manual aria-label="Refresh page"><span aria-hidden="true">&#10227;</span></button>'
         )
-    live_target_open = ""
-    live_target_close = ""
-    if config.live_interval and config.live_url:
-        attrs = f'id="live-target" data-live-url="{escape(config.live_url)}"'
-        if config.live_hold_selector:
-            attrs += f' data-live-hold-when="{escape(config.live_hold_selector)}"'
-        live_target_open = f"<div {attrs}>"
-        live_target_close = "</div>"
     legacy_refresh_alias = ""
     if config.legacy_refresh_global:
         legacy_name = "".join(ch for ch in config.legacy_refresh_global if ch.isalnum() or ch in {"_", "$"})
@@ -352,12 +528,10 @@ def render_shell_html(
         <h1>{escape(config.page_title)}</h1>
         <div class="sub">{escape(config.page_subtitle)}</div>
       </div>
-      <div class="page-actions">{refresh}{render_live_controls(config)}</div>
+      <div class="page-actions">{refresh}{render_live_controls(live_config)}</div>
     </section>
     {'<div id="flash-stack" class="flash-stack pc-flash-stack" aria-live="polite"></div>' if flash_container else ''}
-    {live_target_open}
-    {body_html}
-    {live_target_close}
+    {render_live_region(body_html, live_config)}
   </main>
   <script src="{escape(config.static_base_url.rstrip('/'))}/persona-console.js"></script>
   {legacy_refresh_alias}

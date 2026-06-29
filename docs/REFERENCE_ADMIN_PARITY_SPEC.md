@@ -96,6 +96,10 @@ PersonaConsole should supply reusable primitives for common module surfaces:
   surface; consumers still own worker execution, retries, service management,
   dead-letter status changes, rollback proposal writes, dry-run producer logic,
   auth, and deployment behavior.
+- `live_refresh`: shared partial-target controls, pause/resume state, manual
+  refresh, stale/error classes, and no-JS fallback links. PersonaConsole
+  `1.0.33` supplies the typed shell contract and browser behavior; consumers
+  still own partial routes, auth, rate limits, data queries, and fragment HTML.
 - `people`: profile and relationship summaries rendered from consumer-owned
   data. PersonaConsole `1.0.11` supplies the typed filter/table/notes surface;
   consumers still own lookups, auth, edits, and private scope mapping.

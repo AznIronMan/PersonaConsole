@@ -261,10 +261,14 @@ _OWNER_PRIVATE_EXPORTS = (
     "render_private_text",
 )
 _RENDER_EXPORTS = (
+    "LiveRefreshConfig",
     "NavGroup",
     "NavItem",
     "PersonaConsoleConfig",
+    "live_refresh_attributes",
     "render_dashboard_sections",
+    "render_live_region",
+    "render_live_status",
     "render_shell_html",
 )
 _CONTROL_EXPORTS = (
@@ -2038,13 +2042,28 @@ def _shell_render_check(module: Any) -> DoctorCheck:
                     )
                 ],
                 app_version=module.__version__,
+                live_refresh=module.LiveRefreshConfig(
+                    enabled=True,
+                    key="doctor",
+                    url="/doctor/partial",
+                    interval_seconds=15,
+                    stale_after_seconds=60,
+                    fallback_href="/doctor",
+                ),
             ),
             "<main>doctor body</main>",
         )
     except Exception as exc:
         return _check(False, "shell_render", "shell render failed", f"{exc.__class__.__name__}: {exc}")
-    ok = "Example Runtime" in html and "doctor body" in html and "persona-console" in html
-    return _check(ok, "shell_render", "shared shell renders generic body")
+    ok = (
+        "Example Runtime" in html
+        and "doctor body" in html
+        and "persona-console" in html
+        and "data-pc-live-target" in html
+        and 'data-pc-live-url="/doctor/partial"' in html
+        and "pc-live-noscript" in html
+    )
+    return _check(ok, "shell_render", "shared shell renders generic body and live partial contract")
 
 
 if __name__ == "__main__":

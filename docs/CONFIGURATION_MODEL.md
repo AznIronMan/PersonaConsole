@@ -60,6 +60,39 @@ from personaconsole import NavGroup, NavItem, PersonaConsoleConfig
 The older `personaconsole` path should remain available as a compatibility
 alias during the v1.x transition.
 
+## Live Refresh And Partials
+
+`LiveRefreshConfig` defines the shared shell contract for polling a
+consumer-owned partial endpoint. PersonaConsole renders controls, target data
+attributes, stale/error classes, and the browser-side replacement behavior. The
+consumer runtime still owns the route, auth, rate limits, data queries, and the
+HTML fragment returned by that route.
+
+```python
+from personaconsole import LiveRefreshConfig, PersonaConsoleConfig
+
+config = PersonaConsoleConfig(
+    brand_name="Example Persona",
+    page_title="Dashboard",
+    live_refresh=LiveRefreshConfig(
+        enabled=True,
+        key="dashboard",
+        url="/fragments/dashboard",
+        interval_seconds=30,
+        interval_options=(10, 30, 60),
+        hold_selector="[data-live-hold]",
+        stale_after_seconds=120,
+        fallback_href="/dashboard",
+    ),
+)
+```
+
+For compatibility, older `live_url`, `live_interval`, and
+`live_hold_selector` fields still render the same default `#live-target` shell.
+New integrations should prefer `LiveRefreshConfig`, `render_live_controls(...)`,
+`render_live_region(...)`, and `live_refresh_attributes(...)` when they need
+per-surface partial targets.
+
 ## Format Recommendation
 
 Use typed Python dataclasses and plain dictionaries as the primary runtime
@@ -1263,7 +1296,7 @@ After changing a consumer's installed package, checked-out tag, source mount, or
 service image, run the generic doctor before deeper runtime-specific smokes:
 
 ```bash
-PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.32
+PYTHONPATH=/path/to/personaconsole/src python3 /path/to/personaconsole/scripts/consumer_integration_doctor.py --expected-version 1.0.33
 ```
 
 The doctor verifies that `personaconsole` and its legacy compatibility shims

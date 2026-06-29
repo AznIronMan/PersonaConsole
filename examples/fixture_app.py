@@ -98,6 +98,7 @@ from personaconsole import (
     JournalSurfaceConfig,
     LegalNotice,
     LoginPageConfig,
+    LiveRefreshConfig,
     MediaArtifactCard,
     MediaLibraryActionSlot,
     MediaLibraryItem,
@@ -476,7 +477,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             tier="admin",
             source="fixture",
         ),
-        app_version="v1.0.32-fixture",
+        app_version="v1.0.33-fixture",
         brand_assets=fixture_public_brand(),
         static_base_url=static_base_url,
         theme=ThemeTokens(
@@ -491,9 +492,16 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             muted="rgb(156 163 175)",
             info="rgb(45 212 191)",
         ),
-        live_url="/fragments/dashboard",
-        live_interval=30,
-        live_hold_selector="[data-live-hold]",
+        live_refresh=LiveRefreshConfig(
+            enabled=True,
+            key="dashboard",
+            url="/fragments/dashboard",
+            interval_seconds=30,
+            interval_options=(10, 30, 60),
+            hold_selector="[data-live-hold]",
+            stale_after_seconds=120,
+            fallback_href="/",
+        ),
     )
 
 
@@ -2305,6 +2313,7 @@ def render_public_settings_fixture_page(*, static_base_url: str = "/persona-cons
         active="public-presence",
         page_title="Public Presence",
         page_subtitle="Reusable splash, login, chat, media, and connector settings.",
+        live_refresh=None,
         live_url="",
         live_interval=None,
     )

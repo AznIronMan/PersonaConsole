@@ -69,7 +69,10 @@ screenshots, data, and runtime policy stay outside the public repo.
   PersonaConsole `1.0.16`; lifecycle semantics remain runtime-owned.
 - Page refresh and live-refresh controls as configurable shell primitives.
   PersonaConsole `1.0.16` adds `pc-*` class hooks to the existing live-refresh
-  shell controls.
+  shell controls. PersonaConsole `1.0.33` adds the reusable
+  `LiveRefreshConfig` partial-update contract with target/control/status data
+  attributes, stale/error state classes, pause/resume controls, manual refresh,
+  and no-JS fallback links.
 - Account menu extension point.
 - Runtime lifecycle control slot for private/local deployments.
 

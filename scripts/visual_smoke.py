@@ -135,6 +135,10 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                     expect(page.locator(".pc-agent-ops-surface")).to_be_visible()
                     expect(page.locator(".pc-public-settings-surface")).to_be_visible()
                     expect(page.locator("#live-pill")).to_be_visible()
+                    expect(page.locator(".pc-live-region")).to_be_visible()
+                    expect(page.locator(".pc-live-region")).to_have_attribute("data-pc-live-stale-after", "120")
+                    page.locator("#page-refresh-button").click()
+                    expect(page.locator("#page-refresh-status")).to_have_attribute("data-state", "ok")
                     if name == "mobile":
                         toggle = page.locator(".admin-mobile-toggle")
                         expect(toggle).to_be_visible()

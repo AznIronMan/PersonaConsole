@@ -54,105 +54,216 @@
     if (banner) banner.remove();
   });
 
-  function setRefreshStatus(message, state) {
-    const status = document.getElementById("page-refresh-status");
+  function setRefreshStatus(message, state, statusId) {
+    const status = document.getElementById(statusId || "page-refresh-status");
     if (!status) return;
     status.textContent = message;
     status.dataset.state = state || "";
     status.title = new Date().toLocaleString();
   }
-  function markPageUpdated(message) {
-    setRefreshStatus(message || "Updated now", "ok");
+  function markPageUpdated(message, statusId) {
+    setRefreshStatus(message || "Updated now", "ok", statusId);
   }
   window.__personaConsoleSetRefreshStatus = setRefreshStatus;
   window.__personaConsoleMarkUpdated = markPageUpdated;
 
-  const liveTarget = document.getElementById("live-target");
-  const livePill = document.getElementById("live-pill");
-  let liveInflight = false;
-  let liveTimer = null;
-  let liveState = null;
+  const liveControllers = [];
 
-  async function refreshLiveTarget(options) {
-    const manual = Boolean(options && options.manual);
-    if (!liveTarget || !liveTarget.dataset.liveUrl || liveInflight) return false;
-    const holdSelector = liveTarget.dataset.liveHoldWhen || "";
-    if (!manual && holdSelector && liveTarget.querySelector(holdSelector)) return false;
-    liveInflight = true;
-    try {
-      const response = await fetch(liveTarget.dataset.liveUrl, {
-        credentials: "same-origin",
-        headers: {"X-Live-Refresh": "1"},
-      });
-      if (!response.ok) throw new Error(String(response.status));
-      liveTarget.innerHTML = await response.text();
-      markPageUpdated();
-      return true;
-    } catch (error) {
-      if (manual) setRefreshStatus("Refresh failed", "error");
-      return false;
-    } finally {
-      liveInflight = false;
-    }
-  }
-  window.__personaConsoleRefreshLiveTarget = refreshLiveTarget;
-
-  function scheduleLiveRefresh() {
-    if (liveTimer) {
-      clearInterval(liveTimer);
-      liveTimer = null;
-    }
-    if (!liveState || !liveState.on || document.hidden) return;
-    liveTimer = setInterval(function () { refreshLiveTarget(); }, liveState.interval * 1000);
+  function liveKey(target) {
+    return target.dataset.pcLiveKey || target.id || "live-target";
   }
 
-  if (livePill && liveTarget) {
-    const toggle = livePill.querySelector("#live-toggle");
-    const label = livePill.querySelector(".live-pill-label");
-    const select = livePill.querySelector("#live-interval");
-    const storeKey = livePill.dataset.storageKey || ("live:" + window.location.pathname);
-    const defaultInterval = parseInt(livePill.dataset.defaultInterval || "15", 10) || 15;
-    liveState = {on: true, interval: defaultInterval};
+  function liveUrl(target) {
+    return target.dataset.pcLiveUrl || target.dataset.liveUrl || "";
+  }
+
+  function liveStatusId(target, controls) {
+    return (controls && controls.dataset.pcLiveStatus) || target.dataset.pcLiveStatus || "page-refresh-status";
+  }
+
+  function liveLabel(target, controls, name, fallback) {
+    const dataName = "pcLive" + name.charAt(0).toUpperCase() + name.slice(1) + "Label";
+    return (controls && controls.dataset[dataName]) || target.dataset[dataName] || fallback;
+  }
+
+  function selectorMatchesTarget(selector, target) {
+    if (!selector) return false;
+    if (target.id && (selector === "#" + target.id || selector === target.id)) return true;
+    return selector === liveKey(target);
+  }
+
+  function controlsForTarget(target) {
+    const controls = Array.from(document.querySelectorAll("[data-pc-live-controls], #live-pill"));
+    const key = liveKey(target);
+    return controls.find(function (control) {
+      return selectorMatchesTarget(control.dataset.pcLiveFor || control.dataset.pcLiveTarget || "", target)
+        || control.dataset.pcLiveKey === key
+        || (target.id === "live-target" && control.id === "live-pill");
+    }) || null;
+  }
+
+  function parseSeconds(value, fallback) {
+    const parsed = parseInt(value || String(fallback || 0), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  function setLiveTargetState(target, state, statusId, message) {
+    target.dataset.pcLiveState = state || "";
+    target.classList.toggle("is-refreshing", state === "busy");
+    target.classList.toggle("is-stale", state === "stale");
+    target.classList.toggle("has-refresh-error", state === "error");
+    if (message) setRefreshStatus(message, state, statusId);
+  }
+
+  function installLiveRefresh(target) {
+    const controls = controlsForTarget(target);
+    const url = liveUrl(target);
+    if (!url) return null;
+
+    const toggle = controls ? controls.querySelector("[data-pc-live-toggle], #live-toggle") : null;
+    const label = controls ? controls.querySelector(".live-pill-label, .pc-live-label") : null;
+    const select = controls ? controls.querySelector("[data-pc-live-interval], #live-interval") : null;
+    const manualButtons = Array.from(document.querySelectorAll("[data-pc-live-manual]:not(#page-refresh-button)")).filter(function (button) {
+      const selector = button.dataset.pcLiveTarget || "";
+      return !selector || selectorMatchesTarget(selector, target);
+    });
+    const statusId = liveStatusId(target, controls);
+    const defaultInterval = parseSeconds(
+      (controls && controls.dataset.defaultInterval) || target.dataset.pcLiveInterval,
+      15
+    );
+    const storeKey = (controls && controls.dataset.storageKey) || ("live:" + liveKey(target));
+    const pausedDefault = (controls && controls.dataset.pcLivePaused === "true") || target.dataset.pcLivePaused === "true";
+    const state = {on: !pausedDefault, interval: defaultInterval};
+    let inflight = false;
+    let liveTimer = null;
+    let staleTimer = null;
+
     try {
       const saved = window.localStorage.getItem(storeKey);
-      if (saved) liveState = Object.assign(liveState, JSON.parse(saved));
+      if (saved) Object.assign(state, JSON.parse(saved));
     } catch (error) {}
 
     function persistLiveState() {
-      try { window.localStorage.setItem(storeKey, JSON.stringify(liveState)); } catch (error) {}
+      try { window.localStorage.setItem(storeKey, JSON.stringify(state)); } catch (error) {}
     }
+
     function renderLiveState() {
-      if (label) label.textContent = liveState.on ? "Live" : "Paused";
+      if (label) label.textContent = state.on
+        ? liveLabel(target, controls, "label", "Live")
+        : liveLabel(target, controls, "paused", "Paused");
       if (toggle) {
-        toggle.classList.toggle("live-on", Boolean(liveState.on));
-        toggle.setAttribute("aria-pressed", liveState.on ? "true" : "false");
+        toggle.classList.toggle("live-on", Boolean(state.on));
+        toggle.setAttribute("aria-pressed", state.on ? "true" : "false");
       }
-      if (select) select.value = String(liveState.interval);
+      if (select) select.value = String(state.interval);
+      if (controls) controls.dataset.pcLiveState = state.on ? "live" : "paused";
     }
+
+    function scheduleStaleCheck() {
+      if (staleTimer) {
+        clearTimeout(staleTimer);
+        staleTimer = null;
+      }
+      const staleAfter = parseSeconds(target.dataset.pcLiveStaleAfter, 0);
+      if (!staleAfter) return;
+      staleTimer = setTimeout(function () {
+        if (inflight) return;
+        setLiveTargetState(target, "stale", statusId, liveLabel(target, controls, "stale", "Stale"));
+      }, staleAfter * 1000);
+    }
+
+    async function refresh(options) {
+      const manual = Boolean(options && options.manual);
+      const holdSelector = target.dataset.pcLiveHoldWhen || target.dataset.liveHoldWhen || "";
+      if (inflight) return false;
+      if (!manual && holdSelector && target.querySelector(holdSelector)) return false;
+      inflight = true;
+      setLiveTargetState(target, "busy", statusId, liveLabel(target, controls, "refreshing", "Refreshing..."));
+      try {
+        const response = await fetch(url, {
+          credentials: "same-origin",
+          headers: {"X-Live-Refresh": "1", "X-PersonaConsole-Partial": "1"},
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        target.innerHTML = await response.text();
+        target.dataset.pcLiveUpdatedAt = new Date().toISOString();
+        target.classList.remove("has-refresh-error", "is-stale");
+        markPageUpdated(liveLabel(target, controls, "updated", "Updated now"), statusId);
+        scheduleStaleCheck();
+        return true;
+      } catch (error) {
+        setLiveTargetState(target, "error", statusId, liveLabel(target, controls, "error", "Refresh failed"));
+        return false;
+      } finally {
+        inflight = false;
+        target.classList.remove("is-refreshing");
+      }
+    }
+
+    function scheduleLiveRefresh() {
+      if (liveTimer) {
+        clearInterval(liveTimer);
+        liveTimer = null;
+      }
+      if (!state.on || document.hidden) return;
+      liveTimer = setInterval(function () { refresh(); }, state.interval * 1000);
+    }
+
     if (toggle) {
       toggle.addEventListener("click", function () {
-        liveState.on = !liveState.on;
+        state.on = !state.on;
         persistLiveState();
         renderLiveState();
         scheduleLiveRefresh();
-        if (liveState.on) refreshLiveTarget({manual: true});
+        if (state.on) refresh({manual: true});
       });
     }
     if (select) {
       select.addEventListener("change", function () {
-        liveState.interval = parseInt(select.value || String(defaultInterval), 10) || defaultInterval;
+        state.interval = parseSeconds(select.value, defaultInterval);
         persistLiveState();
         renderLiveState();
         scheduleLiveRefresh();
       });
     }
+    manualButtons.forEach(function (button) {
+      button.addEventListener("click", async function () {
+        if (button.disabled) return;
+        button.disabled = true;
+        button.classList.add("is-loading");
+        await refresh({manual: true});
+        button.disabled = false;
+        button.classList.remove("is-loading");
+      });
+    });
     document.addEventListener("visibilitychange", function () {
       scheduleLiveRefresh();
-      if (!document.hidden && liveState.on) refreshLiveTarget();
+      if (!document.hidden && state.on) refresh();
     });
+
     renderLiveState();
+    scheduleStaleCheck();
     scheduleLiveRefresh();
+    return {target: target, refresh: refresh, schedule: scheduleLiveRefresh};
   }
+
+  Array.from(document.querySelectorAll("[data-pc-live-target], #live-target")).forEach(function (target) {
+    if (liveControllers.some(function (controller) { return controller.target === target; })) return;
+    const controller = installLiveRefresh(target);
+    if (controller) liveControllers.push(controller);
+  });
+
+  async function refreshLiveTarget(options) {
+    if (!liveControllers.length) return false;
+    return liveControllers[0].refresh(options);
+  }
+  window.__personaConsoleRefreshLiveTarget = refreshLiveTarget;
+  window.__personaConsoleRefreshPartial = function (selector, options) {
+    const target = typeof selector === "string" ? document.querySelector(selector) : selector;
+    const controller = liveControllers.find(function (item) { return item.target === target; });
+    return controller ? controller.refresh(options || {manual: true}) : Promise.resolve(false);
+  };
 
   const pageRefreshButton = document.getElementById("page-refresh-button");
   if (pageRefreshButton) {
@@ -160,9 +271,9 @@
       if (pageRefreshButton.disabled) return;
       pageRefreshButton.disabled = true;
       pageRefreshButton.classList.add("is-loading");
-      setRefreshStatus(liveTarget ? "Refreshing..." : "Reloading...", "busy");
+      setRefreshStatus(liveControllers.length ? "Refreshing..." : "Reloading...", "busy");
       try {
-        if (liveTarget) {
+        if (liveControllers.length) {
           const updated = await refreshLiveTarget({manual: true});
           if (updated) markPageUpdated();
         } else {

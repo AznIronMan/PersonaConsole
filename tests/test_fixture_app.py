@@ -34,7 +34,9 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["journal"] is True
     assert config.features["public_presence"] is True
     assert config.brand_assets is not None
-    assert config.live_interval == 30
+    assert config.live_refresh is not None
+    assert config.live_refresh.interval_seconds == 30
+    assert config.live_refresh.stale_after_seconds == 120
 
 
 def test_fixture_renders_shared_shell_with_generic_data():
@@ -42,6 +44,8 @@ def test_fixture_renders_shared_shell_with_generic_data():
 
     assert "Admin Overview" in html
     assert "Example Persona" in html
+    assert "data-pc-live-target" in html
+    assert 'data-pc-live-url="/fragments/dashboard"' in html
     assert "pc-dashboard-overview" in html
     assert "Operator Attention" in html
     assert "pc-admin-list-surface" in html

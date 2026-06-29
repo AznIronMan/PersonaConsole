@@ -38,6 +38,32 @@ class UserPill:
 
 
 @dataclass(frozen=True)
+class LiveRefreshConfig:
+    enabled: bool = False
+    key: str = "page"
+    url: str = ""
+    interval_seconds: int = 15
+    interval_options: Sequence[int] = (5, 15, 30, 60)
+    target_id: str = "live-target"
+    target_selector: str = ""
+    controls_id: str = "live-pill"
+    status_id: str = "page-refresh-status"
+    hold_selector: str = ""
+    stale_after_seconds: int = 0
+    paused: bool = False
+    storage_key: str = ""
+    label: str = "Live"
+    paused_label: str = "Paused"
+    refreshing_label: str = "Refreshing..."
+    updated_label: str = "Updated now"
+    stale_label: str = "Stale"
+    error_label: str = "Refresh failed"
+    manual_label: str = "Refresh now"
+    fallback_href: str = ""
+    include_controls: bool = True
+
+
+@dataclass(frozen=True)
 class ThemeTokens:
     accent: str = "rgb(244 114 182)"
     accent_soft: str = "rgb(251 207 232)"
@@ -273,6 +299,7 @@ class PersonaConsoleConfig:
     home_url: str = "/"
     static_base_url: str = "/persona-console/static"
     theme: ThemeTokens = field(default_factory=ThemeTokens)
+    live_refresh: LiveRefreshConfig | Mapping[str, object] | None = None
     live_url: str = ""
     live_interval: int | None = None
     live_hold_selector: str = ""
