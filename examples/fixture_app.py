@@ -31,6 +31,9 @@ from personaconsole import (
     ActivitySurfaceConfig,
     AgentOpsSurfaceConfig,
     AgentSessionRow,
+    AdminAuthLink,
+    AdminAuthSummaryItem,
+    AdminLoginPageConfig,
     AdminListCell,
     AdminListColumn,
     AdminListFilterField,
@@ -38,6 +41,7 @@ from personaconsole import (
     AdminListRow,
     AdminListSurfaceConfig,
     AdminPrivacyContext,
+    AdminPasswordChangePageConfig,
     AvailabilityEventRow,
     AvailabilityMonitorRow,
     AvailabilityMonitorSurfaceConfig,
@@ -178,6 +182,8 @@ from personaconsole import (
     public_theme_options,
     register_static_assets,
     render_bridge_ops_surface,
+    render_admin_login_page,
+    render_admin_password_change_page,
     render_chat_page,
     render_command_intake_surface,
     render_availability_monitor_surface,
@@ -335,6 +341,46 @@ def build_login_page_config(*, static_base_url: str = "/persona-console/static")
         status_message="Choose any configured method to continue.",
         status_tone="info",
         legal_notices=(LegalNotice("terms", "Terms", body="Example terms appear in a reusable modal."),),
+        static_base_url=static_base_url,
+    )
+
+
+def build_admin_login_page_config(*, static_base_url: str = "/persona-console/static") -> AdminLoginPageConfig:
+    return AdminLoginPageConfig(
+        brand=fixture_public_brand(),
+        title="Admin Login",
+        subtitle="Operator session required.",
+        form_action="/login",
+        next_path="/runtime",
+        status_message="Use a configured operator account.",
+        status_tone="info",
+        summary_items=(
+            AdminAuthSummaryItem("Session", "required", "info", "Fixture auth shell only; consumers own verification."),
+        ),
+        help_links=(AdminAuthLink("Help", "/admin/help"),),
+        legal_links=(AdminAuthLink("Privacy", "/privacy"),),
+        static_base_url=static_base_url,
+    )
+
+
+def build_admin_password_change_page_config(
+    *,
+    static_base_url: str = "/persona-console/static",
+) -> AdminPasswordChangePageConfig:
+    return AdminPasswordChangePageConfig(
+        brand=fixture_public_brand(),
+        title="Change Admin Password",
+        subtitle="Fixture Operator needs a new password.",
+        subject_label="Fixture Operator",
+        form_action="/login/password-change",
+        next_path="/runtime",
+        min_length=8,
+        status_message="Password change challenge is active.",
+        status_tone="info",
+        summary_items=(
+            AdminAuthSummaryItem("Challenge", "active", "good", "Consumer runtime owns challenge validation."),
+        ),
+        help_links=(AdminAuthLink("Sign in instead", "/login"),),
         static_base_url=static_base_url,
     )
 
@@ -2302,6 +2348,14 @@ def render_login_fixture_page(*, static_base_url: str = "/persona-console/static
     return render_login_page(build_login_page_config(static_base_url=static_base_url))
 
 
+def render_admin_login_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    return render_admin_login_page(build_admin_login_page_config(static_base_url=static_base_url))
+
+
+def render_admin_password_change_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
+    return render_admin_password_change_page(build_admin_password_change_page_config(static_base_url=static_base_url))
+
+
 def render_chat_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
     return render_chat_page(build_chat_page_config(static_base_url=static_base_url))
 
@@ -2350,6 +2404,14 @@ def create_app():
     @app.get("/public/login", response_class=HTMLResponse)
     def login_page() -> str:
         return render_login_fixture_page()
+
+    @app.get("/admin/login", response_class=HTMLResponse)
+    def admin_login_page() -> str:
+        return render_admin_login_fixture_page()
+
+    @app.get("/admin/password-change", response_class=HTMLResponse)
+    def admin_password_change_page() -> str:
+        return render_admin_password_change_fixture_page()
 
     @app.get("/public/chat", response_class=HTMLResponse)
     def chat_page() -> str:

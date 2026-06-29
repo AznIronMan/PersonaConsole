@@ -49,6 +49,14 @@ _ADMIN_LIST_EXPORTS = (
     "admin_list_surface_feature_enabled",
     "render_admin_list_surface",
 )
+_ADMIN_AUTH_PAGE_EXPORTS = (
+    "AdminAuthLink",
+    "AdminAuthSummaryItem",
+    "AdminLoginPageConfig",
+    "AdminPasswordChangePageConfig",
+    "render_admin_login_page",
+    "render_admin_password_change_page",
+)
 _DETAIL_DOSSIER_EXPORTS = (
     "DETAIL_DOSSIER_FEATURE",
     "DetailDossierActionSlot",
@@ -383,6 +391,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "adapter_health_exports", _ADAPTER_HEALTH_EXPORTS))
         checks.extend(_export_checks(module, "availability_monitor_exports", _AVAILABILITY_MONITOR_EXPORTS))
         checks.extend(_export_checks(module, "admin_list_exports", _ADMIN_LIST_EXPORTS))
+        checks.extend(_export_checks(module, "admin_auth_page_exports", _ADMIN_AUTH_PAGE_EXPORTS))
         checks.extend(_export_checks(module, "detail_dossier_exports", _DETAIL_DOSSIER_EXPORTS))
         checks.extend(_export_checks(module, "media_library_exports", _MEDIA_LIBRARY_EXPORTS))
         checks.extend(_export_checks(module, "token_health_exports", _TOKEN_HEALTH_EXPORTS))
@@ -403,6 +412,7 @@ def run_consumer_integration_doctor(
         checks.append(_adapter_health_render_check(module))
         checks.append(_availability_monitor_render_check(module))
         checks.append(_admin_list_render_check(module))
+        checks.append(_admin_auth_page_render_check(module))
         checks.append(_detail_dossier_render_check(module))
         checks.append(_media_library_render_check(module))
         checks.append(_token_health_render_check(module))
@@ -720,6 +730,66 @@ def _admin_list_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "admin_list_render", "generic admin list renders controls, rows, cards, and redaction")
+
+
+def _admin_auth_page_render_check(module: Any) -> DoctorCheck:
+    raw_value = "<script>raw-doctor-admin-auth</script>"
+    private_host = "private-auth.example"
+    try:
+        brand = module.BrandAssets(
+            name="Example Runtime",
+            small_logo_url=f"https://{private_host}/logo.svg",
+            home_url=f"https://{private_host}/",
+        )
+        login = module.render_admin_login_page(
+            module.AdminLoginPageConfig(
+                brand=brand,
+                title="Admin Login",
+                subtitle="Operator session required.",
+                form_action=f"https://{private_host}/login",
+                next_path=f"https://{private_host}/runtime",
+                username_value=raw_value,
+                status_message=raw_value,
+                summary_items=[
+                    module.AdminAuthSummaryItem("Session", "required", "info", raw_value),
+                ],
+                help_links=[module.AdminAuthLink("Help", "/help")],
+            )
+        )
+        password = module.render_admin_password_change_page(
+            module.AdminPasswordChangePageConfig(
+                brand=brand,
+                subject_label=raw_value,
+                next_path="/runtime",
+                min_length=8,
+                disabled=True,
+                status_message="Password challenge expired.",
+            )
+        )
+    except Exception as exc:
+        return _check(
+            False,
+            "admin_auth_page_render",
+            "admin auth page render failed",
+            f"{exc.__class__.__name__}: {exc}",
+        )
+    html = login + password
+    ok = (
+        "pc-admin-auth-page" in html
+        and "pc-admin-login-page" in login
+        and "pc-admin-password-change-page" in password
+        and 'action="/login"' in login
+        and 'value="/"' in login
+        and 'action="/login/password-change"' in password
+        and 'value="/runtime"' in password
+        and 'minlength="8"' in password
+        and " disabled" in password
+        and "JavaScript is not required" in html
+        and "&lt;script&gt;raw-doctor-admin-auth&lt;/script&gt;" in html
+        and raw_value not in html
+        and private_host not in html
+    )
+    return _check(ok, "admin_auth_page_render", "admin auth login and password-change pages render safely")
 
 
 def _detail_dossier_render_check(module: Any) -> DoctorCheck:

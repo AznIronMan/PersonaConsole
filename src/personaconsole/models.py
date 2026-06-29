@@ -118,6 +118,85 @@ class BrandAssets:
 
 
 @dataclass(frozen=True)
+class AdminAuthLink:
+    label: str
+    href: str
+    title: str = ""
+    external: bool = False
+    rel: str = "noopener noreferrer"
+
+
+@dataclass(frozen=True)
+class AdminAuthSummaryItem:
+    label: str
+    value: str = ""
+    tone: str = "neutral"
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class AdminLoginPageConfig:
+    brand: BrandAssets | Mapping[str, object] | None = None
+    title: str = "Admin Login"
+    subtitle: str = "Operator session required."
+    form_action: str = "/login"
+    next_path: str = "/"
+    next_field_name: str = "next"
+    blocked_next_prefixes: Sequence[str] = ("/login",)
+    username_label: str = "Username"
+    username_name: str = "username"
+    username_value: str = ""
+    username_placeholder: str = ""
+    password_label: str = "Password"
+    password_name: str = "password"
+    password_placeholder: str = ""
+    method_label: str = "Password"
+    submit_label: str = "Sign in"
+    status_message: str = ""
+    status_tone: str = "bad"
+    banners: Sequence[FlashBanner | Mapping[str, object] | str] = field(default_factory=tuple)
+    summary_items: Sequence[AdminAuthSummaryItem | Mapping[str, object]] = field(default_factory=tuple)
+    help_links: Sequence[AdminAuthLink | Mapping[str, object]] = field(default_factory=tuple)
+    legal_links: Sequence[AdminAuthLink | Mapping[str, object]] = field(default_factory=tuple)
+    static_base_url: str = "/persona-console/static"
+    theme: ThemeTokens | Mapping[str, object] | None = None
+    page_title: str = ""
+    no_script_message: str = "JavaScript is not required for this form."
+    autofocus: bool = True
+
+
+@dataclass(frozen=True)
+class AdminPasswordChangePageConfig:
+    brand: BrandAssets | Mapping[str, object] | None = None
+    title: str = "Change Admin Password"
+    subtitle: str = "Choose a new password to continue."
+    form_action: str = "/login/password-change"
+    next_path: str = "/"
+    next_field_name: str = "next"
+    blocked_next_prefixes: Sequence[str] = ("/login",)
+    subject_label: str = "admin"
+    new_password_label: str = "New password"
+    new_password_name: str = "new_password"
+    confirm_password_label: str = "Confirm password"
+    confirm_password_name: str = "confirm_password"
+    method_label: str = "Password change"
+    submit_label: str = "Change password"
+    min_length: int = 0
+    disabled: bool = False
+    status_message: str = ""
+    status_tone: str = "bad"
+    banners: Sequence[FlashBanner | Mapping[str, object] | str] = field(default_factory=tuple)
+    summary_items: Sequence[AdminAuthSummaryItem | Mapping[str, object]] = field(default_factory=tuple)
+    help_links: Sequence[AdminAuthLink | Mapping[str, object]] = field(default_factory=tuple)
+    legal_links: Sequence[AdminAuthLink | Mapping[str, object]] = field(default_factory=tuple)
+    static_base_url: str = "/persona-console/static"
+    theme: ThemeTokens | Mapping[str, object] | None = None
+    page_title: str = ""
+    no_script_message: str = "JavaScript is not required for this form."
+    autofocus: bool = True
+
+
+@dataclass(frozen=True)
 class PublicMediaSource:
     src: str
     mime_type: str = ""

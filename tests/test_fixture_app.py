@@ -3,6 +3,8 @@ from pathlib import Path
 from examples.fixture_app import (
     _default_static_base_for_output,
     build_fixture_config,
+    render_admin_login_fixture_page,
+    render_admin_password_change_fixture_page,
     render_chat_fixture_page,
     render_fixture_page,
     render_login_fixture_page,
@@ -239,6 +241,22 @@ def test_fixture_renders_public_presence_pages_with_generic_data():
     assert "Reusable splash, login, chat, media, and connector settings." in settings
     assert "private-login.example" not in splash + login + chat + settings
     assert "private-chat.example" not in splash + login + chat + settings
+
+
+def test_fixture_renders_admin_auth_pages_with_generic_data():
+    login = render_admin_login_fixture_page(static_base_url="/static-fixture")
+    password = render_admin_password_change_fixture_page(static_base_url="/static-fixture")
+
+    assert "pc-admin-login-page" in login
+    assert "Operator session required." in login
+    assert 'action="/login"' in login
+    assert 'name="next" value="/runtime"' in login
+    assert "pc-admin-password-change-page" in password
+    assert "Fixture Operator needs a new password." in password
+    assert 'action="/login/password-change"' in password
+    assert 'minlength="8"' in password
+    assert "/static-fixture/persona-console.css" in login + password
+    assert "private-auth.example" not in login + password
 
 
 def test_fixture_static_output_path_points_to_shared_assets(tmp_path):

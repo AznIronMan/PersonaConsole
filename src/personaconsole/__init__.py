@@ -16,6 +16,10 @@ from .admin_list import (
     admin_list_surface_feature_enabled,
     render_admin_list_surface,
 )
+from .admin_auth_pages import (
+    render_admin_login_page,
+    render_admin_password_change_page,
+)
 from .detail_dossier import (
     DETAIL_DOSSIER_FEATURE,
     detail_dossier_surface_feature_enabled,
@@ -52,12 +56,16 @@ from .models import (
     AdapterHealthSparkBucket,
     ActivityEvent,
     ActivitySurfaceConfig,
+    AdminAuthLink,
+    AdminAuthSummaryItem,
+    AdminLoginPageConfig,
     AdminListCell,
     AdminListColumn,
     AdminListFilterField,
     AdminListPagination,
     AdminListRow,
     AdminListSurfaceConfig,
+    AdminPasswordChangePageConfig,
     AvailabilityEventRow,
     AvailabilityMonitorRow,
     AvailabilityMonitorSurfaceConfig,
@@ -343,12 +351,16 @@ __all__ = [
     "AdapterHealthSparkBucket",
     "ActivityEvent",
     "ActivitySurfaceConfig",
+    "AdminAuthLink",
+    "AdminAuthSummaryItem",
+    "AdminLoginPageConfig",
     "AdminListCell",
     "AdminListColumn",
     "AdminListFilterField",
     "AdminListPagination",
     "AdminListRow",
     "AdminListSurfaceConfig",
+    "AdminPasswordChangePageConfig",
     "AVAILABILITY_MONITOR_FEATURE",
     "AvailabilityEventRow",
     "AvailabilityMonitorRow",
@@ -549,7 +561,9 @@ __all__ = [
     "privacy_render_mode",
     "register_static_assets",
     "render_activity_surface",
+    "render_admin_login_page",
     "render_admin_list_surface",
+    "render_admin_password_change_page",
     "render_agent_ops_surface",
     "render_availability_monitor_surface",
     "render_dashboard_activity",
@@ -622,7 +636,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.33"
+__version__ = "1.0.34"
 
 
 def configure_jinja_loader(*args, **kwargs):

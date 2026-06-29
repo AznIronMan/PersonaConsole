@@ -18,6 +18,8 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.ADAPTER_HEALTH_FEATURE == "adapter_health"
     assert personaconsole.AVAILABILITY_MONITOR_FEATURE == "availability_monitor"
     assert personaconsole.ADMIN_LIST_FEATURE == "admin_list"
+    assert personaconsole.AdminLoginPageConfig
+    assert personaconsole.AdminPasswordChangePageConfig
     assert personaconsole.DETAIL_DOSSIER_FEATURE == "detail_dossier"
     assert personaconsole.MEDIA_LIBRARY_FEATURE == "media_library"
     assert personaconsole.WORKER_OPERATIONS_FEATURE == "worker_operations"
@@ -40,6 +42,8 @@ def test_personaconsole_is_canonical_api():
     assert "render_public_splash_page" in personaconsole.__all__
     assert "render_availability_monitor_surface" in personaconsole.__all__
     assert "render_admin_list_surface" in personaconsole.__all__
+    assert "render_admin_login_page" in personaconsole.__all__
+    assert "render_admin_password_change_page" in personaconsole.__all__
     assert "render_detail_dossier_surface" in personaconsole.__all__
     assert "render_media_library_surface" in personaconsole.__all__
     assert "render_worker_operations_surface" in personaconsole.__all__
@@ -62,6 +66,8 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.render_adapter_health_panel is personaconsole.render_adapter_health_panel
         assert legacy.render_availability_monitor_surface is personaconsole.render_availability_monitor_surface
         assert legacy.render_admin_list_surface is personaconsole.render_admin_list_surface
+        assert legacy.render_admin_login_page is personaconsole.render_admin_login_page
+        assert legacy.render_admin_password_change_page is personaconsole.render_admin_password_change_page
         assert legacy.render_detail_dossier_surface is personaconsole.render_detail_dossier_surface
         assert legacy.render_media_library_surface is personaconsole.render_media_library_surface
         assert legacy.render_worker_operations_surface is personaconsole.render_worker_operations_surface
@@ -85,6 +91,7 @@ def test_legacy_submodules_reexport_canonical_implementation():
     legacy_modules = {
         "adapter_health": "render_adapter_health_panel",
         "admin_list": "render_admin_list_surface",
+        "admin_auth_pages": "render_admin_login_page",
         "availability_monitor": "render_availability_monitor_surface",
         "detail_dossier": "render_detail_dossier_surface",
         "media_library": "render_media_library_surface",
@@ -133,4 +140,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.33"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.34"

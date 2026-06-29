@@ -846,6 +846,56 @@ PersonaEngine can later provide provider-neutral connector/capability metadata
 that consumers pass into PersonaConsole, but PersonaConsole should remain a renderer
 and configuration model only.
 
+## Admin Authentication Pages
+
+Admin auth pages are reusable HTML shells for runtime operator login and forced
+password-change flows. PersonaConsole renders branded forms, banners,
+auth-state summaries, help/legal links, and no-JS-safe form markup. Consumers
+own credential verification, session cookies, CSRF, device trust, lockouts,
+audits, and persistence.
+
+```python
+from personaconsole import (
+    AdminAuthSummaryItem,
+    AdminLoginPageConfig,
+    AdminPasswordChangePageConfig,
+    BrandAssets,
+    render_admin_login_page,
+    render_admin_password_change_page,
+)
+
+brand = BrandAssets(name="Example Runtime", small_logo_url="/static/logo.svg")
+
+login_html = render_admin_login_page(
+    AdminLoginPageConfig(
+        brand=brand,
+        title="Admin Login",
+        subtitle="Operator session required.",
+        form_action="/login",
+        next_path="/runtime",
+        status_message="Use a configured operator account.",
+        status_tone="info",
+        summary_items=[
+            AdminAuthSummaryItem("Session", "required", "info"),
+        ],
+    )
+)
+
+password_html = render_admin_password_change_page(
+    AdminPasswordChangePageConfig(
+        brand=brand,
+        subject_label="Operator",
+        form_action="/login/password-change",
+        next_path="/runtime",
+        min_length=8,
+    )
+)
+```
+
+For public-safety, the admin auth renderers only emit same-origin root-relative
+form actions, hidden next paths, static asset paths, help/legal links, and logo
+URLs. Unsafe absolute or protocol-relative values fall back to local defaults.
+
 ## Workflow Surfaces
 
 The operations workflow layer is shared, opt-in markup for repeated runtime

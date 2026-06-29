@@ -15,6 +15,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from examples.fixture_app import (
+    render_admin_login_fixture_page,
+    render_admin_password_change_fixture_page,
     render_chat_fixture_page,
     render_dashboard_fragment,
     render_fixture_page,
@@ -42,6 +44,12 @@ class FixtureHandler(http.server.SimpleHTTPRequestHandler):
             return
         if path == "/public/login":
             self._send_html(render_login_fixture_page(static_base_url="/src/personaconsole/static"))
+            return
+        if path == "/admin/login":
+            self._send_html(render_admin_login_fixture_page(static_base_url="/src/personaconsole/static"))
+            return
+        if path == "/admin/password-change":
+            self._send_html(render_admin_password_change_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/public/chat":
             self._send_html(render_chat_fixture_page(static_base_url="/src/personaconsole/static"))
@@ -154,9 +162,19 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                         "public-login": ".pc-public-login-page",
                         "public-chat": ".pc-public-chat-shell",
                         "public-settings": ".pc-public-settings-surface",
+                        "admin-login": ".pc-admin-login-page",
+                        "admin-password-change": ".pc-admin-password-change-page",
                     }.items():
                         public_page = browser.new_page(viewport=viewport)
-                        public_page.goto(url + slug.replace("public-", "public/") if slug != "public-settings" else url + "settings/public-presence", wait_until="networkidle")
+                        if slug == "public-settings":
+                            target = url + "settings/public-presence"
+                        elif slug == "admin-login":
+                            target = url + "admin/login"
+                        elif slug == "admin-password-change":
+                            target = url + "admin/password-change"
+                        else:
+                            target = url + slug.replace("public-", "public/")
+                        public_page.goto(target, wait_until="networkidle")
                         expect(public_page.locator(selector)).to_be_visible()
                         if slug == "public-splash":
                             expect(public_page.locator(".pc-public-primary-action")).to_be_visible()
@@ -164,6 +182,8 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                             expect(public_page.locator(".pc-connector-option").first).to_be_visible()
                         if slug == "public-chat":
                             expect(public_page.locator("[data-pc-chat-form]")).to_be_visible()
+                        if slug.startswith("admin-"):
+                            expect(public_page.locator("[data-pc-admin-auth-form]")).to_be_visible()
                         public_page.screenshot(path=screenshot_dir / f"{name}-{slug}.png", full_page=True)
                         public_page.close()
             finally:

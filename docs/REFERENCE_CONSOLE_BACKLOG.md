@@ -139,6 +139,11 @@ screenshots, data, and runtime policy stay outside the public repo.
   Initial typed renderers and static assets shipped in PersonaConsole `1.0.19`;
   provider truth, auth, callbacks, chat processing, settings persistence, and
   deployment wiring remain outside PersonaConsole.
+- Admin authentication page shells for operator login, forced password change,
+  auth-state summaries, help/legal links, and no-JS forms. Initial typed
+  renderers shipped in PersonaConsole `1.0.34`; credential verification,
+  sessions, cookies, CSRF, lockout policy, and audit writes remain outside
+  PersonaConsole.
 - Bridge/provider operation panels for webhook posture, queues, heartbeats,
   provider capability rows, delivery claims, documentation links, and action
   slots. Initial typed renderer shipped in PersonaConsole `1.0.26`.
