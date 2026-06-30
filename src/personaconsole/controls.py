@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import asdict, fields, is_dataclass
 from html import escape
 from time import time
-from typing import Any, Mapping, Sequence, TypeVar
+from typing import Any, Callable, Mapping, Sequence, TypeVar
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from .models import FlashBanner, StatusTab
+from .models import DiagnosticActionCard, DiagnosticMetaPair, DiagnosticTableColumn, FlashBanner, StatusTab
 
 T = TypeVar("T")
 
@@ -100,6 +100,245 @@ def _status_tab_html(tab: StatusTab) -> str:
     if tab.href:
         return f'<a {attrs} href="{escape(str(tab.href), quote=True)}">{label}{count_html}</a>'
     return f"<span {attrs}>{label}{count_html}</span>"
+
+
+def render_diagnostic_action_card(card: DiagnosticActionCard | Mapping[str, object]) -> str:
+    """Render a dense diagnostic card with legacy action-card CSS hooks."""
+
+    model = _coerce(card, DiagnosticActionCard, {"title": "Diagnostic"})
+    title = str(model.title or "Diagnostic")
+    tone = _tone(model.tone)
+    classes = ["action-card", "pc-diagnostic-card", f"pc-diagnostic-card-{tone}"]
+    status = str(model.status or "")
+    status_html = ""
+    if status:
+        status_tone = tone if tone in {"good", "warn", "bad"} else "neutral"
+        status_html = (
+            f'<span class="status-pill status-{escape(status_tone)} pc-diagnostic-status">'
+            f"<span></span>{escape(status)}</span>"
+        )
+    pair_html = "".join(_diagnostic_pair_html(pair) for pair in model.pairs)
+    body = (
+        '<div class="action-card-head pc-diagnostic-card-head"><div>'
+        f'<div class="action-card-kicker pc-diagnostic-kicker">{escape(str(model.kicker or "diagnostic"))}</div>'
+        f"<h3>{escape(title)}</h3></div>{status_html}</div>"
+    )
+    if model.summary:
+        body += f'<p class="pc-diagnostic-summary">{escape(str(model.summary))}</p>'
+    if pair_html:
+        body += f'<div class="meta-pair-grid pc-diagnostic-pairs">{pair_html}</div>'
+    if model.href:
+        return (
+            f'<a class="{" ".join(classes)}" href="{escape(str(model.href), quote=True)}">'
+            f"{body}</a>"
+        )
+    return f'<article class="{" ".join(classes)}">{body}</article>'
+
+
+def render_diagnostic_action_cards(
+    cards: Sequence[DiagnosticActionCard | Mapping[str, object]],
+    *,
+    empty_label: str = "No diagnostic cards.",
+    wrapper_class: str = "action-card-list pc-diagnostic-card-list",
+) -> str:
+    """Render a diagnostic card list with a safe empty state."""
+
+    body = "".join(render_diagnostic_action_card(card) for card in cards)
+    if not body:
+        body = f'<p class="hint pc-diagnostic-empty">{escape(str(empty_label))}</p>'
+    return f'<div class="{escape(str(wrapper_class), quote=True)}">{body}</div>'
+
+
+def render_surface_unavailable(
+    title: object,
+    *,
+    status: object = "renderer unavailable",
+    summary: object = "Shared renderer output is unavailable; showing runtime-owned diagnostics.",
+    href: object = "",
+    tone: object = "warn",
+    kicker: object = "diagnostic",
+    pairs: Sequence[DiagnosticMetaPair | Mapping[str, object] | tuple[str, str]] = (),
+) -> str:
+    """Render one generic unavailable-renderer diagnostic card."""
+
+    return render_diagnostic_action_card(
+        DiagnosticActionCard(
+            title=str(title or "Shared surface"),
+            kicker=str(kicker or "diagnostic"),
+            status=str(status or "renderer unavailable"),
+            summary=str(summary or ""),
+            href=str(href or ""),
+            tone=_tone(tone),
+            pairs=tuple(pairs),
+        )
+    )
+
+
+def _diagnostic_pair_html(raw: DiagnosticMetaPair | Mapping[str, object] | tuple[str, str]) -> str:
+    if isinstance(raw, tuple):
+        pair = DiagnosticMetaPair(str(raw[0] if len(raw) > 0 else ""), str(raw[1] if len(raw) > 1 else ""))
+    else:
+        pair = _coerce(raw, DiagnosticMetaPair, {"label": "", "value": ""})
+    if not pair.label and not pair.value:
+        return ""
+    return (
+        '<div class="meta-pair pc-diagnostic-pair">'
+        f"<span>{escape(str(pair.label))}</span><strong>{escape(str(pair.value))}</strong></div>"
+    )
+
+
+def render_diagnostic_table(
+    rows: Sequence[Mapping[str, object]],
+    columns: Sequence[str | DiagnosticTableColumn | Mapping[str, object] | tuple[str, str]],
+    *,
+    empty_label: str = "No rows yet.",
+    wrapper_class: str = "table-wrap",
+    table_class: str = "compact-table",
+    cell_renderer: Callable[[object, Mapping[str, object], str], str] | None = None,
+) -> str:
+    """Render a compact diagnostic table with safe defaults and legacy classes."""
+
+    models = tuple(_diagnostic_column(column) for column in columns)
+    clean_rows = tuple(row for row in rows if isinstance(row, Mapping))
+    if not clean_rows:
+        return f'<p class="hint pc-diagnostic-empty">{escape(str(empty_label))}</p>'
+    header = "".join(f"<th>{escape(column.label or column.key.replace('_', ' '))}</th>" for column in models)
+    body = ""
+    for row in clean_rows:
+        cells = "".join(
+            f"<td>{_diagnostic_cell_html(row.get(column.key), row, column, cell_renderer=cell_renderer)}</td>"
+            for column in models
+        )
+        body += f"<tr>{cells}</tr>"
+    return (
+        f'<div class="{escape(str(wrapper_class), quote=True)}">'
+        f'<table class="{escape(str(table_class), quote=True)}"><thead><tr>{header}</tr></thead>'
+        f"<tbody>{body}</tbody></table></div>"
+    )
+
+
+def render_sortable_diagnostic_table(
+    rows: Sequence[Mapping[str, object]],
+    columns: Sequence[str | DiagnosticTableColumn | Mapping[str, object] | tuple[str, str]],
+    *,
+    sortable_columns: Sequence[str] = (),
+    sort_key: str = "",
+    direction: str = "",
+    sort_href_builder: Callable[[str, str], str] | None = None,
+    link_columns: Mapping[str, Callable[[Mapping[str, object]], str]] | None = None,
+    numeric_columns: Sequence[str] = (),
+    boolean_columns: Sequence[str] = (),
+    primary_columns: Sequence[str] = (),
+    empty_label: str = "No rows yet.",
+    wrapper_class: str = "table-wrap",
+    table_class: str = "list-table",
+    cell_renderer: Callable[[object, Mapping[str, object], str], str] | None = None,
+) -> str:
+    """Render a sortable diagnostic table without owning consumer sorting logic."""
+
+    sortable = {str(key) for key in sortable_columns}
+    numeric = {str(key) for key in numeric_columns}
+    boolean = {str(key) for key in boolean_columns}
+    primary = {str(key) for key in primary_columns}
+    links = dict(link_columns or {})
+    models = tuple(
+        _diagnostic_column(
+            column,
+            sortable=str(_diagnostic_column(column).key) in sortable,
+            numeric=str(_diagnostic_column(column).key) in numeric,
+            boolean=str(_diagnostic_column(column).key) in boolean,
+            primary=str(_diagnostic_column(column).key) in primary,
+        )
+        for column in columns
+    )
+    clean_rows = tuple(row for row in rows if isinstance(row, Mapping))
+    if not clean_rows:
+        return f'<p class="hint pc-diagnostic-empty">{escape(str(empty_label))}</p>'
+    direction_key = str(direction or "").lower()
+    if direction_key not in {"asc", "desc"}:
+        direction_key = "asc"
+    header = ""
+    for column in models:
+        label = escape(column.label or column.key.replace("_", " "))
+        if column.sortable and sort_href_builder:
+            next_direction = "desc" if sort_key == column.key and direction_key == "asc" else "asc"
+            href = sort_href_builder(column.key, next_direction)
+            marker = _diagnostic_sort_marker(column.key, sort_key, direction_key)
+            header += f'<th><a href="{escape(str(href), quote=True)}">{label}{marker}</a></th>'
+        else:
+            header += f"<th>{label}</th>"
+    body = ""
+    for row in clean_rows:
+        cells: list[str] = []
+        for column in models:
+            classes: list[str] = []
+            if column.numeric:
+                classes.append("numeric")
+            if column.boolean:
+                classes.append("boolean")
+            value_html = _diagnostic_cell_html(row.get(column.key), row, column, cell_renderer=cell_renderer)
+            href_builder = links.get(column.key)
+            if href_builder:
+                href = href_builder(row)
+                if href:
+                    cls = "row-primary" if column.primary else ""
+                    class_attr = f' class="{cls}"' if cls else ""
+                    value_html = f'<a{class_attr} href="{escape(str(href), quote=True)}">{value_html}</a>'
+            elif column.primary:
+                value_html = f'<span class="row-primary">{value_html}</span>'
+            class_attr = f' class="{" ".join(classes)}"' if classes else ""
+            cells.append(f"<td{class_attr}>{value_html}</td>")
+        body += f"<tr>{''.join(cells)}</tr>"
+    return (
+        f'<div class="{escape(str(wrapper_class), quote=True)}">'
+        f'<table class="{escape(str(table_class), quote=True)}"><thead><tr>{header}</tr></thead>'
+        f"<tbody>{body}</tbody></table></div>"
+    )
+
+
+def _diagnostic_column(
+    raw: str | DiagnosticTableColumn | Mapping[str, object] | tuple[str, str],
+    *,
+    sortable: bool | None = None,
+    numeric: bool | None = None,
+    boolean: bool | None = None,
+    primary: bool | None = None,
+) -> DiagnosticTableColumn:
+    if isinstance(raw, str):
+        column = DiagnosticTableColumn(raw)
+    elif isinstance(raw, tuple):
+        column = DiagnosticTableColumn(str(raw[0] if len(raw) > 0 else ""), str(raw[1] if len(raw) > 1 else ""))
+    else:
+        column = _coerce(raw, DiagnosticTableColumn, {"key": ""})
+    return DiagnosticTableColumn(
+        key=str(column.key or ""),
+        label=str(column.label or ""),
+        sortable=column.sortable if sortable is None else sortable,
+        numeric=column.numeric if numeric is None else numeric,
+        boolean=column.boolean if boolean is None else boolean,
+        primary=column.primary if primary is None else primary,
+    )
+
+
+def _diagnostic_cell_html(
+    value: object,
+    row: Mapping[str, object],
+    column: DiagnosticTableColumn,
+    *,
+    cell_renderer: Callable[[object, Mapping[str, object], str], str] | None,
+) -> str:
+    if cell_renderer:
+        return str(cell_renderer(value, row, column.key))
+    if value is None:
+        return '<span class="pc-diagnostic-empty-value">-</span>'
+    return escape(str(value))
+
+
+def _diagnostic_sort_marker(key: str, sort_key: str, direction: str) -> str:
+    if key != sort_key:
+        return ""
+    marker = "up" if direction == "asc" else "down"
+    return f'<span class="sort-marker pc-diagnostic-sort-marker">{escape(marker)}</span>'
 
 
 def flash_query_params(

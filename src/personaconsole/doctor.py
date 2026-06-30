@@ -299,12 +299,20 @@ _RENDER_EXPORTS = (
     "render_shell_html",
 )
 _CONTROL_EXPORTS = (
+    "DiagnosticActionCard",
+    "DiagnosticMetaPair",
+    "DiagnosticTableColumn",
     "FlashBanner",
     "StatusTab",
     "flash_query_params",
     "flash_url",
+    "render_diagnostic_action_card",
+    "render_diagnostic_action_cards",
+    "render_diagnostic_table",
     "render_flash_banners",
+    "render_sortable_diagnostic_table",
     "render_status_tabs",
+    "render_surface_unavailable",
 )
 
 
@@ -1022,6 +1030,26 @@ def _controls_render_check(module: Any) -> DoctorCheck:
             ],
         )
         flash_href = module.flash_url("/review?tab=all#queue", "Saved", level="warn", timestamp=123)
+        unavailable_html = module.render_surface_unavailable(
+            "Review queue",
+            status="renderer unavailable",
+            href="/review",
+            pairs=[("Rows", "8")],
+        )
+        table_html = module.render_diagnostic_table(
+            [{"name": "<Item>", "count": 2}],
+            [module.DiagnosticTableColumn("name", "Name"), "count"],
+        )
+        sortable_html = module.render_sortable_diagnostic_table(
+            [{"name": "Item", "count": 2}],
+            [("name", "Name"), ("count", "Count")],
+            sortable_columns=("name",),
+            sort_key="name",
+            direction="asc",
+            sort_href_builder=lambda key, direction: f"/items?sort={key}&direction={direction}",
+            numeric_columns=("count",),
+            primary_columns=("name",),
+        )
     except Exception as exc:
         return _check(False, "controls_render", "shared controls render failed", f"{exc.__class__.__name__}: {exc}")
     ok = (
@@ -1037,6 +1065,15 @@ def _controls_render_check(module: Any) -> DoctorCheck:
         and "flash_level=warn" in flash_href
         and "flash_ts=123" in flash_href
         and flash_href.endswith("#queue")
+        and "pc-diagnostic-card" in unavailable_html
+        and "renderer unavailable" in unavailable_html
+        and "Rows" in unavailable_html
+        and "pc-diagnostic-empty" not in table_html
+        and "&lt;Item&gt;" in table_html
+        and "compact-table" in table_html
+        and "list-table" in sortable_html
+        and "sort-marker" in sortable_html
+        and 'class="numeric"' in sortable_html
     )
     return _check(ok, "controls_render", "shared controls render status tabs and flash banners")
 

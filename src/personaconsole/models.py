@@ -1224,6 +1224,33 @@ class StatusTab:
 
 
 @dataclass(frozen=True)
+class DiagnosticMetaPair:
+    label: str
+    value: str = ""
+
+
+@dataclass(frozen=True)
+class DiagnosticActionCard:
+    title: str
+    kicker: str = "diagnostic"
+    status: str = ""
+    summary: str = ""
+    href: str = ""
+    tone: str = "neutral"
+    pairs: Sequence[DiagnosticMetaPair | Mapping[str, object] | tuple[str, str]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class DiagnosticTableColumn:
+    key: str
+    label: str = ""
+    sortable: bool = False
+    numeric: bool = False
+    boolean: bool = False
+    primary: bool = False
+
+
+@dataclass(frozen=True)
 class FlashBanner:
     message: str
     tone: str = "good"

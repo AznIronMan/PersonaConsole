@@ -139,6 +139,9 @@ from .models import (
     DetailDossierTableColumn,
     DetailDossierTableRow,
     DetailDossierTimelineEvent,
+    DiagnosticActionCard,
+    DiagnosticMetaPair,
+    DiagnosticTableColumn,
     FlashBanner,
     JournalCalendarDay,
     JournalDetail,
@@ -248,7 +251,17 @@ from .render import (
     render_status_pill,
     render_user_pill,
 )
-from .controls import flash_query_params, flash_url, render_flash_banners, render_status_tabs
+from .controls import (
+    flash_query_params,
+    flash_url,
+    render_diagnostic_action_card,
+    render_diagnostic_action_cards,
+    render_diagnostic_table,
+    render_flash_banners,
+    render_sortable_diagnostic_table,
+    render_status_tabs,
+    render_surface_unavailable,
+)
 from .token_health import (
     TOKEN_HEALTH_FEATURE,
     build_token_health_report,
@@ -450,6 +463,9 @@ __all__ = [
     "DetailDossierTableColumn",
     "DetailDossierTableRow",
     "DetailDossierTimelineEvent",
+    "DiagnosticActionCard",
+    "DiagnosticMetaPair",
+    "DiagnosticTableColumn",
     "FlashBanner",
     "JOURNAL_FEATURE",
     "JOURNAL_THEME_KEYS",
@@ -626,6 +642,9 @@ __all__ = [
     "render_command_intake_surface",
     "render_connector_groups",
     "render_detail_dossier_surface",
+    "render_diagnostic_action_card",
+    "render_diagnostic_action_cards",
+    "render_diagnostic_table",
     "render_flash_banners",
     "render_journal_surface",
     "render_login_page",
@@ -651,6 +670,8 @@ __all__ = [
     "render_public_splash_page",
     "render_status_tabs",
     "render_status_pill",
+    "render_sortable_diagnostic_table",
+    "render_surface_unavailable",
     "render_surface_registry_report",
     "render_surface_sections",
     "render_terminal_stream",
@@ -684,7 +705,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.37"
+__version__ = "1.0.38"
 
 
 def configure_jinja_loader(*args, **kwargs):
