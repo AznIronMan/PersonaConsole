@@ -175,6 +175,8 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "/availability/events/raw-private" not in html
     assert "pc-settings-editor" in html
     assert "Runtime Settings" in html
+    assert "Admin icon URL" in html
+    assert "Leave blank for name-only branding." in html
     assert "Provider API key" in html
     assert "configured" in html
     assert "restart required" in html

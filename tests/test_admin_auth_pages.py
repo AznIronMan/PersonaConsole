@@ -102,3 +102,33 @@ def test_admin_password_change_page_renders_disabled_state_and_min_length():
     assert "Operator &lt;One&gt; needs a new password." in html
     assert "This password-change session expired." in html
     assert not any(host in html for host in PRIVATE_HOSTS)
+
+
+def test_admin_password_change_page_can_require_current_password_pin():
+    html = personaconsole.render_admin_password_change_page(
+        personaconsole.AdminPasswordChangePageConfig(
+            form_action="/password/change",
+            current_password_label="Current 6-digit PIN",
+            current_password_min_length=6,
+            current_password_max_length=6,
+            current_password_pattern="[0-9]{6}",
+            current_password_inputmode="numeric",
+            new_password_label="New 6-digit PIN",
+            confirm_password_label="Confirm 6-digit PIN",
+            min_length=6,
+            max_length=6,
+            password_pattern="[0-9]{6}",
+            password_inputmode="numeric",
+        )
+    )
+
+    assert 'method="post" action="/password/change"' in html
+    assert "Current 6-digit PIN" in html
+    assert 'name="current_password" type="password"' in html
+    assert 'autocomplete="current-password"' in html
+    assert 'minlength="6"' in html
+    assert 'maxlength="6"' in html
+    assert 'pattern="[0-9]{6}"' in html
+    assert 'inputmode="numeric"' in html
+    assert "New 6-digit PIN" in html
+    assert "Confirm 6-digit PIN" in html

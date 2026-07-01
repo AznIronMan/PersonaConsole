@@ -242,6 +242,8 @@ _SETTINGS_EDITOR_EXPORTS = (
     "SettingsGroup",
     "SettingsOption",
     "SettingsValidationMessage",
+    "build_admin_brand_settings_editor",
+    "build_admin_brand_settings_group",
     "render_settings_editor",
     "settings_editor_feature_enabled",
 )

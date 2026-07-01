@@ -18,13 +18,22 @@ def _mapping(value: Any) -> dict[str, Any]:
     return {}
 
 
+def _mapped_text(data: Mapping[str, Any], key: str, default: str = "") -> str:
+    if key in data:
+        return str(data.get(key) or "")
+    return default
+
+
 def _brand_assets(config: PersonaConsoleConfig) -> BrandAssets:
     data = _mapping(config.brand_assets)
     return BrandAssets(
         name=str(data.get("name") or config.brand_name or ""),
+        admin_title=str(data.get("admin_title") or ""),
+        admin_subtitle=_mapped_text(data, "admin_subtitle", "admin"),
         small_logo_url=str(data.get("small_logo_url") or config.icon_url or ""),
         large_logo_url=str(data.get("large_logo_url") or ""),
         wordmark_url=str(data.get("wordmark_url") or ""),
+        lockup_url=str(data.get("lockup_url") or ""),
         favicon_url=str(data.get("favicon_url") or ""),
         signature_text=str(data.get("signature_text") or ""),
         alt_text=str(data.get("alt_text") or data.get("name") or config.brand_name or ""),
@@ -485,18 +494,25 @@ def render_shell_html(
             f'<img class="admin-brand-icon" src="{escape(brand_assets.small_logo_url)}" alt="" width="32" height="32">'
             '</span>'
         )
+    brand_title = brand_assets.admin_title or brand_assets.name
+    subtitle_html = f"<span>{escape(brand_assets.admin_subtitle)}</span>" if brand_assets.admin_subtitle else ""
     wordmark = brand_assets.wordmark_url or brand_assets.large_logo_url
-    wordmark_html = ""
-    if wordmark:
-        wordmark_html = (
-            f'<img class="admin-brand-wordmark" src="{escape(wordmark)}" '
-            f'alt="{escape(brand_assets.alt_text or brand_assets.name)}" height="28">'
+    if brand_assets.lockup_url:
+        brand_copy_html = (
+            f'<img class="admin-brand-lockup" src="{escape(brand_assets.lockup_url)}" '
+            f'alt="{escape(brand_assets.alt_text or brand_title)}" height="38">'
         )
-    brand_name_html = "" if wordmark_html else f"<strong>{escape(brand_assets.name)}</strong>"
+    elif wordmark:
+        brand_copy_html = (
+            f'<img class="admin-brand-wordmark" src="{escape(wordmark)}" '
+            f'alt="{escape(brand_assets.alt_text or brand_title)}" height="28">'
+            f"{subtitle_html}"
+        )
+    else:
+        brand_copy_html = f"<strong>{escape(brand_title)}</strong>{subtitle_html}"
     brand = (
         f'<a href="{escape(brand_assets.home_url)}" class="admin-brand">{icon}'
-        f'<span class="admin-brand-copy">{wordmark_html}{brand_name_html}'
-        '<span>admin</span></span></a>'
+        f'<span class="admin-brand-copy">{brand_copy_html}</span></a>'
     )
     return f"""<!doctype html>
 <html lang="en">

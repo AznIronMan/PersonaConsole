@@ -6,7 +6,9 @@ import json
 from typing import Any, Mapping, Sequence, TypeVar
 
 from .models import (
+    BrandAssets,
     FlashBanner,
+    PersonaConsoleConfig,
     SettingsChange,
     SettingsEditorConfig,
     SettingsField,
@@ -60,6 +62,7 @@ _FIELD_KINDS = {
     "readonly",
     "json",
     "code",
+    "url",
 }
 
 
@@ -73,6 +76,12 @@ def _mapping(value: Any) -> dict[str, Any]:
     return {}
 
 
+def _mapped_text(data: Mapping[str, Any], key: str, default: str = "") -> str:
+    if key in data:
+        return str(data.get(key) or "")
+    return default
+
+
 def _coerce(value: T | Mapping[str, object] | str, cls: type[T], defaults: Mapping[str, Any] | None = None) -> T:
     if isinstance(value, cls):
         return value
@@ -84,6 +93,152 @@ def _coerce(value: T | Mapping[str, object] | str, cls: type[T], defaults: Mappi
     allowed = {field.name for field in fields(cls)}
     data = {key: value for key, value in data.items() if key in allowed}
     return cls(**data)
+
+
+def _brand_model(value: BrandAssets | PersonaConsoleConfig | Mapping[str, object] | None) -> BrandAssets:
+    if isinstance(value, PersonaConsoleConfig):
+        raw_assets = _mapping(value.brand_assets)
+        return BrandAssets(
+            name=str(raw_assets.get("name") or value.brand_name or ""),
+            admin_title=str(raw_assets.get("admin_title") or ""),
+            admin_subtitle=_mapped_text(raw_assets, "admin_subtitle", "admin"),
+            small_logo_url=str(raw_assets.get("small_logo_url") or value.icon_url or ""),
+            large_logo_url=str(raw_assets.get("large_logo_url") or ""),
+            wordmark_url=str(raw_assets.get("wordmark_url") or ""),
+            lockup_url=str(raw_assets.get("lockup_url") or ""),
+            favicon_url=str(raw_assets.get("favicon_url") or ""),
+            signature_text=str(raw_assets.get("signature_text") or ""),
+            alt_text=str(raw_assets.get("alt_text") or raw_assets.get("name") or value.brand_name or ""),
+            home_url=str(raw_assets.get("home_url") or value.home_url or "/"),
+        )
+    if isinstance(value, Mapping) and ("brand_assets" in value or "brand_name" in value or "icon_url" in value):
+        raw_assets = _mapping(value.get("brand_assets"))
+        brand_name = str(value.get("brand_name") or "")
+        return BrandAssets(
+            name=str(raw_assets.get("name") or brand_name),
+            admin_title=str(raw_assets.get("admin_title") or value.get("admin_title") or ""),
+            admin_subtitle=_mapped_text(raw_assets, "admin_subtitle", _mapped_text(value, "admin_subtitle", "admin")),
+            small_logo_url=str(raw_assets.get("small_logo_url") or value.get("icon_url") or ""),
+            large_logo_url=str(raw_assets.get("large_logo_url") or value.get("large_logo_url") or ""),
+            wordmark_url=str(raw_assets.get("wordmark_url") or value.get("wordmark_url") or ""),
+            lockup_url=str(raw_assets.get("lockup_url") or value.get("lockup_url") or ""),
+            favicon_url=str(raw_assets.get("favicon_url") or ""),
+            signature_text=str(raw_assets.get("signature_text") or ""),
+            alt_text=str(raw_assets.get("alt_text") or raw_assets.get("name") or brand_name),
+            home_url=str(raw_assets.get("home_url") or value.get("home_url") or "/"),
+        )
+    return _coerce(value, BrandAssets, {"home_url": "/"})
+
+
+def build_admin_brand_settings_group(
+    brand: BrandAssets | PersonaConsoleConfig | Mapping[str, object] | None = None,
+    *,
+    key: str = "admin-branding",
+    title: str = "Admin Branding",
+    description: str = "Runtime-owned admin shell name, icon, wordmark, and home link.",
+) -> SettingsGroup:
+    """Build a reusable settings group for optional admin shell brand assets."""
+
+    model = _brand_model(brand)
+    return SettingsGroup(
+        key,
+        title,
+        description,
+        fields=(
+            SettingsField(
+                "brand-name",
+                "Brand title",
+                "brand_name",
+                "text",
+                model.admin_title or model.name,
+                autocomplete="organization",
+                help_text="Bold text in the admin header when no title image or full lockup image is set.",
+            ),
+            SettingsField(
+                "admin-subtitle",
+                "Brand subtitle",
+                "admin_subtitle",
+                "text",
+                model.admin_subtitle,
+                placeholder="admin",
+                help_text="Small text under the brand title. Leave blank when you do not want subtext.",
+            ),
+            SettingsField(
+                "admin-icon-url",
+                "Admin icon URL",
+                "small_logo_url",
+                "url",
+                model.small_logo_url,
+                placeholder="/static/example-icon.svg",
+                help_text="Shown in the admin header when set. Leave blank for name-only branding.",
+                autocomplete="url",
+            ),
+            SettingsField(
+                "admin-wordmark-url",
+                "Brand title image URL",
+                "wordmark_url",
+                "url",
+                model.wordmark_url,
+                placeholder="/static/example-wordmark.svg",
+                help_text="Optional image shown instead of the bold title while keeping the subtitle.",
+                autocomplete="url",
+            ),
+            SettingsField(
+                "admin-lockup-url",
+                "Full lockup image URL",
+                "lockup_url",
+                "url",
+                model.lockup_url,
+                placeholder="/static/example-lockup.svg",
+                help_text="Optional image that replaces both the bold title and subtitle in the header.",
+                autocomplete="url",
+            ),
+            SettingsField(
+                "brand-home-url",
+                "Brand home URL",
+                "home_url",
+                "url",
+                model.home_url,
+                placeholder="/",
+                help_text="Target for the admin header brand link.",
+                autocomplete="url",
+            ),
+        ),
+    )
+
+
+def build_admin_brand_settings_editor(
+    brand: BrandAssets | PersonaConsoleConfig | Mapping[str, object] | None = None,
+    *,
+    form_action: str = "",
+    form_method: str = "post",
+    key: str = "admin-brand-settings",
+    title: str = "Admin Branding",
+    subtitle: str = "Update the shared admin shell branding for this runtime.",
+    save_label: str = "Save branding",
+    reset_href: str = "",
+    groups: Sequence[SettingsGroup | Mapping[str, object]] = (),
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = (),
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = (),
+    banners: Sequence[FlashBanner | Mapping[str, object]] = (),
+) -> SettingsEditorConfig:
+    """Build a settings editor focused on PersonaConsole admin branding."""
+
+    configured_groups = tuple(groups) or (build_admin_brand_settings_group(brand),)
+    return SettingsEditorConfig(
+        enabled=True,
+        key=key,
+        title=title,
+        subtitle=subtitle,
+        form_action=form_action,
+        form_method=form_method,
+        groups=configured_groups,
+        messages=messages,
+        banners=banners,
+        actions=actions,
+        save_label=save_label,
+        reset_href=reset_href,
+    )
 
 
 def _tone(value: object) -> str:
@@ -303,7 +458,12 @@ def _field_control_html(field: SettingsField, field_id: str) -> str:
             f'<label class="pc-settings-toggle"><input type="checkbox"{common}'
             f'{_attrs(value="true", checked=checked)}><span>{escape(field.placeholder or "Enabled")}</span></label>'
         )
-    input_type = "password" if _is_secret(field) else ("number" if kind == "number" else "text")
+    if _is_secret(field):
+        input_type = "password"
+    elif kind in {"number", "url"}:
+        input_type = kind
+    else:
+        input_type = "text"
     placeholder = field.placeholder or ("Leave blank to keep current value" if _is_secret(field) else "")
     return (
         f'<input type="{input_type}"{common}'

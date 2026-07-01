@@ -181,5 +181,71 @@ def test_admin_shell_uses_brand_assets_without_breaking_icon_fallback():
 
     assert "admin-brand-wordmark" in html
     assert "/assets/wordmark.svg" in html
+    assert "<span>admin</span>" in html
     assert "Example &lt;Persona&gt;" in html
     assert "body" in html
+
+
+def test_admin_shell_supports_custom_brand_title_subtitle_and_lockup():
+    title_html = personaconsole.render_shell_html(
+        personaconsole.PersonaConsoleConfig(
+            brand_name="Example Runtime",
+            page_title="Dashboard",
+            brand_assets=personaconsole.BrandAssets(
+                name="Example Runtime",
+                admin_title="Control Room",
+                admin_subtitle="ops",
+            ),
+            nav_groups=[personaconsole.NavGroup("Core", [personaconsole.NavItem("Home", "/")])],
+        ),
+        "<section>body</section>",
+    )
+    wordmark_html = personaconsole.render_shell_html(
+        personaconsole.PersonaConsoleConfig(
+            brand_name="Example Runtime",
+            page_title="Dashboard",
+            brand_assets=personaconsole.BrandAssets(
+                name="Example Runtime",
+                admin_subtitle="operations",
+                wordmark_url="/assets/title.svg",
+            ),
+            nav_groups=[personaconsole.NavGroup("Core", [personaconsole.NavItem("Home", "/")])],
+        ),
+        "<section>body</section>",
+    )
+    lockup_html = personaconsole.render_shell_html(
+        personaconsole.PersonaConsoleConfig(
+            brand_name="Example Runtime",
+            page_title="Dashboard",
+            brand_assets=personaconsole.BrandAssets(
+                name="Example Runtime",
+                admin_subtitle="hidden",
+                lockup_url="/assets/full-lockup.svg",
+            ),
+            nav_groups=[personaconsole.NavGroup("Core", [personaconsole.NavItem("Home", "/")])],
+        ),
+        "<section>body</section>",
+    )
+
+    assert "<strong>Control Room</strong><span>ops</span>" in title_html
+    assert 'class="admin-brand-wordmark"' in wordmark_html
+    assert "/assets/title.svg" in wordmark_html
+    assert "<span>operations</span>" in wordmark_html
+    assert 'class="admin-brand-lockup"' in lockup_html
+    assert "/assets/full-lockup.svg" in lockup_html
+    assert "<span>hidden</span>" not in lockup_html
+
+
+def test_admin_shell_omits_brand_icon_when_no_icon_url_is_assigned():
+    html = personaconsole.render_shell_html(
+        personaconsole.PersonaConsoleConfig(
+            brand_name="Example Runtime",
+            page_title="Dashboard",
+            brand_assets=personaconsole.BrandAssets(name="Example Runtime"),
+            nav_groups=[personaconsole.NavGroup("Core", [personaconsole.NavItem("Home", "/")])],
+        ),
+        "<section>body</section>",
+    )
+
+    assert "admin-brand-icon" not in html
+    assert "Example Runtime" in html

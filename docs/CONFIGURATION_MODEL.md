@@ -782,8 +782,12 @@ from personaconsole import (
 
 brand = BrandAssets(
     name="Example Persona",
+    admin_title="Example Console",
+    admin_subtitle="admin",
     small_logo_url="/static/example-small.svg",
     large_logo_url="/static/example-large.svg",
+    wordmark_url="/static/example-title.svg",
+    lockup_url="",
     home_url="/",
 )
 
@@ -887,6 +891,7 @@ password_html = render_admin_password_change_page(
         subject_label="Operator",
         form_action="/login/password-change",
         next_path="/runtime",
+        current_password_label="Current password",
         min_length=8,
     )
 )
@@ -1201,12 +1206,18 @@ logging, or secret lookup into PersonaConsole.
 
 ```python
 from personaconsole import (
+    BrandAssets,
     SettingsEditorConfig,
     SettingsField,
     SettingsGroup,
     SettingsValidationMessage,
     SurfaceAction,
+    build_admin_brand_settings_group,
     render_settings_editor,
+)
+
+brand_group = build_admin_brand_settings_group(
+    BrandAssets(name="Example Runtime", small_logo_url="/static/example-icon.svg")
 )
 
 html = render_settings_editor(
@@ -1217,6 +1228,7 @@ html = render_settings_editor(
         messages=[SettingsValidationMessage("Interval needs review.", "interval", "warn")],
         actions=[SurfaceAction("Restart runtime", "/settings/runtime/restart", "warn", method="post")],
         groups=[
+            brand_group,
             SettingsGroup(
                 "runtime",
                 "Runtime",
@@ -1235,6 +1247,17 @@ Secret/redacted fields render posture such as `configured` and empty password
 inputs by default. Raw current or pending secret values are not echoed into the
 HTML. Consumers provide action hrefs for reveal, save, reset, restart, and audit
 flows and enforce authorization on those routes.
+
+`build_admin_brand_settings_group(...)` and
+`build_admin_brand_settings_editor(...)` provide reusable admin branding fields
+for `brand_name`, `admin_subtitle`, optional `small_logo_url` admin icon,
+optional `wordmark_url` title image, optional `lockup_url` full header image,
+and header home link. The admin shell renders `BrandAssets.small_logo_url` only
+when it is set; blank icon values render the text or image brand lockup without
+an icon. `wordmark_url` replaces the bold title while preserving subtitle text.
+`lockup_url` replaces both the bold title and subtitle with a single image.
+Consumers still own asset upload, URL validation, settings persistence, and
+deployment wiring.
 
 ## Shared System Health
 

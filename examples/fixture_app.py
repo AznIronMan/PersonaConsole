@@ -186,6 +186,7 @@ from personaconsole import (
     WorkerRunTelemetryRow,
     WorkerScheduleRow,
     build_journal_calendar,
+    build_admin_brand_settings_group,
     journal_theme_options,
     public_theme_options,
     register_static_assets,
@@ -383,6 +384,7 @@ def build_admin_password_change_page_config(
         subject_label="Fixture Operator",
         form_action="/login/password-change",
         next_path="/runtime",
+        current_password_label="Current password",
         min_length=8,
         status_message="Password change challenge is active.",
         status_tone="info",
@@ -1936,6 +1938,7 @@ def render_dashboard_fragment() -> str:
                 SurfaceAction("Audit trail", "/settings/runtime/audit", "info"),
             ],
             groups=[
+                build_admin_brand_settings_group(fixture_public_brand()),
                 SettingsGroup(
                     "connectors",
                     "Connectors",

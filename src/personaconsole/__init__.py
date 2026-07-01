@@ -348,6 +348,8 @@ from .terminal import (
 )
 from .settings_editor import (
     SETTINGS_EDITOR_FEATURE,
+    build_admin_brand_settings_editor,
+    build_admin_brand_settings_group,
     render_settings_editor,
     settings_editor_feature_enabled,
 )
@@ -585,6 +587,8 @@ __all__ = [
     "adapter_health_feature_enabled",
     "availability_monitor_feature_enabled",
     "agent_ops_surface_feature_enabled",
+    "build_admin_brand_settings_editor",
+    "build_admin_brand_settings_group",
     "build_token_health_report",
     "build_surface_registry_report",
     "build_journal_calendar",
@@ -705,7 +709,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.38"
+__version__ = "1.0.40"
 
 
 def configure_jinja_loader(*args, **kwargs):

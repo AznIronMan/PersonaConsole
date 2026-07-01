@@ -1,12 +1,16 @@
 from personaconsole import (
     SETTINGS_EDITOR_FEATURE,
+    BrandAssets,
     FlashBanner,
+    PersonaConsoleConfig,
     SettingsChange,
     SettingsEditorConfig,
     SettingsField,
     SettingsGroup,
     SettingsValidationMessage,
     SurfaceAction,
+    build_admin_brand_settings_editor,
+    build_admin_brand_settings_group,
     render_settings_editor,
     settings_editor_feature_enabled,
 )
@@ -121,3 +125,73 @@ def test_settings_editor_feature_gate_and_empty_state():
     html = render_settings_editor(config)
 
     assert "No editable settings configured." in html
+
+
+def test_admin_brand_settings_group_renders_optional_icon_url_field():
+    group = build_admin_brand_settings_group(
+        BrandAssets(
+            name="Example Runtime",
+            admin_subtitle="Operations",
+            small_logo_url="/assets/admin-icon.svg",
+            wordmark_url="/assets/admin-wordmark.svg",
+            lockup_url="/assets/admin-lockup.svg",
+            home_url="/admin",
+        )
+    )
+
+    html = render_settings_editor(
+        SettingsEditorConfig(enabled=True, form_action="/settings/branding/save", groups=[group])
+    )
+
+    assert "Admin Branding" in html
+    assert "Brand title" in html
+    assert "Brand subtitle" in html
+    assert "Admin icon URL" in html
+    assert 'name="small_logo_url"' in html
+    assert 'name="admin_subtitle"' in html
+    assert 'type="url"' in html
+    assert 'value="/assets/admin-icon.svg"' in html
+    assert 'value="Operations"' in html
+    assert "Leave blank for name-only branding." in html
+    assert 'value="/assets/admin-wordmark.svg"' in html
+    assert 'value="/assets/admin-lockup.svg"' in html
+    assert 'action="/settings/branding/save"' in html
+
+
+def test_admin_brand_settings_editor_uses_console_config_and_allows_blank_icon():
+    config = PersonaConsoleConfig(
+        brand_name="Example Runtime",
+        page_title="Dashboard",
+        brand_assets=BrandAssets(name="Example Runtime", home_url="/admin"),
+    )
+
+    html = render_settings_editor(build_admin_brand_settings_editor(config, form_action="/settings/branding"))
+
+    assert "Admin Branding" in html
+    assert 'name="brand_name"' in html
+    assert 'value="Example Runtime"' in html
+    assert 'name="admin_subtitle"' in html
+    assert 'name="small_logo_url"' in html
+    assert 'value="/admin"' in html
+    assert "/assets/admin-icon.svg" not in html
+
+
+def test_admin_brand_settings_group_accepts_config_shaped_mapping():
+    html = render_settings_editor(
+        build_admin_brand_settings_editor(
+            {
+                "brand_name": "Example Runtime",
+                "icon_url": "/assets/legacy-icon.svg",
+                "admin_subtitle": "Ops",
+                "wordmark_url": "/assets/title.svg",
+                "lockup_url": "/assets/full.svg",
+            },
+            form_action="/settings/branding",
+        )
+    )
+
+    assert 'value="Example Runtime"' in html
+    assert 'value="/assets/legacy-icon.svg"' in html
+    assert 'value="Ops"' in html
+    assert 'value="/assets/title.svg"' in html
+    assert 'value="/assets/full.svg"' in html

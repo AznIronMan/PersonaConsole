@@ -79,6 +79,46 @@ def _safe_dom_id(value: object, default: str) -> str:
     return safe or default
 
 
+def _password_input_attrs(
+    *,
+    autocomplete: object,
+    min_length: object = 0,
+    max_length: object = 0,
+    pattern: object = "",
+    inputmode: object = "",
+    autofocus: bool = False,
+    disabled: bool = False,
+) -> str:
+    attrs: list[str] = []
+    autocomplete_value = _safe_name(autocomplete, "")
+    if autocomplete_value:
+        attrs.append(f'autocomplete="{escape(autocomplete_value, quote=True)}"')
+    try:
+        min_value = max(0, int(min_length or 0))
+    except (TypeError, ValueError):
+        min_value = 0
+    if min_value:
+        attrs.append(f'minlength="{min_value}"')
+    try:
+        max_value = max(0, int(max_length or 0))
+    except (TypeError, ValueError):
+        max_value = 0
+    if max_value:
+        attrs.append(f'maxlength="{max_value}"')
+    pattern_value = str(pattern or "").strip()
+    if pattern_value:
+        attrs.append(f'pattern="{escape(pattern_value, quote=True)}"')
+    inputmode_value = _safe_name(inputmode, "")
+    if inputmode_value:
+        attrs.append(f'inputmode="{escape(inputmode_value, quote=True)}"')
+    attrs.append("required")
+    if autofocus and not disabled:
+        attrs.append("autofocus")
+    if disabled:
+        attrs.append("disabled")
+    return (" " + " ".join(attrs)) if attrs else ""
+
+
 def _safe_root_relative(value: object, fallback: str = "/") -> str:
     raw = str(value or "").strip()
     if not raw:
@@ -322,26 +362,60 @@ def render_admin_password_change_page(config: AdminPasswordChangePageConfig | Ma
     action = _safe_root_relative(model.form_action, "/login/password-change")
     next_path = _safe_next_path(model.next_path, model.blocked_next_prefixes, "/")
     next_name = _safe_name(model.next_field_name, "next")
+    current_label = str(model.current_password_label or "").strip()
+    current_name = _safe_name(model.current_password_name, "current_password")
     new_name = _safe_name(model.new_password_name, "new_password")
     confirm_name = _safe_name(model.confirm_password_name, "confirm_password")
+    current_id = _safe_dom_id(f"{current_name}-field", "current-password-field")
     new_id = _safe_dom_id(f"{new_name}-field", "new-password-field")
     confirm_id = _safe_dom_id(f"{confirm_name}-field", "confirm-password-field")
-    autofocus = " autofocus" if model.autofocus and not model.disabled else ""
-    disabled = " disabled" if model.disabled else ""
-    min_length = max(0, int(model.min_length or 0))
-    min_attr = f' minlength="{min_length}"' if min_length else ""
     subject = str(model.subject_label or "admin")
     subtitle = model.subtitle or f"{subject} needs a new password."
+    current_html = ""
+    if current_label:
+        current_html = (
+            f'<label for="{escape(current_id, quote=True)}">{escape(current_label)}\n'
+            f'          <input id="{escape(current_id, quote=True)}" name="{escape(current_name, quote=True)}" type="password"'
+            + _password_input_attrs(
+                autocomplete=model.current_password_autocomplete,
+                min_length=model.current_password_min_length,
+                max_length=model.current_password_max_length,
+                pattern=model.current_password_pattern,
+                inputmode=model.current_password_inputmode,
+                autofocus=bool(model.autofocus),
+                disabled=bool(model.disabled),
+            )
+            + ">\n"
+            "        </label>"
+        )
+    new_attrs = _password_input_attrs(
+        autocomplete=model.new_password_autocomplete,
+        min_length=model.min_length,
+        max_length=model.max_length,
+        pattern=model.password_pattern,
+        inputmode=model.password_inputmode,
+        autofocus=bool(model.autofocus and not current_label),
+        disabled=bool(model.disabled),
+    )
+    confirm_attrs = _password_input_attrs(
+        autocomplete=model.confirm_password_autocomplete,
+        min_length=model.min_length,
+        max_length=model.max_length,
+        pattern=model.password_pattern,
+        inputmode=model.password_inputmode,
+        disabled=bool(model.disabled),
+    )
     form_html = f"""
       <form class="pc-admin-auth-form" method="post" action="{escape(action, quote=True)}" data-pc-admin-auth-form>
         <input type="hidden" name="{escape(next_name, quote=True)}" value="{escape(next_path, quote=True)}">
+        {current_html}
         <label for="{escape(new_id, quote=True)}">{escape(model.new_password_label)}
-          <input id="{escape(new_id, quote=True)}" name="{escape(new_name, quote=True)}" type="password" autocomplete="new-password"{min_attr} required{autofocus}{disabled}>
+          <input id="{escape(new_id, quote=True)}" name="{escape(new_name, quote=True)}" type="password"{new_attrs}>
         </label>
         <label for="{escape(confirm_id, quote=True)}">{escape(model.confirm_password_label)}
-          <input id="{escape(confirm_id, quote=True)}" name="{escape(confirm_name, quote=True)}" type="password" autocomplete="new-password"{min_attr} required{disabled}>
+          <input id="{escape(confirm_id, quote=True)}" name="{escape(confirm_name, quote=True)}" type="password"{confirm_attrs}>
         </label>
-        <button type="submit"{disabled}>{escape(model.submit_label)}</button>
+        <button type="submit"{' disabled' if model.disabled else ''}>{escape(model.submit_label)}</button>
       </form>"""
     return _shell_html(
         page_title=model.page_title,

@@ -200,7 +200,8 @@ deprecated `personacore` and `persona_console` shims for rollout safety.
 activity windows with chunked history/live-update hooks. `v1.0.23` adds a
 shared settings editor surface for grouped runtime-owned fields, redacted
 values, validation summaries, pending-change previews, restart markers, and
-consumer-supplied action slots. `v1.0.24` adds a system health surface for
+consumer-supplied action slots, plus reusable admin branding fields for an
+optional header icon/wordmark. `v1.0.24` adds a system health surface for
 runtime checks, database posture, table summaries, audit events, secret
 coverage, and readiness probes. `v1.0.25` adds generic persona editor
 primitives for profile sections, traits, rules, mutable state, proposals, and
