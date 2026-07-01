@@ -5342,7 +5342,17 @@ pre {
   display: grid;
   gap: 14px;
   grid-template-columns: minmax(0, 1fr);
+  max-width: 100%;
+  min-width: 0;
   width: 100%;
+}
+.pc-control-center > *,
+.pc-control-section,
+.pc-control-group,
+.pc-control-overview,
+.pc-control-detail {
+  max-width: 100%;
+  min-width: 0;
 }
 .pc-control-overview-meta,
 .pc-control-section-meta,
@@ -5614,6 +5624,7 @@ pre {
   color: var(--pc-text);
   font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   margin: 0;
+  max-width: 100%;
   max-height: 220px;
   overflow: auto;
   padding: 10px;
@@ -5642,6 +5653,7 @@ pre {
   color: var(--pc-text);
   font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   margin: 0;
+  max-width: 100%;
   max-height: 260px;
   overflow: auto;
   padding: 10px;

@@ -22,6 +22,9 @@ def test_control_center_css_prevents_form_grid_column_inheritance():
     css = Path("src/personaconsole/static/persona-console.css").read_text()
 
     assert ".pc-control-center {\n  display: grid;\n  gap: 14px;\n  grid-template-columns: minmax(0, 1fr);" in css
+    assert ".pc-control-center > *,\n.pc-control-section,\n.pc-control-group,\n.pc-control-overview,\n.pc-control-detail" in css
+    assert "max-width: 100%;\n  min-width: 0;" in css
+    assert ".pc-control-detail pre" in css
     assert "repeat(auto-fit, minmax(min(300px, 100%), 1fr))" in css
 
 
