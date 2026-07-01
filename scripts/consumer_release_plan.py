@@ -38,6 +38,11 @@ TEMPLATE: dict[str, Any] = {
                 "Open the admin login route.",
                 "Open one representative authenticated admin route.",
             ],
+            "control_center": [
+                "Confirm focused /control section routes render only the matching section.",
+                "Verify owner, operator, and moderator role posture.",
+                "Exercise one harmless non-secret save and revert through the runtime-owned save route.",
+            ],
             "restart_steps": [
                 "Restart or rebuild only services that import PersonaConsole.",
             ],
@@ -131,6 +136,7 @@ def render_plan(
         lines.extend(_section("Update", _as_list(consumer.get("update_steps"))))
         lines.extend(_section("Verification", _as_list(consumer.get("tests"))))
         lines.extend(_section("Smokes", _as_list(consumer.get("smokes"))))
+        lines.extend(_section("Control Center", _as_list(consumer.get("control_center"))))
         lines.extend(_section("Restart Or Rebuild", _as_list(consumer.get("restart_steps"))))
         lines.extend(_section("Rollback", _as_list(consumer.get("rollback"))))
         notes = _as_list(consumer.get("notes"))

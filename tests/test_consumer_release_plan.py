@@ -24,6 +24,7 @@ def _write_roster(path: Path) -> None:
                         "update_steps": ["Read AGENTS.md", "Update package pin"],
                         "tests": ["Run focused tests"],
                         "smokes": ["Smoke admin login"],
+                        "control_center": ["Verify focused Control routes"],
                         "restart_steps": ["Restart admin service"],
                         "rollback": ["Restore previous pin"],
                         "notes": ["Record result in the consumer task."],
@@ -60,6 +61,8 @@ def test_consumer_release_plan_renders_roster_checklist(tmp_path: Path) -> None:
     assert "## Example Runtime" in result.stdout
     assert "- [ ] Read AGENTS.md" in result.stdout
     assert "- [ ] Run focused tests" in result.stdout
+    assert "### Control Center" in result.stdout
+    assert "- [ ] Verify focused Control routes" in result.stdout
     assert "- [ ] Restart admin service" in result.stdout
     assert "public tag v1.2.3" in result.stdout
 

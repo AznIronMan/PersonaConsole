@@ -33,6 +33,50 @@ For each consumer:
 10. Record verification, restart result, rollback posture, and watch items in
     the consumer task system.
 
+## Control Center Rollout Checklist
+
+When a release adds or updates the shared Control Center, each consumer runtime
+should explicitly decide what is runtime-owned before exposing editable
+controls. The shared renderer is presentation-only; the runtime owns auth,
+allowlists, validation, persistence, audit, restarts, and rollback.
+
+For each Control Center consumer:
+
+1. Keep `/settings` compatible as an alias or documented legacy route while
+   adding the first-class Control nav section.
+2. Focus section routes so `/control/runtime`, `/control/integrations`,
+   `/control/appearance`, `/control/features`, and `/control/audit` render the
+   relevant section rather than the whole catalog.
+3. Define a role matrix before save routes are enabled. A typical rollout is:
+   owner can view and edit all supported controls, operator can view most and
+   edit only allowlisted runtime-owned controls, moderator is read-only.
+4. Mark unsupported Console or Engine catalog controls as staged previews,
+   readonly, disabled, or view-only until the runtime owns a save handler for
+   them.
+5. Use stable source paths for editable controls, such as
+   `runtime.feature.example`, `engine.projection.cadence_settings.base_delay_ms`,
+   or `runtime.provider.default_model`.
+6. Persist only allowlisted fields through runtime-owned storage. Do not let a
+   generic form payload write arbitrary settings.
+7. Validate booleans, enums, numbers, thresholds, and restart-required fields in
+   the runtime save route, not only in browser controls.
+8. Render secrets as configured/not-configured posture. New values may be typed
+   to overwrite, and clear actions should be explicit and auditable.
+9. Record operator audit rows for applied settings and secret actions without
+   storing raw secret values in rendered pages, task files, logs, or docs.
+10. Show clear messages for runtime-owned saves, staged previews, role-limited
+    fields, restart/reload posture, and unsupported submissions.
+11. Browser-smoke desktop and mobile Control pages for text overlap, horizontal
+    overflow, one-character columns, and usable card widths.
+12. Exercise one harmless non-secret save and revert through the runtime save
+    path. Verify the projected/runtime value changes, audit records exist, and
+    the prior value or absent override is restored.
+13. Run focused Control Center tests, the consumer admin/render tests, the
+    PersonaConsole doctor with the expected version, and a live login/auth
+    smoke where applicable.
+14. Restart or rebuild only the services that import the updated runtime code or
+    PersonaConsole package.
+
 ## Local Roster
 
 Create an ignored local roster:
@@ -75,6 +119,7 @@ not accidentally written into tracked files.
 - `update_steps`: package/source/static update actions.
 - `tests`: required focused tests or doctor checks.
 - `smokes`: browser, route, or render smokes.
+- `control_center`: optional Control Center-specific rollout checks.
 - `restart_steps`: restart, rebuild, or container rollout actions.
 - `rollback`: exact rollback posture for that consumer.
 - `notes`: private reminders or watch items.
