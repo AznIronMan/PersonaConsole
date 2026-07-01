@@ -127,6 +127,12 @@ from .models import (
     ConnectorGroup,
     ConnectorOption,
     ContinuityItem,
+    ControlCenterConfig,
+    ControlChange,
+    ControlGroup,
+    ControlItem,
+    ControlOption,
+    ControlSection,
     DashboardAction,
     DashboardActivityItem,
     DashboardAdapterCard,
@@ -391,9 +397,13 @@ from .terminal import (
     terminal_stream_feature_enabled,
 )
 from .settings_editor import (
+    CONTROL_CENTER_FEATURE,
     SETTINGS_EDITOR_FEATURE,
     build_admin_brand_settings_editor,
     build_admin_brand_settings_group,
+    build_control_center_from_sources,
+    control_center_feature_enabled,
+    render_control_center,
     render_settings_editor,
     settings_editor_feature_enabled,
 )
@@ -500,6 +510,13 @@ __all__ = [
     "ConnectorGroup",
     "ConnectorOption",
     "ContinuityItem",
+    "CONTROL_CENTER_FEATURE",
+    "ControlCenterConfig",
+    "ControlChange",
+    "ControlGroup",
+    "ControlItem",
+    "ControlOption",
+    "ControlSection",
     "CutoverAuditFinding",
     "CutoverAuditReport",
     "DashboardAction",
@@ -688,6 +705,7 @@ __all__ = [
     "agent_ops_surface_feature_enabled",
     "build_admin_brand_settings_editor",
     "build_admin_brand_settings_group",
+    "build_control_center_from_sources",
     "build_token_health_report",
     "build_surface_registry_report",
     "build_journal_calendar",
@@ -696,6 +714,7 @@ __all__ = [
     "bridge_ops_feature_enabled",
     "command_intake_feature_enabled",
     "configure_jinja_loader",
+    "control_center_feature_enabled",
     "cutover_audit_report_to_text",
     "dashboard_metrics_from_counts",
     "detail_dossier_surface_feature_enabled",
@@ -748,6 +767,7 @@ __all__ = [
     "render_bridge_ops_surface",
     "render_chat_page",
     "render_command_intake_surface",
+    "render_control_center",
     "render_connector_groups",
     "render_detail_dossier_surface",
     "render_diagnostic_action_card",
@@ -817,7 +837,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.46"
+__version__ = "1.0.47"
 
 
 def configure_jinja_loader(*args, **kwargs):

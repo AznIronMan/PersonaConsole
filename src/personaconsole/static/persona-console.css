@@ -355,6 +355,7 @@ summary::-webkit-details-marker { display: none; }
   background: var(--pc-surface-raised);
   box-shadow: 0 20px 44px rgb(0 0 0 / 0.46);
 }
+.admin-nav-group:not([open]) .admin-nav-menu { display: none; }
 .admin-nav-group:last-child .admin-nav-menu { left: auto; right: 0; }
 .admin-nav-item,
 .admin-mobile-link {
@@ -420,6 +421,7 @@ summary::-webkit-details-marker { display: none; }
   background: var(--pc-surface-raised);
   box-shadow: 0 20px 54px rgb(0 0 0 / 0.52);
 }
+.admin-mobile-nav:not([open]) .admin-mobile-panel { display: none; }
 .admin-mobile-section + .admin-mobile-section {
   padding-top: 12px;
   border-top: 1px solid color-mix(in srgb, var(--pc-border) 70%, transparent);
@@ -5336,6 +5338,303 @@ pre {
   outline: 2px solid color-mix(in srgb, var(--pc-info) 48%, transparent);
   outline-offset: 2px;
 }
+.pc-control-center {
+  display: grid;
+  gap: 14px;
+}
+.pc-control-overview-meta,
+.pc-control-section-meta,
+.pc-control-group-meta,
+.pc-control-flags,
+.pc-control-footer,
+.pc-control-nav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pc-control-overview {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.pc-control-metric,
+.pc-control-item {
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  min-width: 0;
+}
+.pc-control-metric {
+  background: var(--pc-surface-muted);
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+}
+.pc-control-metric span,
+.pc-control-metric small,
+.pc-control-help,
+.pc-control-value-preview {
+  color: var(--pc-muted);
+  font-size: 12px;
+}
+.pc-control-metric strong {
+  color: var(--pc-text);
+  font-size: 20px;
+  line-height: 1.1;
+}
+.pc-control-nav a {
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  color: var(--pc-text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 9px;
+  text-decoration: none;
+}
+.pc-control-section {
+  display: grid;
+  gap: 12px;
+}
+.pc-control-section-head {
+  align-items: end;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+.pc-control-section-head h2 {
+  color: var(--pc-text);
+  font-size: 18px;
+  margin: 0;
+}
+.pc-control-section-head p {
+  color: var(--pc-muted);
+  margin: 3px 0 0;
+}
+.pc-control-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.pc-control-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+.pc-control-item.is-changed {
+  background: color-mix(in srgb, var(--pc-warning) 8%, transparent);
+}
+.pc-control-item.is-secret {
+  background: color-mix(in srgb, var(--pc-info) 5%, transparent);
+}
+.pc-control-item.is-dangerous {
+  border-color: color-mix(in srgb, var(--pc-danger) 54%, var(--pc-border));
+}
+.pc-control-item-head {
+  align-items: start;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-width: 0;
+}
+.pc-control-item-head > div {
+  min-width: 0;
+}
+.pc-control-item label,
+.pc-control-item-head label {
+  color: var(--pc-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+.pc-control-item code {
+  color: var(--pc-muted);
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-control-owner,
+.pc-control-badge,
+.pc-control-restart,
+.pc-control-changed,
+.pc-control-danger {
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  color: var(--pc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+.pc-control-owner {
+  color: var(--pc-text);
+}
+.pc-control-restart {
+  border-color: color-mix(in srgb, var(--pc-warning) 45%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-warning) 88%, var(--pc-text));
+}
+.pc-control-changed {
+  border-color: color-mix(in srgb, var(--pc-info) 45%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-info) 82%, var(--pc-text));
+}
+.pc-control-danger {
+  border-color: color-mix(in srgb, var(--pc-danger) 55%, var(--pc-border));
+  color: color-mix(in srgb, var(--pc-danger) 86%, var(--pc-text));
+}
+.pc-control-input {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.pc-control-input input[type="text"],
+.pc-control-input input[type="number"],
+.pc-control-input input[type="url"],
+.pc-control-input input[type="password"],
+.pc-control-input select,
+.pc-control-input textarea {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  font: inherit;
+  min-height: 38px;
+  min-width: 0;
+  padding: 8px 10px;
+  width: 100%;
+}
+.pc-control-switch {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+}
+.pc-control-switch input[type="checkbox"] {
+  inline-size: 0;
+  opacity: 0;
+  position: absolute;
+}
+.pc-control-switch > span {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  display: inline-block;
+  height: 22px;
+  position: relative;
+  width: 42px;
+}
+.pc-control-switch > span::after {
+  background: var(--pc-muted);
+  border-radius: 999px;
+  content: "";
+  height: 16px;
+  left: 3px;
+  position: absolute;
+  top: 2px;
+  transition: transform .16s ease, background .16s ease;
+  width: 16px;
+}
+.pc-control-switch input[type="checkbox"]:checked + span::after {
+  background: var(--pc-success);
+  transform: translateX(19px);
+}
+.pc-control-switch strong {
+  color: var(--pc-text);
+  font-size: 12px;
+}
+.pc-control-segments {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px;
+}
+.pc-control-segment input {
+  inline-size: 0;
+  opacity: 0;
+  position: absolute;
+}
+.pc-control-segment span {
+  border-radius: 6px;
+  color: var(--pc-muted);
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 9px;
+}
+.pc-control-segment input:checked + span {
+  background: color-mix(in srgb, var(--pc-info) 18%, transparent);
+  color: var(--pc-text);
+}
+.pc-control-swatch {
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  flex: 0 0 auto;
+  height: 34px;
+  width: 34px;
+}
+.pc-control-readonly {
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  color: var(--pc-text);
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  white-space: pre-wrap;
+  width: 100%;
+}
+.pc-control-value-preview {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.pc-control-change-list {
+  display: grid;
+  gap: 8px;
+}
+.pc-control-change {
+  align-items: center;
+  border: 1px solid var(--pc-border);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 9px 10px;
+}
+.pc-control-diff {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-width: min(520px, 100%);
+}
+.pc-control-diff del,
+.pc-control-diff ins {
+  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 9px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-control-diff del {
+  background: color-mix(in srgb, var(--pc-danger) 10%, transparent);
+  color: var(--pc-muted);
+}
+.pc-control-diff ins {
+  background: color-mix(in srgb, var(--pc-success) 10%, transparent);
+  color: var(--pc-text);
+}
+.pc-control-item.is-client-changed {
+  outline: 2px solid color-mix(in srgb, var(--pc-info) 48%, transparent);
+  outline-offset: 2px;
+}
 .pc-command-intake-surface {
   display: grid;
   gap: 14px;
@@ -5571,6 +5870,8 @@ pre {
   }
   .pc-command-intake-metrics,
   .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field),
+  .pc-control-overview,
+  .pc-control-grid,
   .pc-availability-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5756,6 +6057,17 @@ pre {
   }
   .pc-settings-diff {
     grid-template-columns: 1fr;
+  }
+  .pc-control-overview,
+  .pc-control-grid,
+  .pc-control-diff {
+    grid-template-columns: 1fr;
+  }
+  .pc-control-section-head,
+  .pc-control-item-head,
+  .pc-control-change {
+    align-items: stretch;
+    flex-direction: column;
   }
   .pc-command-intake-metrics,
   .pc-command-intake-section .pc-command-intake-list:has(.pc-command-intake-field),

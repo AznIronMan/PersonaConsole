@@ -433,8 +433,8 @@
     }
   });
 
-  document.querySelectorAll("[data-pc-settings-editor]").forEach(function (editor) {
-    const changedCount = editor.querySelector("[data-pc-settings-changed-count]");
+  document.querySelectorAll("[data-pc-settings-editor], [data-pc-control-center]").forEach(function (editor) {
+    const changedCount = editor.querySelector("[data-pc-settings-changed-count], [data-pc-control-changed-count]");
 
     function inputValue(input) {
       if (input.type === "checkbox") return input.checked ? "true" : "false";
@@ -443,9 +443,10 @@
 
     function updateDirtyState() {
       let count = 0;
-      editor.querySelectorAll("[data-pc-settings-field]").forEach(function (field) {
+      editor.querySelectorAll("[data-pc-settings-field], [data-pc-control-item]").forEach(function (field) {
         let dirty = false;
         field.querySelectorAll("input, select, textarea").forEach(function (input) {
+          if (input.type === "hidden") return;
           if (input.dataset.secret === "true") {
             if (input.value) dirty = true;
             return;

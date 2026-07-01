@@ -1556,6 +1556,50 @@ an icon. `wordmark_url` replaces the bold title while preserving subtitle text.
 Consumers still own asset upload, URL validation, settings persistence, and
 deployment wiring.
 
+## Control Center
+
+`render_control_center(...)` renders a first-class staged control surface for
+feature gates, runtime behavior, persona extension slots, appearance,
+integrations, and audit previews. It is the richer replacement target for new
+runtimes that should not look like an `.env` editor or spreadsheet. The older
+`render_settings_editor(...)` remains supported for compatibility.
+
+```python
+from personaconsole import (
+    ControlCenterConfig,
+    ControlGroup,
+    ControlItem,
+    ControlSection,
+    SurfaceAction,
+    build_control_center_from_sources,
+    render_control_center,
+)
+
+html = render_control_center(
+    build_control_center_from_sources(
+        console_config,
+        surface_registry=registry,
+        engine_catalog=engine_control_catalog_mapping,
+        form_action="/control/save",
+        actions=[SurfaceAction("Audit trail", "/control/audit", "info")],
+    )
+)
+```
+
+Control Center accepts PersonaEngine control metadata as plain mappings or
+dataclasses; PersonaConsole does not import PersonaEngine. Known sections are
+Features, Appearance & Navigation, Runtime Behavior, Persona Extensions,
+Integrations, and Advanced & Audit. Boolean controls render as switch cards with
+hidden `false` inputs so staged saves can explicitly turn features off. Secret
+controls render only posture such as `configured` or `not configured`; raw
+current and pending values are never echoed into HTML.
+
+Consumers own persistence, route authorization, validation, restart/reload
+policy, audit logging, and any custom setting definitions. Runtime-supplied
+extra `ControlSection` values are the v1 extension point for custom controls,
+including persona pack/profile/memory/voice controls that are private to a
+consumer runtime.
+
 ## Shared System Health
 
 `render_system_health_surface(...)` renders sanitized runtime posture without

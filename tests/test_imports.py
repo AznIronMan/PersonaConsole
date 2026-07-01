@@ -41,6 +41,7 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.AGENT_OPS_FEATURE == "agent_ops"
     assert personaconsole.TERMINAL_STREAM_FEATURE == "terminal_stream"
     assert personaconsole.SETTINGS_EDITOR_FEATURE == "settings_editor"
+    assert personaconsole.CONTROL_CENTER_FEATURE == "control_center"
     assert personaconsole.SYSTEM_HEALTH_FEATURE == "system_health"
     assert personaconsole.SURFACE_COMPOSITION_FEATURE == "surface_composition"
     assert personaconsole.SystemAuditFilterState
@@ -48,6 +49,8 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.SystemSecretInventoryRow
     assert personaconsole.SystemPaginationState
     assert personaconsole.SurfaceRegistryConfig
+    assert personaconsole.ControlCenterConfig
+    assert personaconsole.render_control_center
     assert personaconsole.render_surface_registry_report
     assert personaconsole.CutoverAuditReport
     assert personaconsole.run_consumer_shared_ui_cutover_audit
@@ -68,6 +71,8 @@ def test_personaconsole_is_canonical_api():
     assert "render_command_intake_surface" in personaconsole.__all__
     assert "render_terminal_stream" in personaconsole.__all__
     assert "render_settings_editor" in personaconsole.__all__
+    assert "render_control_center" in personaconsole.__all__
+    assert "build_control_center_from_sources" in personaconsole.__all__
     assert "build_admin_brand_settings_group" in personaconsole.__all__
     assert "build_admin_brand_settings_editor" in personaconsole.__all__
     assert "render_system_health_surface" in personaconsole.__all__
@@ -110,6 +115,8 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.render_runtime_task_board_surface is personaconsole.render_runtime_task_board_surface
         assert legacy.render_terminal_stream is personaconsole.render_terminal_stream
         assert legacy.render_settings_editor is personaconsole.render_settings_editor
+        assert legacy.render_control_center is personaconsole.render_control_center
+        assert legacy.build_control_center_from_sources is personaconsole.build_control_center_from_sources
         assert legacy.build_admin_brand_settings_group is personaconsole.build_admin_brand_settings_group
         assert legacy.build_admin_brand_settings_editor is personaconsole.build_admin_brand_settings_editor
         assert legacy.render_system_health_surface is personaconsole.render_system_health_surface
@@ -184,4 +191,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.46"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.47"

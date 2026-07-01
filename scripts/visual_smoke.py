@@ -18,6 +18,7 @@ from examples.fixture_app import (
     render_admin_login_fixture_page,
     render_admin_password_change_fixture_page,
     render_chat_fixture_page,
+    render_control_center_fixture_page,
     render_dashboard_fragment,
     render_fixture_page,
     render_login_fixture_page,
@@ -56,6 +57,9 @@ class FixtureHandler(http.server.SimpleHTTPRequestHandler):
             return
         if path == "/settings/public-presence":
             self._send_html(render_public_settings_fixture_page(static_base_url="/src/personaconsole/static"))
+            return
+        if path == "/control":
+            self._send_html(render_control_center_fixture_page(static_base_url="/src/personaconsole/static"))
             return
         if path == "/fragments/dashboard":
             self._send_html(render_dashboard_fragment())
@@ -162,12 +166,15 @@ def run_visual_smoke(output_dir: Path, *, headed: bool = False) -> None:
                         "public-login": ".pc-public-login-page",
                         "public-chat": ".pc-public-chat-shell",
                         "public-settings": ".pc-public-settings-surface",
+                        "control-center": ".pc-control-center",
                         "admin-login": ".pc-admin-login-page",
                         "admin-password-change": ".pc-admin-password-change-page",
                     }.items():
                         public_page = browser.new_page(viewport=viewport)
                         if slug == "public-settings":
                             target = url + "settings/public-presence"
+                        elif slug == "control-center":
+                            target = url + "control"
                         elif slug == "admin-login":
                             target = url + "admin/login"
                         elif slug == "admin-password-change":

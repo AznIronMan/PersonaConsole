@@ -1026,6 +1026,112 @@ class SettingsEditorConfig:
 
 
 @dataclass(frozen=True)
+class ControlOption:
+    key: str
+    label: str = ""
+    selected: bool = False
+    disabled: bool = False
+    description: str = ""
+
+
+@dataclass(frozen=True)
+class ControlChange:
+    label: str
+    before: str | int | float | bool = ""
+    after: str | int | float | bool = ""
+    control_key: str = ""
+    before_display: str = ""
+    after_display: str = ""
+    tone: str = "warn"
+    secret: bool = False
+    restart_required: bool = False
+
+
+@dataclass(frozen=True)
+class ControlItem:
+    key: str
+    label: str = ""
+    name: str = ""
+    kind: str = "text"
+    value: Any = ""
+    display_value: str = ""
+    pending_value: Any = None
+    pending_display_value: str = ""
+    placeholder: str = ""
+    help_text: str = ""
+    owner: str = "Runtime"
+    source_path: str = ""
+    section: str = ""
+    status: str = ""
+    tone: str = "neutral"
+    required: bool = False
+    readonly: bool = False
+    disabled: bool = False
+    secret: bool = False
+    redacted: bool = False
+    changed: bool = False
+    restart_required: bool = False
+    dangerous: bool = False
+    rows: int = 4
+    min_value: str | int | float = ""
+    max_value: str | int | float = ""
+    step: str | int | float = ""
+    options: Sequence[ControlOption | Mapping[str, object] | str] = field(default_factory=tuple)
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = field(default_factory=tuple)
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    metadata: Mapping[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ControlGroup:
+    key: str
+    title: str
+    description: str = ""
+    owner: str = ""
+    items: Sequence[ControlItem | Mapping[str, object]] = field(default_factory=tuple)
+    status: str = ""
+    tone: str = "neutral"
+    restart_required: bool = False
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    metadata: Mapping[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ControlSection:
+    key: str
+    title: str
+    description: str = ""
+    groups: Sequence[ControlGroup | Mapping[str, object]] = field(default_factory=tuple)
+    status: str = ""
+    tone: str = "neutral"
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class ControlCenterConfig:
+    enabled: bool = False
+    feature: str = "control_center"
+    key: str = "control-center"
+    title: str = "Control Center"
+    subtitle: str = "Feature gates, runtime behavior, appearance, integrations, and staged changes."
+    form_action: str = ""
+    form_method: str = "post"
+    sections: Sequence[ControlSection | Mapping[str, object]] = field(default_factory=tuple)
+    changes: Sequence[ControlChange | Mapping[str, object]] = field(default_factory=tuple)
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = field(default_factory=tuple)
+    banners: Sequence[FlashBanner | Mapping[str, object]] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    save_label: str = "Save staged changes"
+    reset_label: str = "Reset"
+    reset_href: str = ""
+    restart_required: bool = False
+    empty_label: str = "No controls configured."
+
+
+@dataclass(frozen=True)
 class SystemHealthCheck:
     key: str
     label: str = ""

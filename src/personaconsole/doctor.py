@@ -295,6 +295,13 @@ _COMMAND_INTAKE_EXPORTS = (
     "render_command_intake_surface",
 )
 _SETTINGS_EDITOR_EXPORTS = (
+    "CONTROL_CENTER_FEATURE",
+    "ControlCenterConfig",
+    "ControlChange",
+    "ControlGroup",
+    "ControlItem",
+    "ControlOption",
+    "ControlSection",
     "SETTINGS_EDITOR_FEATURE",
     "SettingsChange",
     "SettingsEditorConfig",
@@ -304,6 +311,9 @@ _SETTINGS_EDITOR_EXPORTS = (
     "SettingsValidationMessage",
     "build_admin_brand_settings_editor",
     "build_admin_brand_settings_group",
+    "build_control_center_from_sources",
+    "control_center_feature_enabled",
+    "render_control_center",
     "render_settings_editor",
     "settings_editor_feature_enabled",
 )
@@ -528,6 +538,7 @@ def run_consumer_integration_doctor(
         checks.append(_bridge_ops_render_check(module))
         checks.append(_command_intake_render_check(module))
         checks.append(_settings_editor_render_check(module))
+        checks.append(_control_center_render_check(module))
         checks.append(_system_health_render_check(module))
         checks.append(_surface_composition_render_check(module))
         checks.append(_owner_private_render_check(module))
@@ -2331,6 +2342,58 @@ def _settings_editor_render_check(module: Any) -> DoctorCheck:
         and "/settings/reveal/api-key" in html
     )
     return _check(ok, "settings_editor_render", "settings editor renders redacted changed settings")
+
+
+def _control_center_render_check(module: Any) -> DoctorCheck:
+    raw_secret = "raw-doctor-control-secret"
+    try:
+        html = module.render_control_center(
+            module.ControlCenterConfig(
+                enabled=True,
+                title="Control Center",
+                form_action="/control/save",
+                sections=[
+                    module.ControlSection(
+                        "features",
+                        "Features",
+                        groups=[
+                            module.ControlGroup(
+                                "runtime",
+                                "Runtime",
+                                "Staged controls",
+                                items=[
+                                    module.ControlItem("messages", "Messages", "pc.feature.messages", "switch", True, owner="Console", source_path="pc.feature.messages"),
+                                    module.ControlItem(
+                                        "provider_secret",
+                                        "Provider secret",
+                                        "runtime.provider_secret",
+                                        "secret",
+                                        raw_secret,
+                                        display_value="configured",
+                                        pending_display_value="new secret staged",
+                                        changed=True,
+                                        restart_required=True,
+                                    ),
+                                ],
+                            )
+                        ],
+                    )
+                ],
+            )
+        )
+    except Exception as exc:
+        return _check(False, "control_center_render", "control center render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-control-center" in html
+        and "Control Center" in html
+        and 'name="pc.feature.messages" value="false"' in html
+        and "Pending Changes" in html
+        and "restart required" in html
+        and "configured" in html
+        and "new secret staged" not in html
+        and raw_secret not in html
+    )
+    return _check(ok, "control_center_render", "control center renders staged redacted controls")
 
 
 def _persona_editor_render_check(module: Any) -> DoctorCheck:

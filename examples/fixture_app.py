@@ -21,6 +21,7 @@ from personaconsole import (
     PEOPLE_FEATURE,
     BRIDGE_OPS_FEATURE,
     COMMAND_INTAKE_FEATURE,
+    CONTROL_CENTER_FEATURE,
     PERSONA_EDITOR_FEATURE,
     PERSONA_RUNTIME_FEATURE,
     PRESENCE_MONITOR_FEATURE,
@@ -223,6 +224,7 @@ from personaconsole import (
     WorkerRollbackCandidate,
     WorkerRunTelemetryRow,
     WorkerScheduleRow,
+    build_control_center_from_sources,
     build_journal_calendar,
     build_admin_brand_settings_group,
     journal_theme_options,
@@ -234,6 +236,7 @@ from personaconsole import (
     render_admin_password_change_page,
     render_chat_page,
     render_command_intake_surface,
+    render_control_center,
     render_availability_monitor_surface,
     render_admin_list_surface,
     render_dashboard_sections,
@@ -504,6 +507,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             RUNTIME_TASK_BOARD_FEATURE: True,
             TERMINAL_STREAM_FEATURE: True,
             SETTINGS_EDITOR_FEATURE: True,
+            CONTROL_CENTER_FEATURE: True,
             SYSTEM_HEALTH_FEATURE: True,
             INFRASTRUCTURE_POSTURE_FEATURE: True,
             PUBLIC_PRESENCE_FEATURE: True,
@@ -542,6 +546,19 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                     NavItem("Persona Editor", "/persona/editor", active="persona-editor", feature=PERSONA_EDITOR_FEATURE),
                 ],
                 key="operations",
+            ),
+            NavGroup(
+                "Control",
+                [
+                    NavItem("Overview", "/control", active="control", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Features", "/control/features", active="control-features", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Runtime", "/control/runtime", active="control-runtime", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Persona", "/control/persona", active="control-persona", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Appearance", "/control/appearance", active="control-appearance", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Integrations", "/control/integrations", active="control-integrations", feature=CONTROL_CENTER_FEATURE),
+                    NavItem("Audit", "/control/audit", active="control-audit", feature=CONTROL_CENTER_FEATURE),
+                ],
+                key="control",
             ),
             NavGroup(
                 "System",
@@ -657,6 +674,7 @@ def render_dashboard_fragment() -> str:
             DashboardRouteCard("Media", "/media", "Track artifacts, previews, and publishing status.", metric=9),
             DashboardRouteCard("Tasks", "/tasks", "Follow queued work and operator-owned next actions.", metric=6),
             DashboardRouteCard("Logs", "/logs", "Read sanitized runtime events and warnings.", metric=2, tone="info"),
+            DashboardRouteCard("Control Center", "/control", "Stage feature, runtime, appearance, and integration changes.", metric="new", tone="info"),
             DashboardRouteCard("Settings", "/settings", "Adjust feature flags and integration posture.", metric="on"),
             DashboardRouteCard("Workers", "/workers", "Inspect queue health and retries.", metric="42s", tone="bad"),
         ],
@@ -3048,6 +3066,236 @@ def render_fixture_page(*, static_base_url: str = "/persona-console/static") -> 
     )
 
 
+def build_fixture_control_surface_registry() -> SurfaceRegistryConfig:
+    return SurfaceRegistryConfig(
+        enabled=True,
+        features={
+            "messages": True,
+            "review": True,
+            "system_health": True,
+            "media_library": True,
+            "public_presence": True,
+        },
+        nav_groups=[NavGroup("Core", (), key="core"), NavGroup("System", (), key="system")],
+        surfaces=[
+            SurfaceRegistration(
+                "messages",
+                "Messages",
+                feature="messages",
+                renderer="render_message_surface",
+                route_key="messages",
+                href="/messages",
+                nav_group="core",
+                active="messages",
+                required_assets=[SurfaceAssetRequirement("css", "Shared CSS", "/persona-console/static/persona-console.css")],
+                adapters=[SurfaceAdapterBinding("message_rows", "Message rows", "fixture adapter")],
+                summary="Consumer supplies transcript rows and route auth.",
+            ),
+            SurfaceRegistration(
+                "system-health",
+                "System Health",
+                feature="system_health",
+                renderer="render_system_health_surface",
+                route_key="system-health",
+                href="/health",
+                nav_group="system",
+                active="health",
+                adapters=[SurfaceAdapterBinding("runtime_probe_rows", "Runtime probes", "fixture adapter")],
+                summary="Consumer owns probes, database checks, and remediation.",
+            ),
+            SurfaceRegistration(
+                "media-library",
+                "Media Library",
+                feature="media_library",
+                renderer="render_media_library_surface",
+                route_key="media-library",
+                href="/media/library",
+                nav_group="core",
+                active="media-library",
+                required_assets=[SurfaceAssetRequirement("media-css", "Media CSS", "/persona-console/static/persona-console.css")],
+                adapters=[SurfaceAdapterBinding("media_rows", "Media rows", "fixture adapter")],
+                summary="Consumer owns file storage and upload validation.",
+            ),
+        ],
+    )
+
+
+def build_fixture_engine_control_catalog() -> dict[str, object]:
+    return {
+        "catalog_id": "fixture-engine-control-catalog",
+        "schema_version": "1.0",
+        "groups": [
+            {
+                "key": "engine-features",
+                "label": "PersonaEngine Features",
+                "description": "Projected engine gates from a sanitized runtime profile.",
+                "section": "features",
+                "owner": "Engine",
+                "controls": [
+                    {
+                        "key": "engine-feature-workflows",
+                        "label": "Workflows",
+                        "source_path": "engine.feature.workflows",
+                        "kind": "boolean",
+                        "value": True,
+                        "owner": "Engine",
+                        "status": "enabled",
+                        "restart_required": True,
+                    },
+                    {
+                        "key": "engine-feature-media",
+                        "label": "Media",
+                        "source_path": "engine.feature.media",
+                        "kind": "boolean",
+                        "value": True,
+                        "owner": "Engine",
+                        "status": "enabled",
+                        "restart_required": True,
+                    },
+                ],
+            },
+            {
+                "key": "engine-cadence",
+                "label": "Cadence",
+                "description": "Typing, chunking, pause, and coalescing settings.",
+                "section": "runtime",
+                "owner": "Engine",
+                "controls": [
+                    {
+                        "key": "engine-cadence-base-delay",
+                        "label": "Base delay",
+                        "source_path": "engine.projection.cadence_settings.base_delay_ms",
+                        "kind": "number",
+                        "value": 450,
+                        "owner": "Engine",
+                        "restart_required": True,
+                    },
+                    {
+                        "key": "engine-cadence-max-chunk",
+                        "label": "Max chunk size",
+                        "source_path": "engine.projection.cadence_settings.max_chunk_chars",
+                        "kind": "number",
+                        "value": 220,
+                        "owner": "Engine",
+                        "restart_required": True,
+                    },
+                ],
+            },
+            {
+                "key": "engine-policy-canary",
+                "label": "Policy & Canary",
+                "description": "Safety, review, and rollout controls.",
+                "section": "runtime",
+                "owner": "Engine",
+                "controls": [
+                    {
+                        "key": "engine-canary-mode",
+                        "label": "Canary mode",
+                        "source_path": "engine.projection.canary_mode",
+                        "kind": "segmented",
+                        "value": "log_only",
+                        "owner": "Engine",
+                        "restart_required": True,
+                        "options": [
+                            {"key": "off", "label": "Off"},
+                            {"key": "log_only", "label": "Log only"},
+                            {"key": "block", "label": "Block"},
+                        ],
+                    },
+                    {
+                        "key": "engine-review-risk",
+                        "label": "Review risk threshold",
+                        "source_path": "engine.projection.policy_settings.review_risk_threshold",
+                        "kind": "number",
+                        "value": 0.45,
+                        "owner": "Engine",
+                        "restart_required": True,
+                    },
+                ],
+            },
+            {
+                "key": "engine-provider-routes",
+                "label": "Provider Routes",
+                "description": "Read-only provider-neutral routing posture.",
+                "section": "integrations",
+                "owner": "Engine",
+                "controls": [
+                    {
+                        "key": "engine-provider-route-default",
+                        "label": "Default route",
+                        "source_path": "engine.projection.provider_routes.0",
+                        "kind": "readonly",
+                        "value": {"provider": "provider-alpha", "model": "model-small", "lane": "default"},
+                        "display_value": "provider-alpha / model-small (default)",
+                        "owner": "Engine",
+                        "readonly": True,
+                    }
+                ],
+            },
+            {
+                "key": "engine-persona-extension-slots",
+                "label": "Persona Extension Slots",
+                "description": "Runtime-owned persona settings that stay outside the public shared package.",
+                "section": "persona",
+                "owner": "Runtime",
+                "controls": [
+                    {
+                        "key": "engine-extension-persona-pack-refs",
+                        "label": "Persona pack references",
+                        "source_path": "runtime.persona.pack_refs",
+                        "kind": "readonly",
+                        "value": "runtime-owned",
+                        "display_value": "runtime-owned",
+                        "owner": "Runtime",
+                        "readonly": True,
+                    },
+                    {
+                        "key": "engine-extension-consumer-controls",
+                        "label": "Consumer control sections",
+                        "source_path": "runtime.control.extra_sections",
+                        "kind": "readonly",
+                        "value": "runtime-supplied",
+                        "display_value": "runtime-supplied",
+                        "owner": "Runtime",
+                        "readonly": True,
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def render_control_center_fixture_page(
+    *,
+    static_base_url: str = "/persona-console/static",
+    active: str = "control",
+    current_path: str = "/control",
+) -> str:
+    config = replace(
+        build_fixture_config(static_base_url=static_base_url),
+        active=active,
+        page_title="Control Center",
+        page_subtitle="Curated staged controls for PersonaConsole and PersonaEngine.",
+        live_refresh=None,
+        live_url="",
+        live_interval=None,
+    )
+    body = render_control_center(
+        build_control_center_from_sources(
+            config,
+            surface_registry=build_fixture_control_surface_registry(),
+            engine_catalog=build_fixture_engine_control_catalog(),
+            form_action="/control/save",
+            actions=[
+                SurfaceAction("Restart runtime", "/control/restart", "warn", method="post"),
+                SurfaceAction("Audit trail", "/control/audit", "info"),
+            ],
+        ),
+        features={CONTROL_CENTER_FEATURE: True},
+    )
+    return render_shell_html(config, body, current_path=current_path)
+
+
 def render_public_splash_fixture_page(*, static_base_url: str = "/persona-console/static") -> str:
     return render_public_splash_page(build_public_splash_config(static_base_url=static_base_url))
 
@@ -3128,6 +3376,38 @@ def create_app():
     @app.get("/settings/public-presence", response_class=HTMLResponse)
     def public_settings() -> str:
         return render_public_settings_fixture_page()
+
+    @app.get("/settings", response_class=HTMLResponse)
+    def settings_alias() -> str:
+        return render_control_center_fixture_page(active="settings", current_path="/settings")
+
+    @app.get("/control", response_class=HTMLResponse)
+    def control_center() -> str:
+        return render_control_center_fixture_page()
+
+    @app.get("/control/features", response_class=HTMLResponse)
+    def control_features() -> str:
+        return render_control_center_fixture_page(active="control-features", current_path="/control/features")
+
+    @app.get("/control/runtime", response_class=HTMLResponse)
+    def control_runtime() -> str:
+        return render_control_center_fixture_page(active="control-runtime", current_path="/control/runtime")
+
+    @app.get("/control/persona", response_class=HTMLResponse)
+    def control_persona() -> str:
+        return render_control_center_fixture_page(active="control-persona", current_path="/control/persona")
+
+    @app.get("/control/appearance", response_class=HTMLResponse)
+    def control_appearance() -> str:
+        return render_control_center_fixture_page(active="control-appearance", current_path="/control/appearance")
+
+    @app.get("/control/integrations", response_class=HTMLResponse)
+    def control_integrations() -> str:
+        return render_control_center_fixture_page(active="control-integrations", current_path="/control/integrations")
+
+    @app.get("/control/audit", response_class=HTMLResponse)
+    def control_audit() -> str:
+        return render_control_center_fixture_page(active="control-audit", current_path="/control/audit")
 
     @app.get("/fragments/dashboard", response_class=HTMLResponse)
     def dashboard_fragment() -> str:

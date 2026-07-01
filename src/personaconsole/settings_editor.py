@@ -7,6 +7,12 @@ from typing import Any, Mapping, Sequence, TypeVar
 
 from .models import (
     BrandAssets,
+    ControlCenterConfig,
+    ControlChange,
+    ControlGroup,
+    ControlItem,
+    ControlOption,
+    ControlSection,
     FlashBanner,
     PersonaConsoleConfig,
     SettingsChange,
@@ -17,10 +23,14 @@ from .models import (
     SettingsValidationMessage,
     SurfaceAction,
     SurfaceBadge,
+    SurfaceRegistration,
+    SurfaceRegistryConfig,
+    ThemeTokens,
 )
 from .privacy import feature_enabled
 
 SETTINGS_EDITOR_FEATURE = "settings_editor"
+CONTROL_CENTER_FEATURE = "control_center"
 
 T = TypeVar("T")
 
@@ -65,6 +75,13 @@ _FIELD_KINDS = {
     "url",
 }
 
+_CONTROL_KINDS = _FIELD_KINDS | {
+    "switch",
+    "toggle",
+    "segmented",
+    "color",
+}
+
 
 def _mapping(value: Any) -> dict[str, Any]:
     if value is None:
@@ -88,6 +105,8 @@ def _coerce(value: T | Mapping[str, object] | str, cls: type[T], defaults: Mappi
     if cls is SettingsValidationMessage and isinstance(value, str):
         return cls(value)  # type: ignore[return-value]
     if cls is SettingsOption and isinstance(value, str):
+        return cls(value, value)  # type: ignore[return-value]
+    if cls is ControlOption and isinstance(value, str):
         return cls(value, value)  # type: ignore[return-value]
     data = {**(defaults or {}), **_mapping(value)}
     allowed = {field.name for field in fields(cls)}
@@ -634,3 +653,611 @@ def render_settings_editor(
         + body
         + shell_close
     )
+
+
+def control_center_feature_enabled(
+    config: ControlCenterConfig | Mapping[str, object],
+    features: Mapping[str, bool] | None = None,
+) -> bool:
+    model = _coerce(config, ControlCenterConfig)
+    return bool(model.enabled) and feature_enabled(features, str(model.feature or CONTROL_CENTER_FEATURE), default=True)
+
+
+def _control_kind(value: object) -> str:
+    raw = str(value or "").strip().lower().replace("_", "-")
+    return raw if raw in _CONTROL_KINDS else "text"
+
+
+def _control_name(item: ControlItem) -> str:
+    return str(item.name or item.source_path or item.key or "").strip()
+
+
+def _control_is_secret(item: ControlItem) -> bool:
+    return bool(item.secret or item.redacted or _control_kind(item.kind) == "secret")
+
+
+def _control_has_pending(item: ControlItem) -> bool:
+    return item.pending_value is not None or bool(item.pending_display_value)
+
+
+def _control_value_for_edit(item: ControlItem) -> Any:
+    if _control_is_secret(item):
+        return ""
+    if item.pending_value is not None:
+        return item.pending_value
+    return item.value
+
+
+def _control_display_value(item: ControlItem, *, pending: bool = False) -> str:
+    if _control_is_secret(item):
+        explicit = item.display_value
+        return str(explicit or ("configured" if (item.value or item.changed or item.pending_value is not None) else "not configured"))
+    if pending and item.pending_display_value:
+        return str(item.pending_display_value)
+    if pending and item.pending_value is not None:
+        return _display(item.pending_value)
+    if item.display_value:
+        return str(item.display_value)
+    return _display(item.value)
+
+
+def _control_option_html(raw_option: ControlOption | Mapping[str, object] | str, selected_value: str) -> str:
+    option = _coerce(raw_option, ControlOption)
+    key = str(option.key)
+    label = str(option.label or option.key)
+    selected = bool(option.selected or key == selected_value)
+    return (
+        f'<option value="{escape(key, quote=True)}"'
+        f'{_attrs(selected=selected, disabled=option.disabled)}>{escape(label)}</option>'
+    )
+
+
+def _control_segment_html(item: ControlItem, item_id: str, selected_value: str) -> str:
+    name = _control_name(item)
+    disabled = bool(item.disabled or item.readonly)
+    buttons: list[str] = []
+    for index, raw_option in enumerate(item.options):
+        option = _coerce(raw_option, ControlOption)
+        option_id = f"{item_id}-{index}"
+        key = str(option.key)
+        checked = bool(option.selected or key == selected_value)
+        buttons.append(
+            '<label class="pc-control-segment">'
+            f'<input type="radio"{_attrs(id=option_id, name=name, value=key, checked=checked, disabled=disabled or option.disabled, required=item.required, data_original_value=_display(item.value))}>'
+            f'<span>{escape(str(option.label or option.key))}</span></label>'
+        )
+    return f'<div class="pc-control-segments" role="group" aria-labelledby="{escape(item_id, quote=True)}-label">{"".join(buttons)}</div>'
+
+
+def _control_control_html(item: ControlItem, item_id: str) -> str:
+    kind = _control_kind(item.kind)
+    name = _control_name(item)
+    disabled = bool(item.disabled or item.readonly)
+    required = bool(item.required)
+    value = _control_value_for_edit(item)
+    value_text = _display(value)
+    original = "" if _control_is_secret(item) else _display(item.value)
+    common = _attrs(
+        id=item_id,
+        name=name,
+        disabled=disabled,
+        required=required,
+        data_original_value=original,
+        data_secret="true" if _control_is_secret(item) else "",
+    )
+    if kind in {"readonly", "json", "code"} or item.readonly:
+        language = _key("json" if kind == "json" else "text", "text")
+        return (
+            f'<pre class="pc-control-readonly pc-settings-code-{language}"'
+            f'{_attrs(data_original_value=original)}>{escape(_control_display_value(item, pending=_control_has_pending(item)))}</pre>'
+        )
+    if kind == "textarea":
+        rows = max(2, int(item.rows or 4))
+        return f'<textarea{common}{_attrs(rows=rows, placeholder=item.placeholder)}>{escape(value_text)}</textarea>'
+    if kind == "select":
+        options = "".join(_control_option_html(option, value_text) for option in item.options)
+        return f'<select{common}>{options}</select>'
+    if kind == "segmented":
+        return _control_segment_html(item, item_id, value_text)
+    if kind in {"boolean", "switch", "toggle"}:
+        checked = _bool(value)
+        hidden = f'<input type="hidden" name="{escape(name, quote=True)}" value="false"{_attrs(disabled=disabled)}>'
+        return (
+            f'<label class="pc-control-switch">{hidden}<input type="checkbox"{common}'
+            f'{_attrs(value="true", checked=checked)}><span aria-hidden="true"></span>'
+            f'<strong>{escape("On" if checked else "Off")}</strong></label>'
+        )
+    if _control_is_secret(item):
+        input_type = "password"
+    elif kind in {"number", "url"}:
+        input_type = kind
+    else:
+        input_type = "text"
+    placeholder = item.placeholder or ("Leave blank to keep current value" if _control_is_secret(item) else "")
+    swatch = f'<span class="pc-control-swatch"{_attrs(style=f"background: {value_text}")}></span>' if kind == "color" and value_text else ""
+    return (
+        f'{swatch}<input type="{input_type}"{common}'
+        f'{_attrs(value="" if _control_is_secret(item) else value_text, placeholder=placeholder, min=item.min_value, max=item.max_value, step=item.step)}>'
+    )
+
+
+def _control_item_html(raw_item: ControlItem | Mapping[str, object]) -> str:
+    item = _coerce(raw_item, ControlItem, {"key": "control"})
+    key = _key(item.key, "control")
+    label = str(item.label or item.key)
+    item_id = f"pc-control-{key}"
+    changed = bool(item.changed)
+    restart_required = bool(item.restart_required)
+    tone = item.tone or item.status
+    if item.dangerous and not tone:
+        tone = "bad"
+    classes = [
+        "pc-control-item",
+        f"pc-control-kind-{_control_kind(item.kind)}",
+        f"pc-dashboard-tone-{_tone(tone)}",
+    ]
+    if changed:
+        classes.append("is-changed")
+    if restart_required:
+        classes.append("is-restart-required")
+    if item.disabled:
+        classes.append("is-disabled")
+    if item.readonly:
+        classes.append("is-readonly")
+    if item.dangerous:
+        classes.append("is-dangerous")
+    if _control_is_secret(item):
+        classes.append("is-secret")
+    status = f'<span class="pc-control-badge pc-dashboard-tone-{_tone(item.status)}">{escape(str(item.status))}</span>' if item.status else ""
+    owner = f'<span class="pc-control-owner">{escape(str(item.owner or "Runtime"))}</span>'
+    required = '<span class="pc-control-badge">required</span>' if item.required else ""
+    restart = '<span class="pc-control-restart">restart required</span>' if restart_required else ""
+    changed_pill = '<span class="pc-control-changed">changed</span>' if changed else ""
+    dangerous = '<span class="pc-control-danger">danger</span>' if item.dangerous else ""
+    help_text = f'<div class="pc-control-help">{escape(str(item.help_text))}</div>' if item.help_text else ""
+    source = f'<code>{escape(str(item.source_path))}</code>' if item.source_path else ""
+    preview = (
+        f'<div class="pc-control-value-preview">{escape(_control_display_value(item))}</div>'
+        if _control_is_secret(item) or item.display_value
+        else ""
+    )
+    return (
+        f'<article class="{" ".join(classes)}" data-pc-control-item data-pc-settings-field data-control-key="{escape(key, quote=True)}">'
+        '<div class="pc-control-item-head">'
+        f'<div><label id="{escape(item_id, quote=True)}-label" for="{escape(item_id, quote=True)}">{escape(label)}</label>{source}</div>'
+        f'<div class="pc-control-flags">{owner}{status}{required}{changed_pill}{restart}{dangerous}</div>'
+        '</div>'
+        f'<div class="pc-control-input">{_control_control_html(item, item_id)}</div>'
+        f'{preview}{help_text}{_messages_html(item.messages)}{_badges_html(item.badges)}{_actions_html(item.actions)}'
+        '</article>'
+    )
+
+
+def _control_group_html(raw_group: ControlGroup | Mapping[str, object]) -> str:
+    group = _coerce(raw_group, ControlGroup, {"key": "controls", "title": "Controls"})
+    key = _key(group.key, "controls")
+    item_html = "".join(_control_item_html(item) for item in group.items)
+    if not item_html:
+        item_html = '<div class="pc-dashboard-empty">No controls in this group.</div>'
+    status = f'<span class="pc-surface-status pc-dashboard-tone-{_tone(group.tone or group.status)}">{escape(str(group.status))}</span>' if group.status else ""
+    restart = '<span class="pc-control-restart">restart required</span>' if group.restart_required else ""
+    owner = f'<span class="pc-control-owner">{escape(str(group.owner))}</span>' if group.owner else ""
+    return (
+        f'<section class="pc-control-group pc-dashboard-panel pc-dashboard-tone-{_tone(group.tone or group.status)}" data-control-group="{escape(key, quote=True)}">'
+        '<div class="pc-dashboard-panel-head"><div>'
+        f'<h3 class="pc-dashboard-section-title">{escape(str(group.title))}</h3>'
+        f'<div class="pc-dashboard-section-meta">{escape(str(group.description))}</div>'
+        f'</div><div class="pc-control-group-meta">{owner}{status}{restart}{_badges_html(group.badges)}{_actions_html(group.actions)}</div></div>'
+        f'<div class="pc-control-grid">{item_html}</div></section>'
+    )
+
+
+def _control_section_html(raw_section: ControlSection | Mapping[str, object]) -> str:
+    section = _coerce(raw_section, ControlSection, {"key": "section", "title": "Section"})
+    key = _key(section.key, "section")
+    groups_html = "".join(_control_group_html(group) for group in section.groups)
+    if not groups_html:
+        groups_html = '<div class="pc-dashboard-empty">No controls in this section.</div>'
+    status = f'<span class="pc-surface-status pc-dashboard-tone-{_tone(section.tone or section.status)}">{escape(str(section.status))}</span>' if section.status else ""
+    return (
+        f'<section id="pc-control-section-{escape(key, quote=True)}" class="pc-control-section" data-control-section="{escape(key, quote=True)}">'
+        '<div class="pc-control-section-head">'
+        f'<div><h2>{escape(str(section.title))}</h2><p>{escape(str(section.description))}</p></div>'
+        f'<div class="pc-control-section-meta">{status}{_badges_html(section.badges)}{_actions_html(section.actions)}</div></div>'
+        f'{groups_html}</section>'
+    )
+
+
+def _control_items(sections: Sequence[ControlSection | Mapping[str, object]]) -> list[ControlItem]:
+    items: list[ControlItem] = []
+    for raw_section in sections:
+        section = _coerce(raw_section, ControlSection, {"key": "section", "title": "Section"})
+        for raw_group in section.groups:
+            group = _coerce(raw_group, ControlGroup, {"key": "controls", "title": "Controls"})
+            for raw_item in group.items:
+                items.append(_coerce(raw_item, ControlItem, {"key": "control"}))
+    return items
+
+
+def _auto_control_changes(sections: Sequence[ControlSection | Mapping[str, object]]) -> list[ControlChange]:
+    changes: list[ControlChange] = []
+    for item in _control_items(sections):
+        if not item.changed:
+            continue
+        changes.append(
+            ControlChange(
+                label=str(item.label or item.key),
+                control_key=str(item.key),
+                before_display=_control_display_value(item),
+                after_display="********" if _control_is_secret(item) else _control_display_value(item, pending=True),
+                secret=_control_is_secret(item),
+                restart_required=item.restart_required,
+            )
+        )
+    return changes
+
+
+def _control_change_html(raw_change: ControlChange | Mapping[str, object]) -> str:
+    change = _coerce(raw_change, ControlChange, {"label": "Control"})
+    before = "********" if change.secret else str(change.before_display or _display(change.before))
+    after = "********" if change.secret else str(change.after_display or _display(change.after))
+    restart = '<span class="pc-control-restart">restart required</span>' if change.restart_required else ""
+    return (
+        f'<div class="pc-control-change pc-dashboard-tone-{_tone(change.tone)}"'
+        f'{_attrs(data_control_key=change.control_key)}>'
+        f'<strong>{escape(str(change.label))}</strong>'
+        f'<span class="pc-control-diff"><del>{escape(before)}</del><ins>{escape(after)}</ins></span>'
+        f'{restart}</div>'
+    )
+
+
+def _control_changes_html(
+    changes: Sequence[ControlChange | Mapping[str, object]],
+    sections: Sequence[ControlSection | Mapping[str, object]],
+) -> str:
+    all_changes = list(changes) or _auto_control_changes(sections)
+    body = "".join(_control_change_html(change) for change in all_changes)
+    if not body:
+        return ""
+    return (
+        '<section class="pc-control-changes pc-dashboard-panel">'
+        '<div class="pc-dashboard-panel-head"><div>'
+        '<div class="pc-dashboard-section-title">Pending Changes</div>'
+        f'<div class="pc-dashboard-section-meta"><span data-pc-control-changed-count data-initial-count="{len(all_changes)}">{len(all_changes)}</span> staged controls</div>'
+        '</div></div>'
+        f'<div class="pc-control-change-list">{body}</div></section>'
+    )
+
+
+def _control_overview_html(model: ControlCenterConfig, sections: Sequence[ControlSection | Mapping[str, object]]) -> str:
+    items = _control_items(sections)
+    bool_items = [item for item in items if _control_kind(item.kind) in {"boolean", "switch", "toggle"}]
+    enabled = sum(1 for item in bool_items if _bool(item.pending_value if item.pending_value is not None else item.value))
+    disabled = max(0, len(bool_items) - enabled)
+    changes = len(model.changes) or len(_auto_control_changes(sections))
+    restart = sum(1 for item in items if item.restart_required or item.changed and item.restart_required)
+    secrets = sum(1 for item in items if _control_is_secret(item))
+    metrics = (
+        ("Controls", len(items), "configured"),
+        ("Enabled", enabled, "switches on"),
+        ("Off", disabled, "switches off"),
+        ("Pending", changes, "staged"),
+        ("Restart", restart, "required"),
+        ("Secrets", secrets, "redacted"),
+    )
+    body = "".join(
+        f'<div class="pc-control-metric"><span>{escape(label)}</span><strong>{escape(str(value))}</strong><small>{escape(detail)}</small></div>'
+        for label, value, detail in metrics
+    )
+    return f'<section class="pc-control-overview" aria-label="Control summary">{body}</section>'
+
+
+def render_control_center(
+    config: ControlCenterConfig | Mapping[str, object] | None,
+    *,
+    features: Mapping[str, bool] | None = None,
+) -> str:
+    if config is None:
+        return ""
+    model = _coerce(config, ControlCenterConfig)
+    if not control_center_feature_enabled(model, features):
+        return ""
+    sections = tuple(model.sections or ())
+    section_html = "".join(_control_section_html(section) for section in sections)
+    if not section_html:
+        section_html = f'<div class="pc-dashboard-empty">{escape(str(model.empty_label))}</div>'
+    method = str(model.form_method or "post").strip().lower()
+    if method not in {"get", "post"}:
+        method = "post"
+    restart_required = bool(model.restart_required or any(item.restart_required for item in _control_items(sections)))
+    restart = '<span class="pc-control-restart">restart required</span>' if restart_required else ""
+    actions = _actions_html(model.actions, form=bool(model.form_action))
+    reset = f'<a class="pc-settings-action pc-dashboard-tone-neutral" href="{escape(model.reset_href, quote=True)}">{escape(str(model.reset_label))}</a>' if model.reset_href else ""
+    save = (
+        f'<button type="submit" class="pc-settings-action pc-settings-save pc-dashboard-tone-good">{escape(str(model.save_label))}</button>'
+        if model.form_action
+        else ""
+    )
+    footer = f'<div class="pc-control-footer">{save}{reset}{actions}</div>' if save or reset or actions else ""
+    nav = "".join(
+        f'<a href="#pc-control-section-{escape(_key(_coerce(section, ControlSection, {"key": "section", "title": "Section"}).key), quote=True)}">{escape(str(_coerce(section, ControlSection, {"key": "section", "title": "Section"}).title))}</a>'
+        for section in sections
+    )
+    body = (
+        f'{_banners_html(model.banners)}{_messages_html(model.messages)}'
+        f'{_control_overview_html(model, sections)}{_control_changes_html(model.changes, sections)}'
+        f'{f"<nav class=\"pc-control-nav\" aria-label=\"Control Center sections\">{nav}</nav>" if nav else ""}'
+        f'{section_html}{footer}'
+    )
+    shell_open = (
+        f'<form class="pc-control-center pc-dashboard-surface" id="{escape(_key(model.key, "control-center"), quote=True)}"'
+        f' method="{method}" action="{escape(model.form_action, quote=True)}" data-pc-control-center>'
+        if model.form_action
+        else f'<section class="pc-control-center pc-dashboard-surface" id="{escape(_key(model.key, "control-center"), quote=True)}" data-pc-control-center>'
+    )
+    shell_close = "</form>" if model.form_action else "</section>"
+    return (
+        shell_open
+        + '<div class="pc-dashboard-overview-head"><div>'
+        f'<div class="pc-dashboard-section-title">{escape(str(model.title))}</div>'
+        f'<div class="pc-dashboard-section-meta">{escape(str(model.subtitle))}</div>'
+        f'</div><div class="pc-control-overview-meta">{restart}</div></div>'
+        + body
+        + shell_close
+    )
+
+
+def build_control_center_from_sources(
+    console_config: PersonaConsoleConfig | Mapping[str, object] | None = None,
+    *,
+    surface_registry: SurfaceRegistryConfig | Mapping[str, object] | None = None,
+    engine_catalog: Mapping[str, object] | object | None = None,
+    sections: Sequence[ControlSection | Mapping[str, object]] = (),
+    form_action: str = "",
+    form_method: str = "post",
+    key: str = "control-center",
+    title: str = "Control Center",
+    subtitle: str = "Feature gates, runtime behavior, appearance, integrations, and staged changes.",
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = (),
+    messages: Sequence[SettingsValidationMessage | Mapping[str, object] | str] = (),
+    banners: Sequence[FlashBanner | Mapping[str, object]] = (),
+    save_label: str = "Save staged changes",
+    reset_href: str = "",
+) -> ControlCenterConfig:
+    configured_sections = _base_control_sections()
+    console_feature_items = _console_feature_controls(console_config, surface_registry)
+    if console_feature_items:
+        configured_sections["features"].append(ControlGroup("console-features", "PersonaConsole Features", "Shared admin surface switches.", "Console", tuple(console_feature_items)))
+    appearance_groups = _appearance_control_groups(console_config)
+    configured_sections["appearance"].extend(appearance_groups)
+    registry_groups = _surface_registry_control_groups(surface_registry)
+    configured_sections["advanced"].extend(registry_groups)
+    for group in _engine_control_groups(engine_catalog):
+        section_key = group.metadata.get("section") if isinstance(group.metadata, Mapping) else ""
+        target = str(section_key or _section_for_group(group))
+        configured_sections.setdefault(target, []).append(group)
+    for raw_section in sections:
+        section = _coerce(raw_section, ControlSection, {"key": "custom", "title": "Custom"})
+        configured_sections.setdefault(str(section.key or "custom"), []).extend(
+            _coerce(group, ControlGroup, {"key": "custom", "title": "Custom"}) for group in section.groups
+        )
+    ordered = []
+    titles = {
+        "features": ("Features", "PersonaConsole surface switches and PersonaEngine feature gates."),
+        "appearance": ("Appearance & Navigation", "Branding, theme tokens, and navigation labels."),
+        "runtime": ("Runtime Behavior", "Cadence, policy, canary, memory, media, and worker controls."),
+        "persona": ("Persona Extensions", "Runtime-owned persona pack, profile, memory, and voice/media controls."),
+        "integrations": ("Integrations", "Connectors, provider routes, token posture, and adapter references."),
+        "advanced": ("Advanced & Audit", "Read-only previews, schema references, and runtime-owned audit actions."),
+    }
+    for section_key in ("features", "appearance", "runtime", "persona", "integrations", "advanced"):
+        groups = tuple(group for group in configured_sections.get(section_key, ()) if group.items)
+        if not groups:
+            continue
+        title_text, description = titles[section_key]
+        ordered.append(ControlSection(section_key, title_text, description, groups))
+    for section_key, raw_groups in configured_sections.items():
+        if section_key in titles:
+            continue
+        groups = tuple(group for group in raw_groups if group.items)
+        if groups:
+            ordered.append(ControlSection(section_key, _human_label(section_key), "Runtime-supplied controls.", groups))
+    return ControlCenterConfig(
+        enabled=True,
+        key=key,
+        title=title,
+        subtitle=subtitle,
+        form_action=form_action,
+        form_method=form_method,
+        sections=tuple(ordered),
+        actions=actions,
+        messages=messages,
+        banners=banners,
+        save_label=save_label,
+        reset_href=reset_href,
+    )
+
+
+def _base_control_sections() -> dict[str, list[ControlGroup]]:
+    return {"features": [], "appearance": [], "runtime": [], "persona": [], "integrations": [], "advanced": []}
+
+
+def _section_for_group(group: ControlGroup) -> str:
+    if group.key.startswith("engine-feature"):
+        return "features"
+    if "persona" in group.key or "extension" in group.key:
+        return "persona"
+    if "provider" in group.key or "connector" in group.key:
+        return "integrations"
+    if "advanced" in group.key or "registry" in group.key:
+        return "advanced"
+    return "runtime"
+
+
+def _console_feature_controls(
+    console_config: PersonaConsoleConfig | Mapping[str, object] | None,
+    surface_registry: SurfaceRegistryConfig | Mapping[str, object] | None,
+) -> list[ControlItem]:
+    feature_map: dict[str, bool] = {}
+    summaries: dict[str, str] = {}
+    if console_config is not None:
+        config_data = _mapping(console_config)
+        feature_map.update({str(key): bool(value) for key, value in _mapping(config_data.get("features")).items()})
+    if surface_registry is not None:
+        registry = _coerce(surface_registry, SurfaceRegistryConfig)
+        feature_map.update({str(key): bool(value) for key, value in registry.features.items() if str(key) not in feature_map})
+        for raw_surface in registry.surfaces:
+            surface = _coerce(raw_surface, SurfaceRegistration, {"key": "surface", "label": "Surface"})
+            if surface.feature:
+                feature_map.setdefault(surface.feature, bool(surface.enabled))
+                summaries.setdefault(surface.feature, surface.summary or f"Surface: {surface.label}")
+    return [
+        ControlItem(
+            key=f"pc-feature-{_key(feature, 'feature')}",
+            label=_human_label(feature),
+            name=f"pc.feature.{feature}",
+            kind="switch",
+            value=enabled,
+            help_text=summaries.get(feature, f"PersonaConsole feature flag for {feature}."),
+            owner="Console",
+            source_path=f"pc.feature.{feature}",
+            section="features",
+            status="enabled" if enabled else "disabled",
+            tone="good" if enabled else "warn",
+            restart_required=True,
+            metadata={"feature_key": feature},
+        )
+        for feature, enabled in sorted(feature_map.items())
+    ]
+
+
+def _appearance_control_groups(console_config: PersonaConsoleConfig | Mapping[str, object] | None) -> list[ControlGroup]:
+    if console_config is None:
+        return []
+    config_data = _mapping(console_config)
+    brand = _brand_model(console_config)
+    theme_raw = config_data.get("theme")
+    theme = theme_raw if isinstance(theme_raw, ThemeTokens) else ThemeTokens(**_mapping(theme_raw)) if _mapping(theme_raw) else ThemeTokens()
+    brand_items = (
+        ControlItem("pc-brand-name", "Brand title", "pc.brand.name", "text", brand.admin_title or brand.name, owner="Console", source_path="pc.brand.name"),
+        ControlItem("pc-brand-subtitle", "Brand subtitle", "pc.brand.admin_subtitle", "text", brand.admin_subtitle, owner="Console", source_path="pc.brand.admin_subtitle"),
+        ControlItem("pc-brand-icon", "Admin icon URL", "pc.brand.small_logo_url", "url", brand.small_logo_url, owner="Console", source_path="pc.brand.small_logo_url"),
+        ControlItem("pc-brand-home", "Brand home URL", "pc.brand.home_url", "url", brand.home_url, owner="Console", source_path="pc.brand.home_url"),
+    )
+    theme_items = (
+        ControlItem("pc-theme-accent", "Accent", "pc.theme.accent", "color", theme.accent, owner="Console", source_path="pc.theme.accent"),
+        ControlItem("pc-theme-background", "Background", "pc.theme.background", "text", theme.background, owner="Console", source_path="pc.theme.background"),
+        ControlItem("pc-theme-surface", "Surface", "pc.theme.surface", "text", theme.surface, owner="Console", source_path="pc.theme.surface"),
+        ControlItem("pc-theme-text", "Text", "pc.theme.text", "text", theme.text, owner="Console", source_path="pc.theme.text"),
+    )
+    nav_items: list[ControlItem] = []
+    for index, raw_group in enumerate(config_data.get("nav_groups", ()) or ()):
+        group = _mapping(raw_group)
+        label = str(group.get("label", f"Group {index + 1}"))
+        nav_items.append(
+            ControlItem(
+                f"pc-nav-group-{index}",
+                f"Navigation group {index + 1}",
+                f"pc.nav_groups.{index}.label",
+                "text",
+                label,
+                owner="Console",
+                source_path=f"pc.nav_groups.{index}.label",
+                help_text="Runtime-owned label for a grouped admin navigation menu.",
+            )
+        )
+    groups = [
+        ControlGroup("pc-branding", "Branding", "Admin shell brand assets and header target.", "Console", brand_items),
+        ControlGroup("pc-theme", "Theme Tokens", "Shared admin color tokens.", "Console", theme_items),
+    ]
+    if nav_items:
+        groups.append(ControlGroup("pc-navigation", "Navigation", "Grouped admin navigation labels.", "Console", tuple(nav_items)))
+    return groups
+
+
+def _surface_registry_control_groups(surface_registry: SurfaceRegistryConfig | Mapping[str, object] | None) -> list[ControlGroup]:
+    if surface_registry is None:
+        return []
+    registry = _coerce(surface_registry, SurfaceRegistryConfig)
+    preview = {
+        "surface_count": len(registry.surfaces),
+        "feature_count": len(registry.features),
+        "theme_key": registry.theme_key,
+    }
+    items = [
+        ControlItem(
+            "pc-surface-registry-preview",
+            "Surface registry preview",
+            "pc.surface_registry",
+            "json",
+            preview,
+            owner="Console",
+            source_path="pc.surface_registry",
+            readonly=True,
+            display_value=json.dumps(preview, indent=2, sort_keys=True),
+            help_text="Read-only summary of configured shared admin surfaces.",
+        )
+    ]
+    return [ControlGroup("pc-surface-registry", "Surface Registry", "Read-only composition coverage.", "Console", tuple(items))]
+
+
+def _engine_control_groups(engine_catalog: Mapping[str, object] | object | None) -> list[ControlGroup]:
+    if engine_catalog is None:
+        return []
+    data = _mapping(engine_catalog)
+    groups: list[ControlGroup] = []
+    for raw_group in data.get("groups", ()) or ():
+        group_data = _mapping(raw_group)
+        section = str(group_data.get("section") or "runtime")
+        items = tuple(_engine_control_item(raw_control, section) for raw_control in group_data.get("controls", ()) or ())
+        groups.append(
+            ControlGroup(
+                str(group_data.get("key") or "engine-controls"),
+                str(group_data.get("label") or group_data.get("title") or "Engine Controls"),
+                str(group_data.get("description") or ""),
+                str(group_data.get("owner") or "Engine"),
+                items,
+                metadata={"section": section},  # type: ignore[arg-type]
+            )
+        )
+    return groups
+
+
+def _engine_control_item(raw_control: Mapping[str, object] | object, section: str) -> ControlItem:
+    data = _mapping(raw_control)
+    options = tuple(
+        ControlOption(
+            str(_mapping(option).get("key") or ""),
+            str(_mapping(option).get("label") or _mapping(option).get("key") or ""),
+            bool(_mapping(option).get("selected", False)),
+            bool(_mapping(option).get("disabled", False)),
+            str(_mapping(option).get("description") or ""),
+        )
+        for option in data.get("options", ()) or ()
+    )
+    source_path = str(data.get("source_path") or data.get("sourcePath") or data.get("name") or data.get("key") or "")
+    return ControlItem(
+        key=str(data.get("key") or _key(source_path, "engine-control")),
+        label=str(data.get("label") or _human_label(source_path)),
+        name=source_path,
+        kind=str(data.get("kind") or "text"),
+        value=data.get("value", ""),
+        display_value=str(data.get("display_value") or data.get("displayValue") or ""),
+        help_text=str(data.get("description") or ""),
+        owner=str(data.get("owner") or "Engine"),
+        source_path=source_path,
+        section=str(data.get("section") or section),
+        status=str(data.get("status") or ""),
+        tone=str(data.get("tone") or "neutral"),
+        restart_required=bool(data.get("restart_required") or data.get("restartRequired") or False),
+        secret=bool(data.get("secret") or False),
+        readonly=bool(data.get("readonly") or False),
+        disabled=bool(data.get("disabled") or False),
+        options=options,
+        metadata=_mapping(data.get("metadata")),
+    )
+
+
+def _human_label(value: object) -> str:
+    text = str(value or "").split(".")[-1]
+    return text.replace("_", " ").replace("-", " ").title()

@@ -6,6 +6,7 @@ from examples.fixture_app import (
     render_admin_login_fixture_page,
     render_admin_password_change_fixture_page,
     render_chat_fixture_page,
+    render_control_center_fixture_page,
     render_fixture_page,
     render_login_fixture_page,
     render_public_settings_fixture_page,
@@ -35,6 +36,7 @@ def test_fixture_uses_public_personaconsole_config_name():
     assert config.features["agent_ops"] is True
     assert config.features["terminal_stream"] is True
     assert config.features["settings_editor"] is True
+    assert config.features["control_center"] is True
     assert config.features["system_health"] is True
     assert config.features["infrastructure_posture"] is True
     assert config.features["journal"] is True
@@ -304,6 +306,24 @@ def test_fixture_renders_public_presence_pages_with_generic_data():
     assert "Reusable splash, login, chat, media, and connector settings." in settings
     assert "private-login.example" not in splash + login + chat + settings
     assert "private-chat.example" not in splash + login + chat + settings
+
+
+def test_fixture_renders_control_center_page_with_generic_data():
+    html = render_control_center_fixture_page(static_base_url="/static-fixture")
+
+    assert "Control Center" in html
+    assert "Features" in html
+    assert "Appearance &amp; Navigation" in html
+    assert "Runtime Behavior" in html
+    assert "Persona Extensions" in html
+    assert "Integrations" in html
+    assert "Advanced &amp; Audit" in html
+    assert "pc.feature.messages" in html
+    assert "engine.feature.workflows" in html
+    assert "engine.projection.cadence_settings.max_chunk_chars" in html
+    assert "runtime.control.extra_sections" in html
+    assert "provider-alpha / model-small" in html
+    assert "raw fixture private" not in html
 
 
 def test_fixture_renders_admin_auth_pages_with_generic_data():
