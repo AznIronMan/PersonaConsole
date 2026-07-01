@@ -701,6 +701,90 @@ def _control_display_value(item: ControlItem, *, pending: bool = False) -> str:
     return _display(item.value)
 
 
+def _control_original_value(item: ControlItem) -> str:
+    if _control_is_secret(item):
+        return ""
+    if isinstance(item.value, (Mapping, list, tuple)):
+        try:
+            return json.dumps(_control_detail_value(item.value), sort_keys=True, default=str)
+        except TypeError:
+            return _display(_control_detail_value(item.value))
+    return _display(item.value)
+
+
+def _control_sensitive_key(key: object) -> bool:
+    normalized = str(key or "").strip().lower().replace("-", "_")
+    markers = (
+        "api_key",
+        "apikey",
+        "authorization",
+        "bearer",
+        "credential",
+        "password",
+        "private_key",
+        "secret",
+        "token",
+    )
+    return any(marker in normalized for marker in markers)
+
+
+def _control_sensitive_value(value: object) -> bool:
+    text = str(value or "").strip()
+    lowered = text.lower()
+    return bool(
+        text
+        and (
+            lowered.startswith(("bearer ", "sk-", "xox", "ghp_", "gho_", "github_pat_"))
+            or "api_key=" in lowered
+            or "authorization:" in lowered
+        )
+    )
+
+
+def _control_detail_value(value: Any, *, key: object = "", depth: int = 0) -> Any:
+    if _control_sensitive_key(key):
+        return "REDACTED" if value not in (None, "", (), [], {}) else ""
+    if depth > 6:
+        return "..."
+    if isinstance(value, Mapping):
+        return {str(child_key): _control_detail_value(child, key=child_key, depth=depth + 1) for child_key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_control_detail_value(child, depth=depth + 1) for child in value]
+    if _control_sensitive_value(value):
+        return "REDACTED"
+    return value
+
+
+def _control_detail_payload(item: ControlItem) -> Any:
+    if _control_is_secret(item):
+        return None
+    metadata = item.metadata if isinstance(item.metadata, Mapping) else {}
+    for detail_key in ("details", "detail", "detail_payload", "detailPayload"):
+        if detail_key in metadata:
+            detail = metadata.get(detail_key)
+            if isinstance(detail, (Mapping, list, tuple)):
+                return _control_detail_value(detail)
+    if isinstance(item.value, (Mapping, list, tuple)):
+        return _control_detail_value(item.value)
+    return None
+
+
+def _control_detail_html(item: ControlItem) -> str:
+    payload = _control_detail_payload(item)
+    if payload in (None, {}, [], ()):
+        return ""
+    try:
+        text = json.dumps(payload, indent=2, sort_keys=True, default=str)
+    except TypeError:
+        text = _display(payload)
+    return (
+        '<details class="pc-control-detail">'
+        '<summary>View details</summary>'
+        f'<pre>{escape(text)}</pre>'
+        '</details>'
+    )
+
+
 def _control_option_html(raw_option: ControlOption | Mapping[str, object] | str, selected_value: str) -> str:
     option = _coerce(raw_option, ControlOption)
     key = str(option.key)
@@ -736,7 +820,7 @@ def _control_control_html(item: ControlItem, item_id: str) -> str:
     required = bool(item.required)
     value = _control_value_for_edit(item)
     value_text = _display(value)
-    original = "" if _control_is_secret(item) else _display(item.value)
+    original = _control_original_value(item)
     common = _attrs(
         id=item_id,
         name=name,
@@ -810,7 +894,10 @@ def _control_item_html(raw_item: ControlItem | Mapping[str, object]) -> str:
         classes.append("is-secret")
     status = f'<span class="pc-control-badge pc-dashboard-tone-{_tone(item.status)}">{escape(str(item.status))}</span>' if item.status else ""
     owner = f'<span class="pc-control-owner">{escape(str(item.owner or "Runtime"))}</span>'
+    mode_label = "disabled" if item.disabled else "read-only" if item.readonly else "editable"
+    mode = f'<span class="pc-control-badge">{mode_label}</span>'
     required = '<span class="pc-control-badge">required</span>' if item.required else ""
+    redacted = '<span class="pc-control-badge">redacted</span>' if _control_is_secret(item) else ""
     restart = '<span class="pc-control-restart">restart required</span>' if restart_required else ""
     changed_pill = '<span class="pc-control-changed">changed</span>' if changed else ""
     dangerous = '<span class="pc-control-danger">danger</span>' if item.dangerous else ""
@@ -825,10 +912,10 @@ def _control_item_html(raw_item: ControlItem | Mapping[str, object]) -> str:
         f'<article class="{" ".join(classes)}" data-pc-control-item data-pc-settings-field data-control-key="{escape(key, quote=True)}">'
         '<div class="pc-control-item-head">'
         f'<div><label id="{escape(item_id, quote=True)}-label" for="{escape(item_id, quote=True)}">{escape(label)}</label>{source}</div>'
-        f'<div class="pc-control-flags">{owner}{status}{required}{changed_pill}{restart}{dangerous}</div>'
+        f'<div class="pc-control-flags">{owner}{mode}{status}{required}{redacted}{changed_pill}{restart}{dangerous}</div>'
         '</div>'
         f'<div class="pc-control-input">{_control_control_html(item, item_id)}</div>'
-        f'{preview}{help_text}{_messages_html(item.messages)}{_badges_html(item.badges)}{_actions_html(item.actions)}'
+        f'{preview}{help_text}{_control_detail_html(item)}{_messages_html(item.messages)}{_badges_html(item.badges)}{_actions_html(item.actions)}'
         '</article>'
     )
 

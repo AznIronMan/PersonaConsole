@@ -104,6 +104,58 @@ def test_control_center_renders_switches_changes_actions_and_redacted_secret():
     assert "new secret staged" not in html
 
 
+def test_control_center_renders_structured_detail_inspector_and_mode_badges():
+    raw_secret = "raw-structured-secret"
+    html = render_control_center(
+        ControlCenterConfig(
+            enabled=True,
+            sections=[
+                ControlSection(
+                    "advanced",
+                    "Advanced",
+                    groups=[
+                        ControlGroup(
+                            "schema",
+                            "Schema",
+                            items=[
+                                ControlItem(
+                                    "provider-route-schema",
+                                    "ProviderRoute",
+                                    "engine.schema.ProviderRoute",
+                                    "readonly",
+                                    {
+                                        "model": "ProviderRoute",
+                                        "fields": ["provider", "model", "lane", "fallback_allowed"],
+                                        "api_key": raw_secret,
+                                    },
+                                    display_value="4 fields",
+                                    readonly=True,
+                                ),
+                                ControlItem(
+                                    "provider",
+                                    "Provider",
+                                    "runtime.llm.provider",
+                                    "select",
+                                    "openai",
+                                    options=[ControlOption("local", "Local"), ControlOption("openai", "OpenAI")],
+                                ),
+                            ],
+                        )
+                    ],
+                )
+            ],
+        )
+    )
+
+    assert "4 fields" in html
+    assert "View details" in html
+    assert "fallback_allowed" in html
+    assert "raw-structured-secret" not in html
+    assert "REDACTED" in html
+    assert "read-only" in html
+    assert "editable" in html
+
+
 def test_control_center_feature_gate_and_empty_state():
     config = ControlCenterConfig(enabled=True)
 
