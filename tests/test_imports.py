@@ -19,6 +19,7 @@ def test_personaconsole_is_canonical_api():
     assert personaconsole.AVAILABILITY_MONITOR_FEATURE == "availability_monitor"
     assert personaconsole.ADMIN_LIST_FEATURE == "admin_list"
     assert personaconsole.ADMIN_ACCESS_FEATURE == "admin_access"
+    assert personaconsole.PLATFORM_IDENTITY_BLOCKS_FEATURE == "platform_identity_blocks"
     assert personaconsole.AdminLoginPageConfig
     assert personaconsole.AdminPasswordChangePageConfig
     assert personaconsole.DETAIL_DOSSIER_FEATURE == "detail_dossier"
@@ -61,6 +62,7 @@ def test_personaconsole_is_canonical_api():
     assert "render_availability_monitor_surface" in personaconsole.__all__
     assert "render_admin_list_surface" in personaconsole.__all__
     assert "render_admin_access_surface" in personaconsole.__all__
+    assert "render_platform_identity_blocks_surface" in personaconsole.__all__
     assert "render_admin_login_page" in personaconsole.__all__
     assert "render_admin_password_change_page" in personaconsole.__all__
     assert "render_detail_dossier_surface" in personaconsole.__all__
@@ -94,6 +96,7 @@ def test_legacy_import_shims_reexport_canonical_api():
         assert legacy.render_availability_monitor_surface is personaconsole.render_availability_monitor_surface
         assert legacy.render_admin_list_surface is personaconsole.render_admin_list_surface
         assert legacy.render_admin_access_surface is personaconsole.render_admin_access_surface
+        assert legacy.render_platform_identity_blocks_surface is personaconsole.render_platform_identity_blocks_surface
         assert legacy.render_admin_login_page is personaconsole.render_admin_login_page
         assert legacy.render_admin_password_change_page is personaconsole.render_admin_password_change_page
         assert legacy.render_detail_dossier_surface is personaconsole.render_detail_dossier_surface
@@ -136,6 +139,7 @@ def test_legacy_submodules_reexport_canonical_implementation():
         "adapter_health": "render_adapter_health_panel",
         "admin_list": "render_admin_list_surface",
         "admin_access": "render_admin_access_surface",
+        "platform_identity_blocks": "render_platform_identity_blocks_surface",
         "admin_auth_pages": "render_admin_login_page",
         "availability_monitor": "render_availability_monitor_surface",
         "detail_dossier": "render_detail_dossier_surface",
@@ -191,4 +195,4 @@ def test_public_package_metadata_matches_runtime_version():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
     assert pyproject["project"]["name"] == "personaconsole"
-    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.52"
+    assert pyproject["project"]["version"] == personaconsole.__version__ == "1.0.53"

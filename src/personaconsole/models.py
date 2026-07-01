@@ -764,6 +764,56 @@ class AdminListSurfaceConfig:
 
 
 @dataclass(frozen=True)
+class PlatformIdentityBlockRow:
+    key: str
+    label: str
+    platform: str = ""
+    person_label: str = ""
+    person_key: str = ""
+    trust_label: str = ""
+    posture_label: str = ""
+    internal_block_state: str = "unknown"
+    internal_block_tone: str = ""
+    internal_reason: str = ""
+    internal_updated: str = ""
+    platform_block_status: str = "not_requested"
+    platform_block_tone: str = ""
+    platform_reason: str = ""
+    platform_updated: str = ""
+    provider_label: str = ""
+    job_label: str = ""
+    updated_age: str = ""
+    summary: str = ""
+    href: str = ""
+    privacy_scope: str = ""
+    safe_alternate: str = ""
+    safe_label: str = ""
+    badges: Sequence[SurfaceBadge | Mapping[str, object] | str] = field(default_factory=tuple)
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class PlatformIdentityBlocksSurfaceConfig:
+    enabled: bool = False
+    feature: str = "platform_identity_blocks"
+    key: str = "platform-identity-blocks"
+    title: str = "Platform Identity Blocks"
+    subtitle: str = "Internal runtime suppression and provider-side block-job posture"
+    status: str = ""
+    status_tone: str = "neutral"
+    tabs: Sequence[StatusTab | Mapping[str, object]] = field(default_factory=tuple)
+    filters: Sequence[DashboardFilter | Mapping[str, object]] = field(default_factory=tuple)
+    metrics: Sequence[DashboardMetric | Mapping[str, object]] = field(default_factory=tuple)
+    rows: Sequence[PlatformIdentityBlockRow | Mapping[str, object]] = field(default_factory=tuple)
+    live_refresh: LiveRefreshConfig | Mapping[str, object] | None = None
+    actions: Sequence[SurfaceAction | Mapping[str, object]] = field(default_factory=tuple)
+    sort_key: str = ""
+    sort_direction: str = "asc"
+    sort_label: str = ""
+    empty_label: str = "No platform identity block rows configured."
+
+
+@dataclass(frozen=True)
 class DetailDossierHeader:
     title: str = ""
     subtitle: str = ""

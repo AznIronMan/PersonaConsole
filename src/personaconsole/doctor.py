@@ -62,6 +62,13 @@ _ADMIN_ACCESS_EXPORTS = (
     "admin_access_feature_enabled",
     "render_admin_access_surface",
 )
+_PLATFORM_IDENTITY_BLOCKS_EXPORTS = (
+    "PLATFORM_IDENTITY_BLOCKS_FEATURE",
+    "PlatformIdentityBlockRow",
+    "PlatformIdentityBlocksSurfaceConfig",
+    "platform_identity_blocks_feature_enabled",
+    "render_platform_identity_blocks_surface",
+)
 _ADMIN_AUTH_PAGE_EXPORTS = (
     "AdminAuthLink",
     "AdminAuthSummaryItem",
@@ -492,6 +499,7 @@ def run_consumer_integration_doctor(
         checks.extend(_export_checks(module, "availability_monitor_exports", _AVAILABILITY_MONITOR_EXPORTS))
         checks.extend(_export_checks(module, "admin_list_exports", _ADMIN_LIST_EXPORTS))
         checks.extend(_export_checks(module, "admin_access_exports", _ADMIN_ACCESS_EXPORTS))
+        checks.extend(_export_checks(module, "platform_identity_blocks_exports", _PLATFORM_IDENTITY_BLOCKS_EXPORTS))
         checks.extend(_export_checks(module, "admin_auth_page_exports", _ADMIN_AUTH_PAGE_EXPORTS))
         checks.extend(_export_checks(module, "detail_dossier_exports", _DETAIL_DOSSIER_EXPORTS))
         checks.extend(_export_checks(module, "media_library_exports", _MEDIA_LIBRARY_EXPORTS))
@@ -519,6 +527,7 @@ def run_consumer_integration_doctor(
         checks.append(_availability_monitor_render_check(module))
         checks.append(_admin_list_render_check(module))
         checks.append(_admin_access_render_check(module))
+        checks.append(_platform_identity_blocks_render_check(module))
         checks.append(_admin_auth_page_render_check(module))
         checks.append(_detail_dossier_render_check(module))
         checks.append(_media_library_render_check(module))
@@ -991,6 +1000,117 @@ def _admin_access_render_check(module: Any) -> DoctorCheck:
         and raw_url not in html
     )
     return _check(ok, "admin_access_render", "admin access renders sessions, rules, audits, lockouts, and redaction")
+
+
+def _platform_identity_blocks_render_check(module: Any) -> DoctorCheck:
+    raw_value = "raw-doctor-private-platform-identity"
+    raw_url = "/doctor/raw-private-platform-identity"
+    try:
+        policy = module.OwnerPrivateScopePolicy(owner_private_scopes={"owner_private": ("owner",)})
+        operator = module.AdminPrivacyContext(
+            access_tier="operator",
+            viewer_person_key="operator",
+            allowed_scopes=("public", "operator"),
+        )
+        html = module.render_platform_identity_blocks_surface(
+            module.PlatformIdentityBlocksSurfaceConfig(
+                enabled=True,
+                title="Identity Blocks",
+                status="review",
+                status_tone="warn",
+                tabs=[
+                    module.StatusTab("All", "/identity-blocks", 4, active=True),
+                    module.StatusTab("Failed", "/identity-blocks?status=failed", 1, tone="bad"),
+                ],
+                filters=[
+                    module.DashboardFilter("Internal blocked", "/identity-blocks?internal=blocked", key="internal", active=True),
+                    module.DashboardFilter("Platform pending", "/identity-blocks?platform=pending", key="platform"),
+                ],
+                metrics=[
+                    module.DashboardMetric("Internal blocked", 2, detail="runtime-owned", tone="bad"),
+                    module.DashboardMetric("Platform pending", 1, detail="provider job", tone="warn"),
+                ],
+                rows=[
+                    module.PlatformIdentityBlockRow(
+                        "blocked",
+                        "Example handle",
+                        "example-chat",
+                        "Example Person",
+                        "example-person",
+                        "known",
+                        "suppressed",
+                        "blocked",
+                        "bad",
+                        "Runtime suppression active.",
+                        "1m ago",
+                        "pending",
+                        "warn",
+                        "Provider job queued.",
+                        "2m ago",
+                        "Example Provider",
+                        "job-1",
+                        "2m",
+                        "Internal block and provider execution are tracked separately.",
+                    ),
+                    module.PlatformIdentityBlockRow(
+                        "private",
+                        raw_value,
+                        "example-chat",
+                        "Owner Private",
+                        "owner",
+                        "owner",
+                        "suppressed",
+                        "blocked",
+                        "bad",
+                        raw_value,
+                        "3m ago",
+                        "failed",
+                        "bad",
+                        raw_value,
+                        "3m ago",
+                        "Example Provider",
+                        "job-2",
+                        "3m",
+                        raw_value,
+                        raw_url,
+                        privacy_scope="owner_private",
+                        safe_alternate="safe platform identity summary",
+                        safe_label="Owner-private identity",
+                    ),
+                    module.PlatformIdentityBlockRow("cancelled", "Cancelled job", "example-chat", platform_block_status="cancelled"),
+                    module.PlatformIdentityBlockRow("not-requested", "Not requested", "example-chat", platform_block_status="not_requested"),
+                    module.PlatformIdentityBlockRow("not-applicable", "Not applicable", "email", platform_block_status="not_applicable"),
+                ],
+                sort_key="platform_block_status",
+                sort_direction="desc",
+                sort_label="Platform block status",
+                actions=[module.SurfaceAction("Refresh posture", "/identity-blocks/refresh", "info", method="post")],
+            ),
+            privacy_policy=policy,
+            privacy_context=operator,
+        )
+    except Exception as exc:
+        return _check(False, "platform_identity_blocks_render", "platform identity blocks render failed", f"{exc.__class__.__name__}: {exc}")
+    ok = (
+        "pc-platform-block-surface" in html
+        and "Identity Blocks" in html
+        and "Internal blocked" in html
+        and "Platform pending" in html
+        and "Example handle" in html
+        and "Internal" in html
+        and "Platform" in html
+        and "Pending" in html
+        and "Failed" in html
+        and "Cancelled" in html
+        and "Not Requested" in html
+        and "Not Applicable" in html
+        and "Sorted by Platform block status" in html
+        and "safe platform identity summary" in html
+        and "Owner-private identity" in html
+        and raw_value not in html
+        and raw_url not in html
+    )
+    return _check(ok, "platform_identity_blocks_render", "platform identity blocks render internal/platform states with redaction")
 
 
 def _admin_auth_page_render_check(module: Any) -> DoctorCheck:

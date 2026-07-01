@@ -1120,6 +1120,50 @@ summaries, and audit rows. Raw device details, private principals, blocklist
 targets, and sensitive audit summaries should use `privacy_scope` plus
 `safe_alternate`; mutation endpoints should be runtime-owned handoffs.
 
+## Platform Identity Block State Surface
+
+`render_platform_identity_blocks_surface(...)` renders platform-account block
+posture where a consumer runtime needs to show internal/runtime suppression
+separately from provider-side block execution. The shared surface displays
+sanitized identity labels, linked person labels, trust/posture labels, internal
+block state, provider/platform block-job status, reasons, update age, filters,
+metrics, live refresh controls, and runtime-owned action links.
+
+```python
+from personaconsole import (
+    PLATFORM_IDENTITY_BLOCKS_FEATURE,
+    PlatformIdentityBlockRow,
+    PlatformIdentityBlocksSurfaceConfig,
+    render_platform_identity_blocks_surface,
+)
+
+html = render_platform_identity_blocks_surface(
+    PlatformIdentityBlocksSurfaceConfig(
+        enabled=True,
+        rows=[
+            PlatformIdentityBlockRow(
+                "example-chat-pending",
+                "Example chat account",
+                platform="example-chat",
+                person_label="Example Person",
+                internal_block_state="blocked",
+                internal_reason="Runtime suppression is active.",
+                platform_block_status="pending",
+                platform_reason="Provider block job queued.",
+            )
+        ],
+    ),
+    features={PLATFORM_IDENTITY_BLOCKS_FEATURE: True},
+)
+```
+
+Consumers own database reads/writes, raw platform IDs, provider calls, block and
+unblock decisions, job retry/cancel execution, audit recording, auth, and
+storage. Public examples should use generic account labels only. Rows that
+would reveal private identities or reasons should use `privacy_scope`,
+`safe_label`, and `safe_alternate` so operators see a safe summary while owners
+with the matching scope can see the raw runtime-provided detail.
+
 ## Admin Authentication Pages
 
 Admin auth pages are reusable HTML shells for runtime operator login and forced

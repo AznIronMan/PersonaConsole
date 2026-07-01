@@ -77,6 +77,15 @@ def test_fixture_renders_shared_shell_with_generic_data():
     assert "Owner-private access audit summarized for operators." in html
     assert "raw fixture private admin access" not in html
     assert "/access/raw-private" not in html
+    assert "pc-platform-block-surface" in html
+    assert "Platform Identity Blocks" in html
+    assert "Example chat account" in html
+    assert "Provider block job queued." in html
+    assert "Owner-private platform identity summarized for operators." in html
+    assert "raw fixture private platform identity" not in html
+    assert "raw fixture private internal block reason" not in html
+    assert "raw fixture private provider block failure" not in html
+    assert "/identity-blocks/raw-private" not in html
     assert "pc-detail-dossier-surface" in html
     assert "Example Detail" in html
     assert "Owner-private dossier field summarized for operators." in html

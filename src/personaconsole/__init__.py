@@ -21,6 +21,11 @@ from .admin_access import (
     admin_access_feature_enabled,
     render_admin_access_surface,
 )
+from .platform_identity_blocks import (
+    PLATFORM_IDENTITY_BLOCKS_FEATURE,
+    platform_identity_blocks_feature_enabled,
+    render_platform_identity_blocks_surface,
+)
 from .admin_auth_pages import (
     render_admin_login_page,
     render_admin_password_change_page,
@@ -99,6 +104,8 @@ from .models import (
     AdminListRow,
     AdminListSurfaceConfig,
     AdminPasswordChangePageConfig,
+    PlatformIdentityBlockRow,
+    PlatformIdentityBlocksSurfaceConfig,
     AvailabilityEventRow,
     AvailabilityMonitorRow,
     AvailabilityMonitorSurfaceConfig,
@@ -458,6 +465,7 @@ __all__ = [
     "AGENT_OPS_FEATURE",
     "ADMIN_LIST_FEATURE",
     "ADMIN_ACCESS_FEATURE",
+    "PLATFORM_IDENTITY_BLOCKS_FEATURE",
     "AdapterHealthCard",
     "AdapterHealthConfig",
     "AdapterHealthSparkBucket",
@@ -480,6 +488,8 @@ __all__ = [
     "AdminListRow",
     "AdminListSurfaceConfig",
     "AdminPasswordChangePageConfig",
+    "PlatformIdentityBlockRow",
+    "PlatformIdentityBlocksSurfaceConfig",
     "AVAILABILITY_MONITOR_FEATURE",
     "AvailabilityEventRow",
     "AvailabilityMonitorRow",
@@ -600,6 +610,7 @@ __all__ = [
     "OpsStatusCard",
     "OpsTableRow",
     "PEOPLE_FEATURE",
+    "platform_identity_blocks_feature_enabled",
     "PERSONA_EDITOR_FEATURE",
     "PERSONA_RUNTIME_FEATURE",
     "AdminPrivacyContext",
@@ -751,6 +762,7 @@ __all__ = [
     "render_admin_login_page",
     "render_admin_list_surface",
     "render_admin_password_change_page",
+    "render_platform_identity_blocks_surface",
     "render_agent_ops_surface",
     "render_availability_monitor_surface",
     "render_dashboard_activity",
@@ -839,7 +851,7 @@ __all__ = [
     "WorkerScheduleRow",
 ]
 
-__version__ = "1.0.52"
+__version__ = "1.0.53"
 
 
 def configure_jinja_loader(*args, **kwargs):

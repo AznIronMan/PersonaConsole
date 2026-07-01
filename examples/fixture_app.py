@@ -19,6 +19,7 @@ from personaconsole import (
     MESSAGES_FEATURE,
     OPERATIONS_FEATURE,
     PEOPLE_FEATURE,
+    PLATFORM_IDENTITY_BLOCKS_FEATURE,
     BRIDGE_OPS_FEATURE,
     COMMAND_INTAKE_FEATURE,
     CONTROL_CENTER_FEATURE,
@@ -55,6 +56,8 @@ from personaconsole import (
     AdminListSurfaceConfig,
     AdminPrivacyContext,
     AdminPasswordChangePageConfig,
+    PlatformIdentityBlockRow,
+    PlatformIdentityBlocksSurfaceConfig,
     AvailabilityEventRow,
     AvailabilityMonitorRow,
     AvailabilityMonitorSurfaceConfig,
@@ -232,6 +235,7 @@ from personaconsole import (
     register_static_assets,
     render_bridge_ops_surface,
     render_admin_access_surface,
+    render_platform_identity_blocks_surface,
     render_admin_login_page,
     render_admin_password_change_page,
     render_chat_page,
@@ -493,6 +497,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             MEDIA_FEATURE: True,
             ADMIN_ACCESS_FEATURE: True,
             ADMIN_LIST_FEATURE: True,
+            PLATFORM_IDENTITY_BLOCKS_FEATURE: True,
             PEOPLE_FEATURE: True,
             REVIEW_FEATURE: True,
             JOURNAL_FEATURE: True,
@@ -530,6 +535,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
                     NavItem("Generic List", "/lists", active="lists", badge="lists", feature=ADMIN_LIST_FEATURE),
                     NavItem("People", "/people", active="people", badge="people", feature=PEOPLE_FEATURE),
                     NavItem("Media", "/media", active="media", badge="media", feature=MEDIA_FEATURE),
+                    NavItem("Identity Blocks", "/identity-blocks", active="identity-blocks", badge="identity_blocks", feature=PLATFORM_IDENTITY_BLOCKS_FEATURE),
                 ],
                 key="conversations",
             ),
@@ -576,6 +582,7 @@ def build_fixture_config(*, static_base_url: str = "/persona-console/static") ->
             "messages": 12,
             "lists": 2,
             "people": 3,
+            "identity_blocks": 5,
             "media": 9,
             "review": 4,
             "journal": 5,
@@ -976,6 +983,96 @@ def render_dashboard_fragment() -> str:
             actions=[SurfaceAction("Refresh access", "/access/refresh", "info", method="post")],
         ),
         features={ADMIN_ACCESS_FEATURE: True},
+        privacy_policy=privacy_policy,
+        privacy_context=operator_context,
+    )
+    platform_identity_blocks_surface = render_platform_identity_blocks_surface(
+        PlatformIdentityBlocksSurfaceConfig(
+            enabled=True,
+            title="Platform Identity Blocks",
+            subtitle="Internal runtime suppression shown separately from provider block execution.",
+            status="review",
+            status_tone="warn",
+            tabs=[
+                StatusTab("All", "/identity-blocks", 5, active=True),
+                StatusTab("Platform failed", "/identity-blocks?platform=failed", 1, tone="bad"),
+            ],
+            filters=[
+                DashboardFilter("Internal blocked", "/identity-blocks?internal=blocked", key="internal", active=True),
+                DashboardFilter("Provider pending", "/identity-blocks?platform=pending", key="pending"),
+            ],
+            metrics=[
+                DashboardMetric("Internal blocked", 2, detail="runtime-owned", tone="bad"),
+                DashboardMetric("Provider pending", 1, detail="adapter job", tone="warn"),
+            ],
+            rows=[
+                PlatformIdentityBlockRow(
+                    "example-chat-pending",
+                    "Example chat account",
+                    "example-chat",
+                    "Example Person",
+                    "example-person",
+                    "known",
+                    "suppressed",
+                    "blocked",
+                    "bad",
+                    "Runtime suppression is active.",
+                    "1m ago",
+                    "pending",
+                    "warn",
+                    "Provider block job queued.",
+                    "2m ago",
+                    "Example Provider",
+                    "job-001",
+                    "2m",
+                    "Consumer runtime owns the save path and provider execution.",
+                    badges=["runtime-owned"],
+                    actions=[SurfaceAction("Open", "/identity-blocks/example-chat-pending")],
+                ),
+                PlatformIdentityBlockRow(
+                    "owner-private-failed",
+                    "raw fixture private platform identity",
+                    "example-chat",
+                    "Owner Private",
+                    "owner",
+                    "owner",
+                    "suppressed",
+                    "blocked",
+                    "bad",
+                    "raw fixture private internal block reason",
+                    "4m ago",
+                    "failed",
+                    "bad",
+                    "raw fixture private provider block failure",
+                    "4m ago",
+                    "Example Provider",
+                    "job-002",
+                    "4m",
+                    "raw fixture private platform identity summary",
+                    "/identity-blocks/raw-private",
+                    privacy_scope="owner_private",
+                    safe_alternate="Owner-private platform identity summarized for operators.",
+                    safe_label="Owner-private identity",
+                    actions=[SurfaceAction("Retry provider block", "", "warn", disabled=True)],
+                ),
+                PlatformIdentityBlockRow("cancelled", "Cancelled provider job", "example-chat", platform_block_status="cancelled", updated_age="8m"),
+                PlatformIdentityBlockRow("not-requested", "Not requested identity", "example-chat", platform_block_status="not_requested", updated_age="11m"),
+                PlatformIdentityBlockRow("not-applicable", "Not applicable identity", "email", platform_block_status="not_applicable", updated_age="12m"),
+            ],
+            sort_key="platform_block_status",
+            sort_direction="desc",
+            sort_label="Platform block status",
+            live_refresh=LiveRefreshConfig(
+                enabled=True,
+                key="identity-blocks",
+                url="/fragments/identity-blocks",
+                target_id="platform-identity-blocks",
+                controls_id="platform-identity-blocks-live-controls",
+                interval_seconds=45,
+            ),
+            actions=[SurfaceAction("Refresh posture", "/identity-blocks/refresh", "info", method="post")],
+        ),
+        features={PLATFORM_IDENTITY_BLOCKS_FEATURE: True},
         privacy_policy=privacy_policy,
         privacy_context=operator_context,
     )
@@ -2976,8 +3073,17 @@ def render_dashboard_fragment() -> str:
                 "review": True,
                 "system_health": True,
                 "media_library": True,
+                "platform_identity_blocks": True,
                 "public_presence": True,
             },
+            known_features=(
+                "messages",
+                "review",
+                "system_health",
+                "media_library",
+                "platform_identity_blocks",
+                "public_presence",
+            ),
             nav_groups=[NavGroup("Core", (), key="core"), NavGroup("System", (), key="system")],
             surfaces=[
                 SurfaceRegistration(
@@ -3018,12 +3124,25 @@ def render_dashboard_fragment() -> str:
                     adapters=[SurfaceAdapterBinding("media_rows", "Media rows", "fixture adapter")],
                     summary="Consumer owns file storage and upload validation.",
                 ),
+                SurfaceRegistration(
+                    "identity-blocks",
+                    "Identity Blocks",
+                    feature="platform_identity_blocks",
+                    renderer="render_platform_identity_blocks_surface",
+                    route_key="identity-blocks",
+                    href="/identity-blocks",
+                    nav_group="system",
+                    active="identity-blocks",
+                    adapters=[SurfaceAdapterBinding("identity_block_rows", "Identity block rows", "fixture adapter")],
+                    summary="Consumer owns platform IDs, provider calls, block decisions, and mutation authority.",
+                ),
             ],
         ),
         available_renderers={
             "render_message_surface": True,
             "render_system_health_surface": True,
             "render_media_library_surface": True,
+            "render_platform_identity_blocks_surface": True,
         },
         available_assets={"css": True, "media-css": True},
     )
@@ -3031,6 +3150,7 @@ def render_dashboard_fragment() -> str:
         render_dashboard_sections(dashboard)
         + admin_list_surface
         + admin_access_surface
+        + platform_identity_blocks_surface
         + detail_dossier_surface
         + people_surface
         + review_surface
@@ -3074,8 +3194,17 @@ def build_fixture_control_surface_registry() -> SurfaceRegistryConfig:
             "review": True,
             "system_health": True,
             "media_library": True,
+            "platform_identity_blocks": True,
             "public_presence": True,
         },
+        known_features=(
+            "messages",
+            "review",
+            "system_health",
+            "media_library",
+            "platform_identity_blocks",
+            "public_presence",
+        ),
         nav_groups=[NavGroup("Core", (), key="core"), NavGroup("System", (), key="system")],
         surfaces=[
             SurfaceRegistration(
@@ -3115,6 +3244,18 @@ def build_fixture_control_surface_registry() -> SurfaceRegistryConfig:
                 required_assets=[SurfaceAssetRequirement("media-css", "Media CSS", "/persona-console/static/persona-console.css")],
                 adapters=[SurfaceAdapterBinding("media_rows", "Media rows", "fixture adapter")],
                 summary="Consumer owns file storage and upload validation.",
+            ),
+            SurfaceRegistration(
+                "identity-blocks",
+                "Identity Blocks",
+                feature="platform_identity_blocks",
+                renderer="render_platform_identity_blocks_surface",
+                route_key="identity-blocks",
+                href="/identity-blocks",
+                nav_group="system",
+                active="identity-blocks",
+                adapters=[SurfaceAdapterBinding("identity_block_rows", "Identity block rows", "fixture adapter")],
+                summary="Consumer owns platform IDs, provider calls, block decisions, and mutation authority.",
             ),
         ],
     )
@@ -3376,6 +3517,10 @@ def create_app():
     @app.get("/settings/public-presence", response_class=HTMLResponse)
     def public_settings() -> str:
         return render_public_settings_fixture_page()
+
+    @app.get("/identity-blocks", response_class=HTMLResponse)
+    def identity_blocks() -> str:
+        return render_fixture_page()
 
     @app.get("/settings", response_class=HTMLResponse)
     def settings_alias() -> str:
