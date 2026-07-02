@@ -404,6 +404,91 @@ body.pcv2-body {
   color: var(--pcv2-text);
   font-weight: 760;
 }
+.pcv2-cell-identity {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 220px;
+}
+.pcv2-cell-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--pcv2-accent) 36%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--pcv2-accent) 18%, var(--pcv2-surface));
+  color: var(--pcv2-accent-3);
+  font-family: var(--pcv2-display-font);
+  font-size: 12px;
+  font-weight: 900;
+}
+.pcv2-cell-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pcv2-cell-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.pcv2-cell-copy strong,
+.pcv2-cell-copy em,
+.pcv2-cell-copy small,
+.pcv2-cell-meta,
+.pcv2-cell-badges,
+.pcv2-cell-chipset,
+.pcv2-cell-status {
+  overflow-wrap: anywhere;
+}
+.pcv2-cell-copy em,
+.pcv2-cell-copy small,
+.pcv2-cell-status em {
+  color: var(--pcv2-text-muted);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+.pcv2-cell-meta,
+.pcv2-cell-badges,
+.pcv2-cell-chipset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.pcv2-cell-meta span {
+  color: var(--pcv2-text-muted);
+  font-size: 10px;
+}
+.pcv2-cell-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 150px;
+}
+.pcv2-cell-status i {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--pcv2-info);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pcv2-info) 12%, transparent);
+}
+.pcv2-cell-status.pcv2-tone-good i { background: var(--pcv2-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pcv2-success) 12%, transparent); }
+.pcv2-cell-status.pcv2-tone-warn i,
+.pcv2-cell-status.pcv2-tone-hot i { background: var(--pcv2-warning); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pcv2-warning) 12%, transparent); }
+.pcv2-cell-status.pcv2-tone-bad i { background: var(--pcv2-danger); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pcv2-danger) 12%, transparent); }
+.pcv2-cell-status.pcv2-tone-owner i,
+.pcv2-cell-status.pcv2-tone-private i { background: var(--pcv2-owner); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pcv2-owner) 12%, transparent); }
+.pcv2-cell-status span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
 .pcv2-table-actions {
   white-space: nowrap;
 }

@@ -140,6 +140,71 @@ def test_v2_linked_table_rows_keep_cells_and_render_actions():
     assert "/knowledge-patch?target_surface=person&amp;target_person_id=1" in html
 
 
+def test_v2_table_cells_accept_safe_structured_identity_badges_and_status():
+    html = render_v2_console_page(
+        {
+            "brand_name": "Example Persona",
+            "page_title": "People",
+            "active_section": "people",
+            "nav_items": [{"key": "people", "label": "People", "href": "/people"}],
+            "sections": [
+                {
+                    "key": "people",
+                    "title": "People",
+                    "layout": "people",
+                    "columns": [
+                        {"key": "name", "label": "Name"},
+                        {"key": "relationship", "label": "Relationship"},
+                        {"key": "tags", "label": "Tags"},
+                    ],
+                    "rows": [
+                        {
+                            "cells": {
+                                "name": {
+                                    "kind": "identity",
+                                    "title": "Example <Person>",
+                                    "subtitle": "2 linked accounts",
+                                    "detail": "Known through chat",
+                                    "avatar_url": "/avatars/example.png",
+                                    "preview": "Profile preview <script>",
+                                    "badges": [{"label": "discord", "tone": "info"}],
+                                },
+                                "relationship": {
+                                    "kind": "status",
+                                    "value": "warm",
+                                    "detail": "score +42",
+                                    "tone": "good",
+                                },
+                                "tags": {
+                                    "kind": "badges",
+                                    "items": [
+                                        {"label": "music", "tone": "cool", "title": "from notes"},
+                                        "friend",
+                                    ],
+                                },
+                            },
+                            "href": "/people/1",
+                            "actions": [{"label": "Patch", "href": "/knowledge-patch"}],
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert 'class="pcv2-cell-identity"' in html
+    assert 'src="/avatars/example.png"' in html
+    assert '<a href="/people/1" title="Profile preview &lt;script&gt;">Example &lt;Person&gt;</a>' in html
+    assert "2 linked accounts" in html
+    assert "Known through chat" in html
+    assert 'class="pcv2-cell-status pcv2-tone-good"' in html
+    assert "score +42" in html
+    assert "music" in html
+    assert "friend" in html
+    assert "<Person>" not in html
+    assert "<script>" not in html
+
+
 def test_v2_media_items_render_actions_without_nesting_tile_anchor():
     html = render_v2_console_page(
         {

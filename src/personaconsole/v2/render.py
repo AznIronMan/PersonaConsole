@@ -279,6 +279,101 @@ def _render_media(value: V2MediaItem | Mapping[str, Any], privacy: V2PrivacyCont
     )
 
 
+def _cell_meta(values: Any) -> str:
+    if not values:
+        return ""
+    if isinstance(values, Mapping):
+        items: Sequence[Any] = (values,)
+    elif isinstance(values, Sequence) and not isinstance(values, (str, bytes, bytearray)):
+        items = values
+    else:
+        items = (values,)
+    out = []
+    for item in items:
+        if isinstance(item, Mapping):
+            label = str(item.get("label") or "").strip()
+            value = str(item.get("value") or item.get("text") or "").strip()
+            if not (label or value):
+                continue
+            text = f"{label}: {value}" if label and value else label or value
+        else:
+            text = str(item or "").strip()
+        if text:
+            out.append(f"<span>{escape(text)}</span>")
+    return "".join(out)
+
+
+def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") -> str:
+    if not isinstance(value, Mapping):
+        return escape(str(value or ""))
+    data = _mapping(value)
+    kind = str(data.get("kind") or data.get("type") or "text").strip().lower().replace("_", "-")
+    title = str(data.get("title") or data.get("label") or data.get("text") or fallback_title or "").strip()
+    subtitle = str(data.get("subtitle") or "").strip()
+    detail = str(data.get("detail") or data.get("description") or "").strip()
+    cell_href = str(data.get("href") or href or "").strip()
+    preview = str(data.get("preview") or data.get("title_attr") or detail or "").strip()
+    badges = data.get("badges") or data.get("chips") or data.get("items") or ()
+    badge_html = _badges(tuple(badges) if isinstance(badges, Sequence) and not isinstance(badges, str) else (badges,))
+    meta_html = _cell_meta(data.get("meta"))
+    title_html = escape(title)
+    if cell_href and title:
+        title_html = f'<a href="{escape(cell_href, quote=True)}"{_attr("title", preview)}>{title_html}</a>'
+    elif title:
+        title_html = f'<span{_attr("title", preview)}>{title_html}</span>'
+
+    if kind in {"identity", "profile", "person", "account"}:
+        avatar_url = str(data.get("avatar_url") or data.get("image_url") or data.get("src") or "").strip()
+        initials = str(data.get("initials") or _initials(title)).strip()[:3]
+        avatar = (
+            f'<img src="{escape(avatar_url, quote=True)}" alt="" loading="lazy">'
+            if avatar_url
+            else f"<span>{escape(initials)}</span>"
+        )
+        subtitle_html = f"<em>{escape(subtitle)}</em>" if subtitle else ""
+        detail_html = f"<small>{escape(detail)}</small>" if detail else ""
+        meta = f'<span class="pcv2-cell-meta">{meta_html}</span>' if meta_html else ""
+        cell_badges = f'<span class="pcv2-cell-badges">{badge_html}</span>' if badge_html else ""
+        return (
+            f'<span class="pcv2-cell-identity"{_attr("title", preview)}>'
+            f'<span class="pcv2-cell-avatar">{avatar}</span>'
+            '<span class="pcv2-cell-copy">'
+            f'<strong>{title_html}</strong>'
+            f"{subtitle_html}"
+            f"{detail_html}"
+            f"{meta}"
+            f"{cell_badges}"
+            '</span></span>'
+        )
+    if kind in {"badges", "chips", "tags", "tag-list"}:
+        return f'<span class="pcv2-cell-chipset">{badge_html}</span>' if badge_html else ""
+    if kind in {"status", "relationship", "state"}:
+        tone = _tone(str(data.get("tone") or "neutral"))
+        value_text = str(data.get("value") or title or "").strip()
+        detail_html = f"<em>{escape(detail)}</em>" if detail else ""
+        return (
+            f'<span class="pcv2-cell-status pcv2-tone-{tone}"{_attr("title", preview)}>'
+            '<i aria-hidden="true"></i><span>'
+            f'<strong>{escape(value_text)}</strong>'
+            f"{detail_html}"
+            '</span>'
+            f'{badge_html}'
+            '</span>'
+        )
+    title = f"<strong>{title_html}</strong>" if title_html else ""
+    detail_html = f"<em>{escape(detail or subtitle)}</em>" if (detail or subtitle) else ""
+    meta = f'<span class="pcv2-cell-meta">{meta_html}</span>' if meta_html else ""
+    cell_badges = f'<span class="pcv2-cell-badges">{badge_html}</span>' if badge_html else ""
+    return (
+        f'<span class="pcv2-cell-copy"{_attr("title", preview)}>'
+        f"{title}"
+        f"{detail_html}"
+        f"{meta}"
+        f"{cell_badges}"
+        '</span>'
+    )
+
+
 def _render_table(section: V2Section, privacy: V2PrivacyContext) -> str:
     columns = _coerce_seq(section.columns, V2TableColumn)
     rows = _coerce_seq(section.rows, V2TableRow)
@@ -301,12 +396,16 @@ def _render_table(section: V2Section, privacy: V2PrivacyContext) -> str:
         cells = []
         for index, column in enumerate(columns):
             raw = private_text if row.private and column == columns[0] else row.cells.get(column.key, "")
-            text = escape(str(raw or ""))
-            if row.href and index == 0:
+            if isinstance(raw, Mapping):
+                cell_body = _render_cell_value(raw, href=row.href if index == 0 else "", fallback_title=row.title)
+                if index == 0:
+                    cell_body += _badges(row.badges)
+            elif row.href and index == 0:
+                text = escape(str(raw or ""))
                 label = text or escape(str(row.title or "Open"))
                 cell_body = f'<a href="{escape(row.href, quote=True)}">{label}</a>{_badges(row.badges)}'
             else:
-                cell_body = text
+                cell_body = escape(str(raw or ""))
             cells.append(f"<td>{cell_body}</td>")
         if has_actions:
             cells.append(f'<td class="pcv2-table-actions">{_actions(row.actions)}</td>')
