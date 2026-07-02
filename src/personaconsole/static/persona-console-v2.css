@@ -122,12 +122,10 @@ body.pcv2-body {
   font-style: normal;
 }
 .pcv2-operator strong {
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 180px;
   color: var(--pcv2-text);
   font-size: 12px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .pcv2-main {
   width: min(1440px, 100%);
@@ -315,10 +313,9 @@ body.pcv2-body {
   gap: 2px;
 }
 .pcv2-feed-copy strong,
-.pcv2-feed-copy em {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.pcv2-feed-copy em,
+.pcv2-feed-copy span {
+  overflow-wrap: anywhere;
 }
 .pcv2-feed-copy strong { color: var(--pcv2-text); font-size: 14px; }
 .pcv2-feed-copy em,
@@ -511,9 +508,7 @@ body.pcv2-body {
 .pcv2-media-copy strong,
 .pcv2-media-copy em,
 .pcv2-media-copy span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .pcv2-media-copy strong { color: var(--pcv2-text); font-size: 13px; }
 .pcv2-media-copy em,

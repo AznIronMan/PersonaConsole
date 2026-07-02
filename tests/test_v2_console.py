@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from personaconsole.v2 import (
     V2ConsoleConfig,
     V2NavItem,
@@ -126,3 +128,36 @@ def test_v2_can_render_minimal_explicit_models():
     assert "calm" in html
     assert "Click for the deep dive." in html
     assert "pcv2-layout-mind" in html
+
+
+def test_v2_preserves_long_meaningful_text_and_css_does_not_ellipsis_content():
+    long_text = "Full narrative starts. " + ("context sentence " * 80) + "full-narrative-tail"
+    html = render_v2_console_page(
+        {
+            "brand_name": "Example Persona",
+            "page_title": "No Truncation",
+            "active_section": "today",
+            "theme": {},
+            "nav_items": [{"key": "today", "label": "Today", "href": "/"}],
+            "sections": [
+                {
+                    "key": "today",
+                    "title": "Today",
+                    "layout": "dashboard",
+                    "panels": [{"title": "Latest thought", "body": long_text}],
+                    "feed": [{"title": long_text, "detail": long_text, "when": "now"}],
+                },
+                {
+                    "key": "media",
+                    "title": "Media",
+                    "layout": "media",
+                    "media": [{"title": "Artifact", "caption": long_text, "src": "/placeholder.svg"}],
+                },
+            ],
+        }
+    )
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert "full-narrative-tail" in html
+    assert "text-overflow" not in css
+    assert "line-clamp" not in css
