@@ -168,12 +168,28 @@ def test_v2_table_cells_accept_safe_structured_identity_badges_and_status():
                                     "avatar_url": "/avatars/example.png",
                                     "preview": "Profile preview <script>",
                                     "badges": [{"label": "discord", "tone": "info"}],
+                                    "popover": {
+                                        "title": "Example <Person>",
+                                        "subtitle": "Profile preview",
+                                        "body": "Known through chat <script>",
+                                        "metrics": [
+                                            {"label": "Relationship", "value": "+42", "detail": "warm", "tone": "good"},
+                                            {"label": "Platforms", "value": "2", "detail": "discord"},
+                                        ],
+                                        "rows": [{"label": "Last contact", "value": "5m ago"}],
+                                        "badges": [{"label": "trusted", "tone": "good"}],
+                                    },
                                 },
                                 "relationship": {
                                     "kind": "status",
                                     "value": "warm",
                                     "detail": "score +42",
                                     "tone": "good",
+                                    "popover": {
+                                        "title": "Relationship breakdown",
+                                        "metrics": [{"label": "Overall", "value": "+42"}],
+                                        "rows": [{"label": "Signals", "value": "12"}],
+                                    },
                                 },
                                 "tags": {
                                     "kind": "badges",
@@ -193,6 +209,11 @@ def test_v2_table_cells_accept_safe_structured_identity_badges_and_status():
     )
 
     assert 'class="pcv2-cell-identity"' in html
+    assert 'data-pcv2-hover-source tabindex="0"' in html
+    assert 'data-pcv2-hover-template hidden' in html
+    assert 'class="pcv2-hover-card"' in html
+    assert "Relationship breakdown" in html
+    assert "Last contact" in html
     assert 'src="/avatars/example.png"' in html
     assert '<a href="/people/1" title="Profile preview &lt;script&gt;">Example &lt;Person&gt;</a>' in html
     assert "2 linked accounts" in html
@@ -335,3 +356,13 @@ def test_v2_preserves_long_meaningful_text_and_css_does_not_ellipsis_content():
     assert "full-narrative-tail" in html
     assert "text-overflow" not in css
     assert "line-clamp" not in css
+
+
+def test_v2_hover_card_assets_are_available():
+    js = Path("src/personaconsole/static/persona-console-v2.js").read_text(encoding="utf-8")
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert "installHoverCards" in js
+    assert "data-pcv2-hover-source" in js
+    assert "pcv2-hover-card-layer" in css
+    assert "pcv2-hover-metrics" in css

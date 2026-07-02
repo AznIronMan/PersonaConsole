@@ -303,6 +303,61 @@ def _cell_meta(values: Any) -> str:
     return "".join(out)
 
 
+def _sequence(value: Any) -> tuple[Any, ...]:
+    if not value:
+        return ()
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return tuple(value)
+    return (value,)
+
+
+def _render_hover_card(value: Any) -> str:
+    if not isinstance(value, Mapping):
+        return ""
+    data = _mapping(value)
+    title = str(data.get("title") or "").strip()
+    subtitle = str(data.get("subtitle") or "").strip()
+    body = str(data.get("body") or data.get("detail") or "").strip()
+    badges = _badges(_sequence(data.get("badges")))
+    metrics = []
+    for item in _sequence(data.get("metrics")):
+        if not isinstance(item, Mapping):
+            continue
+        label = str(item.get("label") or "").strip()
+        metric_value = str(item.get("value") or "").strip()
+        detail = str(item.get("detail") or "").strip()
+        if not (label or metric_value or detail):
+            continue
+        tone = _tone(str(item.get("tone") or "neutral"))
+        metrics.append(
+            f'<span class="pcv2-hover-metric pcv2-tone-{tone}">'
+            f'<em>{escape(label)}</em><strong>{escape(metric_value)}</strong>'
+            f'{f"<small>{escape(detail)}</small>" if detail else ""}</span>'
+        )
+    rows = []
+    for item in _sequence(data.get("rows")):
+        if not isinstance(item, Mapping):
+            continue
+        label = str(item.get("label") or "").strip()
+        row_value = str(item.get("value") or item.get("text") or "").strip()
+        if label or row_value:
+            rows.append(f'<span><b>{escape(label)}</b><em>{escape(row_value)}</em></span>')
+    if not (title or subtitle or body or badges or metrics or rows):
+        return ""
+    title_html = f"<strong>{escape(title)}</strong>" if title else ""
+    subtitle_html = f"<em>{escape(subtitle)}</em>" if subtitle else ""
+    body_html = f"<p>{escape(body)}</p>" if body else ""
+    metrics_html = f'<span class="pcv2-hover-metrics">{"".join(metrics)}</span>' if metrics else ""
+    rows_html = f'<span class="pcv2-hover-rows">{"".join(rows)}</span>' if rows else ""
+    return (
+        '<span data-pcv2-hover-template hidden>'
+        '<span class="pcv2-hover-card">'
+        f'<span class="pcv2-hover-head">{title_html}{subtitle_html}{badges}</span>'
+        f'{body_html}{metrics_html}{rows_html}'
+        '</span></span>'
+    )
+
+
 def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") -> str:
     if not isinstance(value, Mapping):
         return escape(str(value or ""))
@@ -314,8 +369,10 @@ def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") 
     cell_href = str(data.get("href") or href or "").strip()
     preview = str(data.get("preview") or data.get("title_attr") or detail or "").strip()
     badges = data.get("badges") or data.get("chips") or data.get("items") or ()
-    badge_html = _badges(tuple(badges) if isinstance(badges, Sequence) and not isinstance(badges, str) else (badges,))
+    badge_html = _badges(_sequence(badges))
     meta_html = _cell_meta(data.get("meta"))
+    hover_html = _render_hover_card(data.get("popover") or data.get("hover"))
+    hover_attrs = ' data-pcv2-hover-source tabindex="0"' if hover_html else ""
     title_html = escape(title)
     if cell_href and title:
         title_html = f'<a href="{escape(cell_href, quote=True)}"{_attr("title", preview)}>{title_html}</a>'
@@ -335,7 +392,7 @@ def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") 
         meta = f'<span class="pcv2-cell-meta">{meta_html}</span>' if meta_html else ""
         cell_badges = f'<span class="pcv2-cell-badges">{badge_html}</span>' if badge_html else ""
         return (
-            f'<span class="pcv2-cell-identity"{_attr("title", preview)}>'
+            f'<span class="pcv2-cell-identity"{_attr("title", preview)}{hover_attrs}>'
             f'<span class="pcv2-cell-avatar">{avatar}</span>'
             '<span class="pcv2-cell-copy">'
             f'<strong>{title_html}</strong>'
@@ -343,7 +400,7 @@ def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") 
             f"{detail_html}"
             f"{meta}"
             f"{cell_badges}"
-            '</span></span>'
+            f'{hover_html}</span></span>'
         )
     if kind in {"badges", "chips", "tags", "tag-list"}:
         return f'<span class="pcv2-cell-chipset">{badge_html}</span>' if badge_html else ""
@@ -352,12 +409,13 @@ def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") 
         value_text = str(data.get("value") or title or "").strip()
         detail_html = f"<em>{escape(detail)}</em>" if detail else ""
         return (
-            f'<span class="pcv2-cell-status pcv2-tone-{tone}"{_attr("title", preview)}>'
+            f'<span class="pcv2-cell-status pcv2-tone-{tone}"{_attr("title", preview)}{hover_attrs}>'
             '<i aria-hidden="true"></i><span>'
             f'<strong>{escape(value_text)}</strong>'
             f"{detail_html}"
             '</span>'
             f'{badge_html}'
+            f'{hover_html}'
             '</span>'
         )
     title = f"<strong>{title_html}</strong>" if title_html else ""
@@ -365,11 +423,12 @@ def _render_cell_value(value: Any, *, href: str = "", fallback_title: str = "") 
     meta = f'<span class="pcv2-cell-meta">{meta_html}</span>' if meta_html else ""
     cell_badges = f'<span class="pcv2-cell-badges">{badge_html}</span>' if badge_html else ""
     return (
-        f'<span class="pcv2-cell-copy"{_attr("title", preview)}>'
+        f'<span class="pcv2-cell-copy"{_attr("title", preview)}{hover_attrs}>'
         f"{title}"
         f"{detail_html}"
         f"{meta}"
         f"{cell_badges}"
+        f"{hover_html}"
         '</span>'
     )
 

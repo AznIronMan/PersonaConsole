@@ -489,6 +489,89 @@ body.pcv2-body {
   display: grid;
   gap: 1px;
 }
+[data-pcv2-hover-source] {
+  cursor: help;
+  outline: none;
+}
+[data-pcv2-hover-source]:focus-visible {
+  border-radius: var(--pcv2-radius);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pcv2-accent) 58%, transparent);
+}
+[data-pcv2-hover-template] { display: none; }
+.pcv2-hover-card-layer {
+  position: fixed;
+  z-index: 400;
+  width: min(360px, calc(100vw - 24px));
+  pointer-events: none;
+}
+.pcv2-hover-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--pcv2-accent) 38%, var(--pcv2-border));
+  border-radius: var(--pcv2-radius);
+  background: color-mix(in srgb, var(--pcv2-bg-alt) 94%, #000);
+  box-shadow: 0 20px 54px rgb(0 0 0 / 0.46), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  padding: 12px;
+}
+.pcv2-hover-head {
+  display: grid;
+  gap: 4px;
+}
+.pcv2-hover-head strong {
+  color: var(--pcv2-text);
+  font-family: var(--pcv2-display-font);
+  font-size: 14px;
+}
+.pcv2-hover-head em,
+.pcv2-hover-card p {
+  color: var(--pcv2-text-muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.4;
+}
+.pcv2-hover-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.pcv2-hover-metric {
+  display: grid;
+  gap: 2px;
+  border: 1px solid color-mix(in srgb, var(--pcv2-border-soft) 82%, transparent);
+  border-radius: var(--pcv2-radius);
+  background: color-mix(in srgb, var(--pcv2-surface) 74%, transparent);
+  padding: 8px;
+}
+.pcv2-hover-metric em,
+.pcv2-hover-metric small {
+  color: var(--pcv2-text-muted);
+  font-size: 10px;
+  font-style: normal;
+}
+.pcv2-hover-metric strong {
+  color: var(--pcv2-text);
+  font-size: 14px;
+}
+.pcv2-hover-rows {
+  display: grid;
+  gap: 5px;
+}
+.pcv2-hover-rows span {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.4fr) minmax(0, 1fr);
+  gap: 8px;
+  color: var(--pcv2-text-soft);
+  font-size: 11px;
+}
+.pcv2-hover-rows b {
+  color: var(--pcv2-accent-3);
+  font-weight: 760;
+}
+.pcv2-hover-rows em {
+  color: var(--pcv2-text-soft);
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
 .pcv2-table-actions {
   white-space: nowrap;
 }
