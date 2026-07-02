@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from personaconsole.v2 import (
+    V2Action,
     V2ConsoleConfig,
     V2NavItem,
     V2PrivacyContext,
@@ -366,3 +367,27 @@ def test_v2_hover_card_assets_are_available():
     assert "data-pcv2-hover-source" in js
     assert "pcv2-hover-card-layer" in css
     assert "pcv2-hover-metrics" in css
+
+
+def test_v2_post_actions_submit_through_shared_browser_script():
+    html = render_v2_console_page(
+        V2ConsoleConfig(
+            brand_name="Example Persona",
+            page_title="Controls",
+            active_section="control",
+            nav_items=(V2NavItem(key="control", label="Control", href="/control"),),
+            sections=(
+                V2Section(
+                    key="controls",
+                    title="Controls",
+                    actions=(V2Action(label="Pause replies", href="/people/1/pause", method="post"),),
+                ),
+            ),
+        )
+    )
+    js = Path("src/personaconsole/static/persona-console-v2.js").read_text(encoding="utf-8")
+
+    assert 'data-method="post"' in html
+    assert "installActionMethods" in js
+    assert 'document.querySelectorAll("a[data-method]")' in js
+    assert 'document.createElement("form")' in js

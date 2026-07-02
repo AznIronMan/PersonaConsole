@@ -19,6 +19,34 @@
     });
   }
 
+  function installActionMethods() {
+    document.querySelectorAll("a[data-method]").forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        var method = String(link.getAttribute("data-method") || "").trim().toLowerCase();
+        if (!method || method === "get") return;
+        event.preventDefault();
+        if (link.classList.contains("is-disabled") || link.getAttribute("aria-disabled") === "true") return;
+        var href = link.getAttribute("href") || "";
+        if (!href || href === "#") return;
+        var message = link.getAttribute("data-confirm");
+        if (message && !window.confirm(message)) return;
+        var form = document.createElement("form");
+        form.hidden = true;
+        form.method = method === "post" ? "post" : "post";
+        form.action = href;
+        if (method !== "post") {
+          var methodInput = document.createElement("input");
+          methodInput.type = "hidden";
+          methodInput.name = "_method";
+          methodInput.value = method.toUpperCase();
+          form.appendChild(methodInput);
+        }
+        document.body.appendChild(form);
+        form.submit();
+      });
+    });
+  }
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -91,11 +119,13 @@
     document.addEventListener("DOMContentLoaded", function () {
       scrollThreads();
       installFilters();
+      installActionMethods();
       installHoverCards();
     });
   } else {
     scrollThreads();
     installFilters();
+    installActionMethods();
     installHoverCards();
   }
 })();

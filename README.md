@@ -314,6 +314,7 @@ script prints the tag matching the exported package version.
 - [Release 2.0.1](docs/RELEASE_2.0.1.md)
 - [Release 2.0.2](docs/RELEASE_2.0.2.md)
 - [Release 2.0.3](docs/RELEASE_2.0.3.md)
+- [Release 2.0.4](docs/RELEASE_2.0.4.md)
 - [Visual QA](docs/VISUAL_QA.md)
 - [Public Release And Sanitization](docs/PUBLIC_RELEASE.md)
 - [Settled Direction And Open Questions](docs/OPEN_QUESTIONS.md)
