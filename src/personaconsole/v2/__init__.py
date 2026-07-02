@@ -1,0 +1,50 @@
+"""PersonaConsole v2 opt-in shell, models, and renderers."""
+
+from .fixture import build_v2_fixture_config, render_v2_fixture_page
+from .models import (
+    V2_SECTION_KEYS,
+    V2Action,
+    V2Badge,
+    V2ConsoleConfig,
+    V2ConversationMessage,
+    V2FeedItem,
+    V2HeroMedia,
+    V2MediaItem,
+    V2MetricCard,
+    V2NavItem,
+    V2OperatorContext,
+    V2Panel,
+    V2PrivacyContext,
+    V2PrivateValue,
+    V2Section,
+    V2TableColumn,
+    V2TableRow,
+    V2ThemeTokens,
+)
+from .render import render_v2_console_page, render_v2_private_text, render_v2_section
+
+__all__ = [
+    "V2_SECTION_KEYS",
+    "V2Action",
+    "V2Badge",
+    "V2ConsoleConfig",
+    "V2ConversationMessage",
+    "V2FeedItem",
+    "V2HeroMedia",
+    "V2MediaItem",
+    "V2MetricCard",
+    "V2NavItem",
+    "V2OperatorContext",
+    "V2Panel",
+    "V2PrivacyContext",
+    "V2PrivateValue",
+    "V2Section",
+    "V2TableColumn",
+    "V2TableRow",
+    "V2ThemeTokens",
+    "build_v2_fixture_config",
+    "render_v2_console_page",
+    "render_v2_fixture_page",
+    "render_v2_private_text",
+    "render_v2_section",
+]

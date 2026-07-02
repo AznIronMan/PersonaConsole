@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Missing document tile asset</title>
+  <desc id="desc">Generic PersonaConsole placeholder for a missing document or artifact tile.</desc>
+  <rect width="1024" height="1024" fill="#050a12"/>
+  <rect x="36" y="36" width="952" height="952" rx="36" fill="#0c1f37" stroke="#38dff8" stroke-width="6" stroke-dasharray="26 18"/>
+  <path d="M360 218 H604 L704 318 V768 H360 Z" fill="none" stroke="#8defff" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M604 218 V318 H704" fill="none" stroke="#8defff" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M424 430 H638 M424 504 H638 M424 578 H590" fill="none" stroke="#bfd3e5" stroke-width="22" stroke-linecap="round"/>
+  <text x="512" y="850" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#f8fbff">MISSING DOC</text>
+  <text x="512" y="912" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#bfd3e5">Document tile placeholder</text>
+</svg>

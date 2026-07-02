@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Missing media tile asset</title>
+  <desc id="desc">Generic PersonaConsole placeholder for a missing media thumbnail, poster, or tile.</desc>
+  <rect width="1024" height="1024" fill="#050a12"/>
+  <rect x="36" y="36" width="952" height="952" rx="36" fill="#0c1f37" stroke="#38dff8" stroke-width="6" stroke-dasharray="26 18"/>
+  <circle cx="512" cy="382" r="100" fill="none" stroke="#8defff" stroke-width="18"/>
+  <path d="M252 760 L418 590 L542 706 L634 618 L772 760 Z" fill="none" stroke="#8defff" stroke-width="22" stroke-linejoin="round"/>
+  <text x="512" y="850" text-anchor="middle" font-family="Arial, sans-serif" font-size="58" font-weight="700" fill="#f8fbff">MISSING MEDIA</text>
+  <text x="512" y="912" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#bfd3e5">Tile placeholder: 1024 x 1024</text>
+</svg>

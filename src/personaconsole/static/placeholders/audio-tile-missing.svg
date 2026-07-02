@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Missing audio tile asset</title>
+  <desc id="desc">Generic PersonaConsole placeholder for a missing audio waveform or audio tile.</desc>
+  <rect width="1024" height="1024" fill="#050a12"/>
+  <rect x="36" y="36" width="952" height="952" rx="36" fill="#0c1f37" stroke="#38dff8" stroke-width="6" stroke-dasharray="26 18"/>
+  <path d="M218 512 H286 M336 512 V392 M408 512 V306 M480 512 V420 M552 512 V250 M624 512 V358 M696 512 V436 M754 512 H806" fill="none" stroke="#8defff" stroke-width="30" stroke-linecap="round"/>
+  <text x="512" y="850" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#f8fbff">MISSING AUDIO</text>
+  <text x="512" y="912" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#bfd3e5">Audio tile placeholder</text>
+</svg>
