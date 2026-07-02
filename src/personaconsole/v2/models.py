@@ -210,6 +210,7 @@ class V2TableRow:
     href: str = ""
     title: str = ""
     badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
+    actions: Sequence[V2Action | Mapping[str, Any] | str] = field(default_factory=tuple)
     tone: str = "neutral"
     private: V2PrivateValue | Mapping[str, Any] | str | None = None
 
@@ -226,6 +227,7 @@ class V2MediaItem:
     nsfw: bool = False
     private: bool = False
     badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
+    actions: Sequence[V2Action | Mapping[str, Any] | str] = field(default_factory=tuple)
     meta: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
 
 

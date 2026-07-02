@@ -400,6 +400,17 @@ body.pcv2-body {
   color: var(--pcv2-text-soft);
   font-size: 13px;
 }
+.pcv2-table td a {
+  color: var(--pcv2-text);
+  font-weight: 760;
+}
+.pcv2-table-actions {
+  white-space: nowrap;
+}
+.pcv2-table-actions .pcv2-action {
+  min-height: 22px;
+  padding: 0 7px;
+}
 .pcv2-conversation-shell {
   min-height: 560px;
   display: grid;
@@ -511,11 +522,19 @@ body.pcv2-body {
   overflow-wrap: anywhere;
 }
 .pcv2-media-copy strong { color: var(--pcv2-text); font-size: 13px; }
+.pcv2-media-copy strong a { color: inherit; }
 .pcv2-media-copy em,
 .pcv2-media-copy span {
   color: var(--pcv2-text-muted);
   font-size: 11px;
   font-style: normal;
+}
+.pcv2-media-copy .pcv2-action {
+  justify-self: start;
+  min-height: 22px;
+  margin-top: 2px;
+  padding: 0 7px;
+  font-size: 10px;
 }
 .pcv2-journal,
 .pcv2-profile-layout {

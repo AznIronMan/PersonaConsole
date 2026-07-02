@@ -230,12 +230,16 @@ def _render_panel(value: V2Panel | Mapping[str, Any], privacy: V2PrivacyContext)
     body = render_v2_private_text(panel.private, privacy) if panel.private else panel.body
     if panel.private and not body:
         return ""
-    tag = "a" if panel.href else "article"
-    href = _attr("href", panel.href)
+    has_actions = bool(panel.actions)
+    tag = "a" if panel.href and not has_actions else "article"
+    href = _attr("href", panel.href if tag == "a" else "")
     icon = f'<span class="pcv2-panel-icon" aria-hidden="true">{escape(panel.icon)}</span>' if panel.icon else ""
+    title = escape(panel.title)
+    if panel.href and has_actions:
+        title = f'<a href="{escape(panel.href, quote=True)}">{title}</a>'
     return (
         f'<{tag} class="pcv2-panel pcv2-tone-{_tone(panel.tone)}"{href}{_private_attrs(panel.private)}>'
-        f'<div class="pcv2-panel-head">{icon}<h3>{escape(panel.title)}</h3>{_badges(panel.badges)}</div>'
+        f'<div class="pcv2-panel-head">{icon}<h3>{title}</h3>{_badges(panel.badges)}</div>'
         f'<p>{escape(body)}</p>'
         f'<div class="pcv2-panel-actions">{_actions(panel.actions)}</div>'
         f'</{tag}>'
@@ -247,21 +251,29 @@ def _render_media(value: V2MediaItem | Mapping[str, Any], privacy: V2PrivacyCont
     if item.private and not privacy.is_owner:
         return ""
     src = item.poster_src or item.src
-    tag = "a" if item.href else "article"
-    href = _attr("href", item.href)
+    has_actions = bool(item.actions)
+    tag = "a" if item.href and not has_actions else "article"
+    href = _attr("href", item.href if tag == "a" else "")
     classes = f"pcv2-media-tile pcv2-tone-{_tone(item.tone)}"
     if item.nsfw:
         classes += " is-blurred"
     if item.private:
         classes += " is-private"
     label = "Owner only" if item.private else item.kind
+    image = f'<img src="{escape(src)}" alt="{escape(item.title)}" loading="lazy">'
+    title = f"<strong>{escape(item.title)}</strong>"
+    if item.href and has_actions:
+        safe_href = escape(item.href, quote=True)
+        image = f'<a class="pcv2-media-preview-link" href="{safe_href}">{image}</a>'
+        title = f'<strong><a href="{safe_href}">{escape(item.title)}</a></strong>'
     return (
         f'<{tag} class="{classes}"{href}>'
-        f'<img src="{escape(src)}" alt="{escape(item.title)}" loading="lazy">'
+        f'{image}'
         '<span class="pcv2-media-copy">'
-        f'<strong>{escape(item.title)}</strong>'
+        f'{title}'
         f'<em>{escape(item.caption)}</em>'
         f'<span>{escape(label)}</span>{_badges(item.badges)}'
+        f'{_actions(item.actions)}'
         '</span>'
         f'</{tag}>'
     )
@@ -277,28 +289,31 @@ def _render_table(section: V2Section, privacy: V2PrivacyContext) -> str:
                 if key not in keys:
                     keys.append(key)
         columns = tuple(V2TableColumn(key=key, label=key.replace("_", " ").title()) for key in keys)
+    has_actions = any(row.actions for row in rows)
     head = "".join(f"<th>{escape(column.label)}</th>" for column in columns)
+    if has_actions:
+        head += "<th>Actions</th>"
     body: list[str] = []
     for row in rows:
         private_text = render_v2_private_text(row.private, privacy) if row.private else ""
         if row.private and not private_text:
             continue
         cells = []
-        for column in columns:
+        for index, column in enumerate(columns):
             raw = private_text if row.private and column == columns[0] else row.cells.get(column.key, "")
-            cells.append(f"<td>{escape(str(raw or ''))}</td>")
-        tag = "a" if row.href else "tr"
-        href = _attr("href", row.href)
-        if tag == "a":
-            body.append(
-                f'<tr class="pcv2-table-link-row pcv2-tone-{_tone(row.tone)}">'
-                f'<td colspan="{len(columns)}"><a{href}>{escape(str(row.cells.get(columns[0].key, row.title) or row.title))}</a>'
-                f'{_badges(row.badges)}</td></tr>'
-            )
-        else:
-            body.append(f'<tr class="pcv2-tone-{_tone(row.tone)}">{"".join(cells)}</tr>')
+            text = escape(str(raw or ""))
+            if row.href and index == 0:
+                label = text or escape(str(row.title or "Open"))
+                cell_body = f'<a href="{escape(row.href, quote=True)}">{label}</a>{_badges(row.badges)}'
+            else:
+                cell_body = text
+            cells.append(f"<td>{cell_body}</td>")
+        if has_actions:
+            cells.append(f'<td class="pcv2-table-actions">{_actions(row.actions)}</td>')
+        linked = " pcv2-table-link-row" if row.href else ""
+        body.append(f'<tr class="pcv2-tone-{_tone(row.tone)}{linked}">{"".join(cells)}</tr>')
     if not body:
-        body.append(f'<tr><td colspan="{max(1, len(columns))}">{escape(section.empty_text)}</td></tr>')
+        body.append(f'<tr><td colspan="{max(1, len(columns) + (1 if has_actions else 0))}">{escape(section.empty_text)}</td></tr>')
     return f'<div class="pcv2-table-wrap"><table class="pcv2-table"><thead><tr>{head}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'
 
 
