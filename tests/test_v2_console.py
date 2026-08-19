@@ -6,6 +6,7 @@ from personaconsole.v2 import (
     V2NavItem,
     V2PrivacyContext,
     V2PrivateValue,
+    V2RecentExchange,
     V2Section,
     V2ThemeTokens,
     build_v2_fixture_config,
@@ -227,6 +228,202 @@ def test_v2_table_cells_accept_safe_structured_identity_badges_and_status():
     assert "<script>" not in html
 
 
+def test_v2_badges_and_feed_items_support_image_icons():
+    html = render_v2_console_page(
+        {
+            "brand_name": "Example Persona",
+            "page_title": "Icon Support",
+            "active_section": "today",
+            "nav_items": [{"key": "today", "label": "Today", "href": "/"}],
+            "sections": [
+                {
+                    "key": "today",
+                    "title": "Today",
+                    "layout": "dashboard",
+                    "cards": [
+                        {
+                            "label": "Adapter",
+                            "value": "ready",
+                            "icon_src": "/static/provider/card.svg?name=<bad>",
+                            "badges": [
+                                {
+                                    "label": "Example Provider",
+                                    "tone": "info",
+                                    "title": "provider badge",
+                                    "icon_src": "/static/provider/example.svg?x=<bad>",
+                                }
+                            ],
+                        }
+                    ],
+                    "feed": [
+                        {
+                            "title": "Example Provider message",
+                            "detail": "A message arrived.",
+                            "when": "now",
+                            "provider": "Example Provider",
+                            "icon_src": "/static/provider/example-feed.svg",
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert 'class="pcv2-card-icon" aria-hidden="true"><img src="/static/provider/card.svg?name=&lt;bad&gt;"' in html
+    assert 'class="pcv2-badge-icon" src="/static/provider/example.svg?x=&lt;bad&gt;"' in html
+    assert 'title="provider badge"' in html
+    assert "Example Provider" in html
+    assert 'class="pcv2-feed-icon" aria-hidden="true"><img src="/static/provider/example-feed.svg"' in html
+    assert "<bad>" not in html
+
+
+def test_v2_recent_exchanges_render_compact_message_rows_with_hover_full_text():
+    long_message = "First line. " + ("full message context " * 20) + "<tail>"
+    html = render_v2_console_page(
+        {
+            "brand_name": "Example Persona",
+            "page_title": "Today",
+            "active_section": "today",
+            "nav_items": [{"key": "today", "label": "Today", "href": "/"}],
+            "sections": [
+                {
+                    "key": "today",
+                    "title": "Today",
+                    "layout": "dashboard",
+                    "exchanges": [
+                        {
+                            "common_name": "Example <Friend>",
+                            "avatar_url": "/avatars/example.png?name=<bad>",
+                            "platform_label": "Example Social",
+                            "platform_icon_src": "/providers/example.svg?x=<bad>",
+                            "direction": "incoming",
+                            "persona_common_name": "Example Persona",
+                            "persona_avatar_url": "/avatars/persona.png?name=<bad>",
+                            "message": long_message,
+                            "relative_time": "7m ago",
+                            "timestamp": "Jul 3, 2026 11:43 AM",
+                            "href": "/conversations/example?x=<bad>",
+                            "badges": [{"label": "attachment", "tone": "cool"}],
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert 'class="pcv2-exchange-row pcv2-tone-neutral" href="/conversations/example?x=&lt;bad&gt;" data-pcv2-hover-source' in html
+    assert 'class="pcv2-exchange-flow" title="To Example Persona" aria-label="To Example Persona"' in html
+    assert (
+        'class="pcv2-exchange-avatar pcv2-exchange-avatar-persona" aria-hidden="true">'
+        '<img src="/avatars/persona.png?name=&lt;bad&gt;"'
+    ) in html
+    assert (
+        '<span class="pcv2-exchange-arrow pcv2-exchange-arrow-inbound" '
+        'aria-hidden="true">&larr;</span>'
+    ) in html
+    assert (
+        'class="pcv2-exchange-avatar pcv2-exchange-avatar-contact" aria-hidden="true">'
+        '<img src="/avatars/example.png?name=&lt;bad&gt;"'
+    ) in html
+    assert "Example &lt;Friend&gt;" in html
+    assert (
+        'class="pcv2-platform-badge" title="Example Social" aria-label="Example Social">'
+        '<img class="pcv2-platform-badge-icon" '
+        'src="/providers/example.svg?x=&lt;bad&gt;" alt="" loading="lazy"></span>'
+    ) in html
+    assert "pcv2-badge pcv2-platform-badge" not in html
+    assert (
+        '<img class="pcv2-platform-badge-icon" src="/providers/example.svg?x=&lt;bad&gt;" '
+        'alt="" loading="lazy">Example Social</span>'
+    ) not in html
+    assert "pcv2-exchange-direction" not in html
+    assert "Example Social" in html
+    assert "7m ago" in html
+    assert "Jul 3, 2026 11:43 AM" in html
+    assert "full message context" in html
+    assert "&lt;tail&gt;" in html
+    assert "data-pcv2-hover-template hidden" in html
+    assert "attachment" in html
+    assert ".pcv2-exchange-row" in css
+    assert "max-height: calc(1.34em * 3);" in css
+    assert "<Friend>" not in html
+    assert "<tail>" not in html
+    assert "<bad>" not in html
+
+
+def test_v2_recent_exchange_platform_badge_falls_back_to_text_without_icon():
+    html = render_v2_console_page(
+        {
+            "brand_name": "Example Persona",
+            "page_title": "Today",
+            "active_section": "today",
+            "nav_items": [{"key": "today", "label": "Today", "href": "/"}],
+            "sections": [
+                {
+                    "key": "today",
+                    "title": "Today",
+                    "layout": "recent-exchanges",
+                    "exchanges": [
+                        {
+                            "common_name": "Example Friend",
+                            "platform_label": "Unknown Platform",
+                            "direction": "outbound",
+                            "persona_common_name": "Example Persona",
+                            "message": "Reply sent.",
+                            "relative_time": "now",
+                            "timestamp": "Jul 3, 2026 12:00 PM",
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert 'class="pcv2-badge pcv2-tone-info" title="Unknown Platform">Unknown Platform</span>' in html
+    assert "pcv2-platform-badge" not in html
+    assert (
+        'class="pcv2-exchange-flow" title="From Example Persona" aria-label="From Example Persona"'
+    ) in html
+    assert (
+        '<span class="pcv2-exchange-arrow pcv2-exchange-arrow-outbound" '
+        'aria-hidden="true">&rarr;</span>'
+    ) in html
+    assert "pcv2-exchange-direction" not in html
+
+
+def test_v2_recent_exchange_model_can_render_explicit_dataclass():
+    html = render_v2_console_page(
+        V2ConsoleConfig(
+            brand_name="Example Persona",
+            page_title="Today",
+            active_section="today",
+            nav_items=(V2NavItem(key="today", label="Today", href="/"),),
+            sections=(
+                V2Section(
+                    key="today",
+                    title="Today",
+                    layout="recent-exchanges",
+                    exchanges=(
+                        V2RecentExchange(
+                            user_common_name="Example Friend",
+                            platform_label="Direct",
+                            message="Short message.",
+                            relative_time="now",
+                            timestamp="Jul 3, 2026 12:00 PM",
+                        ),
+                    ),
+                ),
+            ),
+        )
+    )
+
+    assert "pcv2-layout-recent-exchanges" in html
+    assert "Example Friend" in html
+    assert "Direct" in html
+    assert "Short message." in html
+
+
 def test_v2_media_items_render_actions_without_nesting_tile_anchor():
     html = render_v2_console_page(
         {
@@ -367,6 +564,53 @@ def test_v2_hover_card_assets_are_available():
     assert "data-pcv2-hover-source" in js
     assert "pcv2-hover-card-layer" in css
     assert "pcv2-hover-metrics" in css
+    assert "cursor: help" not in css
+
+
+def test_v2_hover_templates_stay_hidden_inside_structured_cells():
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert ".pcv2-cell-status [data-pcv2-hover-template]" in css
+    assert ".pcv2-cell-copy [data-pcv2-hover-template]" in css
+    assert "display: none !important" in css
+
+
+def test_v2_nav_scrollbar_is_hidden_but_scrollable():
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert ".pcv2-nav {" in css
+    assert "overflow-x: auto;" in css
+    assert "scrollbar-width: none;" in css
+    assert "-ms-overflow-style: none;" in css
+    assert ".pcv2-nav::-webkit-scrollbar" in css
+    assert "display: none;" in css
+    assert "scrollbar-width: thin;" not in css
+
+
+def test_v2_panel_headers_wrap_inside_narrow_cards():
+    css = Path("src/personaconsole/static/persona-console-v2.css").read_text(encoding="utf-8")
+
+    assert ".pcv2-panel-head" in css
+    assert "flex-wrap: wrap;" in css
+    assert ".pcv2-card,\n.pcv2-panel,\n.pcv2-feed-item,\n.pcv2-media-tile {\n  min-width: 0;" in css
+    assert ".pcv2-panel h3" in css
+    assert "overflow-wrap: anywhere;" in css
+
+
+def test_v2_static_version_adds_asset_cache_query():
+    html = render_v2_console_page(
+        V2ConsoleConfig(
+            brand_name="Example Persona",
+            page_title="Cache Key",
+            active_section="today",
+            static_version="12345",
+            nav_items=(V2NavItem(key="today", label="Today", href="/"),),
+            sections=(V2Section(key="today", title="Today"),),
+        )
+    )
+
+    assert "/persona-console/static/persona-console-v2.css?v=12345" in html
+    assert "/persona-console/static/persona-console-v2.js?v=12345" in html
 
 
 def test_v2_post_actions_submit_through_shared_browser_script():

@@ -156,6 +156,7 @@ class V2Badge:
     label: str
     tone: str = "neutral"
     title: str = ""
+    icon_src: str = ""
 
 
 @dataclass(frozen=True)
@@ -177,6 +178,7 @@ class V2MetricCard:
     tone: str = "neutral"
     href: str = ""
     icon: str = ""
+    icon_src: str = ""
     title: str = ""
     badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
     meta: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
@@ -190,7 +192,31 @@ class V2FeedItem:
     when: str = ""
     href: str = ""
     icon: str = ""
+    icon_src: str = ""
     provider: str = ""
+    tone: str = "neutral"
+    badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
+    media: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
+    private: V2PrivateValue | Mapping[str, Any] | str | None = None
+
+
+@dataclass(frozen=True)
+class V2RecentExchange:
+    user_common_name: str = ""
+    message: str = ""
+    full_message: str = ""
+    platform_label: str = ""
+    platform: str = ""
+    platform_icon_src: str = ""
+    direction: str = ""
+    persona_common_name: str = ""
+    persona_avatar_url: str = ""
+    persona_initials: str = ""
+    avatar_url: str = ""
+    initials: str = ""
+    relative_time: str = ""
+    timestamp: str = ""
+    href: str = ""
     tone: str = "neutral"
     badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
     media: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
@@ -267,6 +293,7 @@ class V2Section:
     badges: Sequence[V2Badge | Mapping[str, Any] | str] = field(default_factory=tuple)
     cards: Sequence[V2MetricCard | Mapping[str, Any]] = field(default_factory=tuple)
     feed: Sequence[V2FeedItem | Mapping[str, Any]] = field(default_factory=tuple)
+    exchanges: Sequence[V2RecentExchange | Mapping[str, Any]] = field(default_factory=tuple)
     panels: Sequence[V2Panel | Mapping[str, Any]] = field(default_factory=tuple)
     media: Sequence[V2MediaItem | Mapping[str, Any]] = field(default_factory=tuple)
     messages: Sequence[V2ConversationMessage | Mapping[str, Any]] = field(default_factory=tuple)
@@ -285,6 +312,7 @@ class V2ConsoleConfig:
     active_section: str = "today"
     home_href: str = "/"
     static_base_url: str = "/persona-console/static"
+    static_version: str = ""
     theme: V2ThemeTokens | Mapping[str, Any] | None = None
     hero: V2HeroMedia | Mapping[str, Any] | None = None
     nav_items: Sequence[V2NavItem | Mapping[str, Any]] = field(default_factory=tuple)

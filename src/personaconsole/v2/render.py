@@ -18,6 +18,7 @@ from .models import (
     V2Panel,
     V2PrivacyContext,
     V2PrivateValue,
+    V2RecentExchange,
     V2Section,
     V2TableColumn,
     V2TableRow,
@@ -41,6 +42,31 @@ _TONES = {
     "muted",
     "hot",
     "cool",
+}
+
+_INBOUND_DIRECTIONS = {
+    "contact",
+    "from",
+    "from-person",
+    "in",
+    "incoming",
+    "inbound",
+    "message",
+    "received",
+    "user",
+}
+
+_OUTBOUND_DIRECTIONS = {
+    "assistant",
+    "bot",
+    "out",
+    "outbound",
+    "outgoing",
+    "persona",
+    "response",
+    "sent",
+    "to",
+    "to-person",
 }
 
 
@@ -81,6 +107,15 @@ def _coerce_seq(values: Sequence[Any], cls: type[T], **defaults: Any) -> tuple[T
 def _tone(value: str) -> str:
     clean = str(value or "neutral").strip().lower().replace("_", "-")
     return clean if clean in _TONES else "neutral"
+
+
+def _exchange_direction(value: Any) -> str:
+    clean = str(value or "").strip().lower().replace("_", "-").replace(" ", "-")
+    if clean in _OUTBOUND_DIRECTIONS:
+        return "outbound"
+    if clean in _INBOUND_DIRECTIONS:
+        return "inbound"
+    return ""
 
 
 def _attr(name: str, value: Any, *, boolean: bool = False) -> str:
@@ -156,7 +191,12 @@ def _badges(values: Sequence[V2Badge | Mapping[str, Any] | str]) -> str:
     for value in _coerce_seq(values, V2Badge):
         tone = _tone(value.tone)
         title = _attr("title", value.title)
-        badges.append(f'<span class="pcv2-badge pcv2-tone-{tone}"{title}>{escape(value.label)}</span>')
+        icon = (
+            f'<img class="pcv2-badge-icon" src="{escape(value.icon_src, quote=True)}" alt="" loading="lazy">'
+            if value.icon_src
+            else ""
+        )
+        badges.append(f'<span class="pcv2-badge pcv2-tone-{tone}"{title}>{icon}{escape(value.label)}</span>')
     return "".join(badges)
 
 
@@ -185,7 +225,12 @@ def _render_card(value: V2MetricCard | Mapping[str, Any], privacy: V2PrivacyCont
         return ""
     tag = "a" if card.href else "article"
     href = _attr("href", card.href)
-    icon = f'<span class="pcv2-card-icon" aria-hidden="true">{escape(card.icon)}</span>' if card.icon else ""
+    icon_content = (
+        f'<img src="{escape(card.icon_src, quote=True)}" alt="" loading="lazy">'
+        if card.icon_src
+        else escape(card.icon)
+    )
+    icon = f'<span class="pcv2-card-icon" aria-hidden="true">{icon_content}</span>' if icon_content else ""
     meta_html = "".join(
         f'<span><b>{escape(str(item.get("label") or ""))}</b>{escape(str(item.get("value") or ""))}</span>'
         for item in card.meta
@@ -209,7 +254,11 @@ def _render_feed_item(value: V2FeedItem | Mapping[str, Any], privacy: V2PrivacyC
         return ""
     tag = "a" if item.href else "article"
     href = _attr("href", item.href)
-    icon = escape(item.icon or item.provider[:1].upper() or "•")
+    icon = (
+        f'<img src="{escape(item.icon_src, quote=True)}" alt="" loading="lazy">'
+        if item.icon_src
+        else escape(item.icon or item.provider[:1].upper() or "•")
+    )
     media_html = "".join(
         f'<span class="pcv2-feed-media">{escape(str(media.get("label") or media.get("kind") or "media"))}</span>'
         for media in item.media
@@ -223,6 +272,167 @@ def _render_feed_item(value: V2FeedItem | Mapping[str, Any], privacy: V2PrivacyC
         f'<span>{escape(item.when)}{(" · " + escape(item.provider)) if item.provider else ""}</span>'
         f'</span><span class="pcv2-feed-side">{_badges(item.badges)}{media_html}</span></{tag}>'
     )
+
+
+def _exchange_payload(value: V2RecentExchange | Mapping[str, Any]) -> V2RecentExchange:
+    if isinstance(value, V2RecentExchange):
+        return value
+    data = _mapping(value)
+    if "user_common_name" not in data:
+        data["user_common_name"] = (
+            data.get("common_name")
+            or data.get("person_name")
+            or data.get("display_name")
+            or data.get("name")
+            or data.get("user_name")
+            or ""
+        )
+    if "platform_label" not in data:
+        data["platform_label"] = data.get("platform_name") or data.get("provider_label") or data.get("provider") or ""
+    if "platform" not in data:
+        data["platform"] = data.get("provider") or data.get("source") or data.get("platform_key") or ""
+    if "platform_icon_src" not in data:
+        data["platform_icon_src"] = data.get("icon_src") or data.get("provider_icon_src") or ""
+    if "direction" not in data:
+        data["direction"] = (
+            data.get("message_direction")
+            or data.get("flow")
+            or data.get("side")
+            or data.get("latest_side")
+            or data.get("kind")
+            or ""
+        )
+    if "persona_common_name" not in data:
+        data["persona_common_name"] = (
+            data.get("persona_name")
+            or data.get("assistant_name")
+            or data.get("bot_name")
+            or data.get("runtime_name")
+            or ""
+        )
+    if "persona_avatar_url" not in data:
+        data["persona_avatar_url"] = (
+            data.get("persona_photo_url")
+            or data.get("persona_image_url")
+            or data.get("assistant_avatar_url")
+            or data.get("bot_avatar_url")
+            or ""
+        )
+    if "persona_initials" not in data:
+        data["persona_initials"] = data.get("assistant_initials") or data.get("bot_initials") or ""
+    if "avatar_url" not in data:
+        data["avatar_url"] = data.get("photo_url") or data.get("image_url") or data.get("src") or ""
+    if "relative_time" not in data:
+        data["relative_time"] = data.get("when") or data.get("age") or ""
+    if "timestamp" not in data:
+        data["timestamp"] = data.get("datetime") or data.get("date_time") or ""
+    return _coerce(data, V2RecentExchange)
+
+
+def _exchange_direction_label(direction: str, persona_name: str) -> str:
+    if direction == "outbound":
+        return f"From {persona_name}"
+    if direction == "inbound":
+        return f"To {persona_name}"
+    return ""
+
+
+def _render_exchange_avatar(name: str, avatar_url: str, initials: str, class_name: str = "") -> str:
+    classes = f"pcv2-exchange-avatar{(' ' + class_name) if class_name else ''}"
+    avatar = (
+        f'<img src="{escape(avatar_url, quote=True)}" alt="" loading="lazy">'
+        if avatar_url
+        else f"<span>{escape((initials or _initials(name))[:3])}</span>"
+    )
+    return f'<span class="{classes}" aria-hidden="true">{avatar}</span>'
+
+
+def _render_exchange_flow(item: V2RecentExchange, direction: str, name: str) -> str:
+    persona_name = item.persona_common_name or "Persona"
+    contact_avatar = _render_exchange_avatar(name, item.avatar_url, item.initials, "pcv2-exchange-avatar-contact")
+    if not direction:
+        return contact_avatar
+    persona_avatar = _render_exchange_avatar(
+        persona_name,
+        item.persona_avatar_url,
+        item.persona_initials,
+        "pcv2-exchange-avatar-persona",
+    )
+    label = _exchange_direction_label(direction, persona_name)
+    arrow = "&rarr;" if direction == "outbound" else "&larr;"
+    return (
+        f'<span class="pcv2-exchange-flow"{_attr("title", label)}{_attr("aria-label", label)}>'
+        f"{persona_avatar}"
+        f'<span class="pcv2-exchange-arrow pcv2-exchange-arrow-{direction}" aria-hidden="true">{arrow}</span>'
+        f"{contact_avatar}"
+        "</span>"
+    )
+
+
+def _render_exchange_platform_badge(label: str, icon_src: str) -> str:
+    safe_label = label or "Platform"
+    if icon_src:
+        return (
+            f'<span class="pcv2-platform-badge"{_attr("title", safe_label)}{_attr("aria-label", safe_label)}>'
+            f'<img class="pcv2-platform-badge-icon" src="{escape(icon_src, quote=True)}" alt="" loading="lazy">'
+            "</span>"
+        )
+    return _badges((V2Badge(label=safe_label, tone="info", title=safe_label),))
+
+
+def _render_exchange(value: V2RecentExchange | Mapping[str, Any], privacy: V2PrivacyContext) -> str:
+    item = _exchange_payload(value)
+    message = render_v2_private_text(item.private, privacy) if item.private else item.message
+    full_message = render_v2_private_text(item.private, privacy) if item.private else (item.full_message or item.message)
+    if item.private and not message and not full_message:
+        return ""
+    name = item.user_common_name or "Unknown"
+    platform = item.platform_label or item.platform or "Message"
+    direction = _exchange_direction(item.direction)
+    persona_name = item.persona_common_name or "Persona"
+    direction_label = _exchange_direction_label(direction, persona_name)
+    tag = "a" if item.href else "article"
+    href = _attr("href", item.href)
+    flow = _render_exchange_flow(item, direction, name)
+    platform_badge = _render_exchange_platform_badge(platform, item.platform_icon_src)
+    media_html = "".join(
+        f'<span class="pcv2-feed-media">{escape(str(media.get("label") or media.get("kind") or "media"))}</span>'
+        for media in item.media
+    )
+    hover_html = _render_hover_card(
+        {
+            "title": name,
+            "subtitle": " · ".join(
+                part for part in (direction_label, platform, item.timestamp or item.relative_time) if part
+            ),
+            "body": full_message,
+            "badges": item.badges,
+        }
+    )
+    hover_attrs = ' data-pcv2-hover-source' if hover_html else ""
+    if hover_html and not item.href:
+        hover_attrs += ' tabindex="0"'
+    message_text = message or full_message or "Message activity recorded."
+    extra_html = f'<span class="pcv2-exchange-extra">{_badges(item.badges)}{media_html}</span>' if item.badges or media_html else ""
+    return (
+        f'<{tag} class="pcv2-exchange-row pcv2-tone-{_tone(item.tone)}"{href}{hover_attrs}{_private_attrs(item.private)}>'
+        '<span class="pcv2-exchange-person">'
+        f"{flow}"
+        f'<strong>{escape(name)}</strong>'
+        '</span>'
+        f'<span class="pcv2-exchange-platform">{platform_badge}</span>'
+        f'<span class="pcv2-exchange-message"{_attr("title", full_message)}>'
+        '<span class="pcv2-exchange-message-body">'
+        f'<span class="pcv2-exchange-message-text">{escape(message_text)}</span></span>{extra_html}{hover_html}</span>'
+        f'<span class="pcv2-exchange-age">{escape(item.relative_time)}</span>'
+        f'<time class="pcv2-exchange-stamp">{escape(item.timestamp)}</time>'
+        f'</{tag}>'
+    )
+
+
+def _render_exchanges(values: Sequence[V2RecentExchange | Mapping[str, Any]], privacy: V2PrivacyContext) -> str:
+    rows = "".join(_render_exchange(value, privacy) for value in values)
+    return f'<div class="pcv2-exchange-list">{rows}</div>' if rows else ""
 
 
 def _render_panel(value: V2Panel | Mapping[str, Any], privacy: V2PrivacyContext) -> str:
@@ -526,13 +736,18 @@ def render_v2_section(section: V2Section | Mapping[str, Any], privacy: V2Privacy
     if layout in {"cards", "dashboard", "mind"}:
         cards = "".join(_render_card(card, context) for card in model.cards)
         panels = "".join(_render_panel(panel, context) for panel in model.panels)
+        exchanges = _render_exchanges(model.exchanges, context)
         feed = "".join(_render_feed_item(item, context) for item in model.feed)
         if cards:
             body += f'<div class="pcv2-card-grid">{cards}</div>'
         if panels:
             body += f'<div class="pcv2-panel-grid">{panels}</div>'
+        if exchanges:
+            body += exchanges
         if feed:
             body += f'<div class="pcv2-feed">{feed}</div>'
+    elif layout in {"exchanges", "recent-exchanges", "message-exchanges"}:
+        body = _render_exchanges(model.exchanges, context)
     elif layout in {"feed", "timeline", "glossary"}:
         body = '<div class="pcv2-feed">' + "".join(_render_feed_item(item, context) for item in model.feed) + "</div>"
     elif layout in {"directory", "table", "people"}:
@@ -552,6 +767,7 @@ def render_v2_section(section: V2Section | Mapping[str, Any], privacy: V2Privacy
         body = '<div class="pcv2-panel-grid">' + "".join(_render_panel(panel, context) for panel in model.panels) + "</div>"
     if not body or body in {
         '<div class="pcv2-feed"></div>',
+        '<div class="pcv2-exchange-list"></div>',
         '<div class="pcv2-media-grid"></div>',
         '<div class="pcv2-panel-grid"></div>',
     }:
@@ -624,6 +840,8 @@ def render_v2_console_page(config: V2ConsoleConfig | Mapping[str, Any]) -> str:
     sections = _coerce_seq(model.sections, V2Section)
     body = "".join(render_v2_section(section, privacy) for section in sections)
     live = ""
+    static_base = escape(model.static_base_url.rstrip("/"), quote=True)
+    static_query = f"?v={escape(str(model.static_version), quote=True)}" if model.static_version else ""
     if model.live_url:
         interval = max(1, int(model.live_interval_seconds or 15))
         live = (
@@ -641,7 +859,7 @@ def render_v2_console_page(config: V2ConsoleConfig | Mapping[str, Any]) -> str:
 {theme.css_variables()}
 }}
   </style>
-  <link rel="stylesheet" href="{escape(model.static_base_url.rstrip('/'))}/persona-console-v2.css">
+  <link rel="stylesheet" href="{static_base}/persona-console-v2.css{static_query}">
   {model.extra_head}
 </head>
 <body class="pcv2-body" data-pcv2-active="{escape(model.active_section)}" data-pcv2-role="{escape(privacy.normalized_role)}">
@@ -655,7 +873,7 @@ def render_v2_console_page(config: V2ConsoleConfig | Mapping[str, Any]) -> str:
     <div class="pcv2-content">{body}</div>
   </main>
   {model.footer_html}
-  <script src="{escape(model.static_base_url.rstrip('/'))}/persona-console-v2.js"></script>
+  <script src="{static_base}/persona-console-v2.js{static_query}"></script>
   {model.extra_body_end}
 </body>
 </html>"""

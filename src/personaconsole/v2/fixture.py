@@ -82,15 +82,20 @@ def build_v2_fixture_config(*, owner: bool = False) -> V2ConsoleConfig:
                         "tone": "cool",
                     },
                 ),
-                feed=(
+                exchanges=(
                     {
-                        "icon": "D",
-                        "provider": "discord",
-                        "when": "5m ago",
-                        "title": "DM from Example Friend",
-                        "detail": "Opened the conversation thread.",
+                        "user_common_name": "Example Friend",
+                        "platform_label": "Discord",
+                        "platform": "discord",
+                        "direction": "inbound",
+                        "persona_name": "Example Persona",
+                        "relative_time": "5m ago",
+                        "timestamp": "Today 9:41 PM",
+                        "message": "DM from Example Friend: opened the conversation thread.",
                         "href": "/conversations/example",
                     },
+                ),
+                feed=(
                     {
                         "icon": "J",
                         "provider": "journal",
